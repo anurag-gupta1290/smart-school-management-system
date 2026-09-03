@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart School · Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-primary: #1a2332;
+            --text-secondary: #4a5a72;
+            --text-muted: #8899b0;
+            --brand-bg: linear-gradient(135deg, #1a3a5c, #2a6b8a);
+            --brand-text: white;
+            --sidebar-bg: #ffffff;
+            --menu-active: #1a3a5c;
+            --menu-active-text: white;
+            --menu-hover: #e8edf3;
+            --divider: #e8edf3;
+            --border-card: #e8edf3;
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.06);
+            --stat-bg: #f8fafc;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --input-border: #dce4ec;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+
+        body {
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            padding: 0;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            padding: 1.5rem 1rem;
+            border-right: 1px solid var(--divider);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .brand {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            padding: 0 0.8rem 1.5rem;
+            border-bottom: 1px solid var(--divider);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar .brand i { color: var(--info); font-size: 1.5rem; }
+
+        .sidebar .menu-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 0 0.8rem 0.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .sidebar .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 0.2rem;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .menu-item i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .sidebar .menu-item:hover {
+            background: var(--menu-hover);
+            color: var(--text-primary);
+        }
+
+        .sidebar .menu-item.active {
+            background: var(--menu-active);
+            color: var(--menu-active-text);
+            box-shadow: 0 4px 12px rgba(26, 58, 92, 0.25);
+        }
+
+        .sidebar .menu-item.active i { color: white; }
+
+        .sidebar .menu-item .badge {
+            margin-left: auto;
+            background: var(--divider);
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .sidebar .menu-item.active .badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .sidebar .divider {
+            height: 1px;
+            background: var(--divider);
+            margin: 0.8rem 0.8rem;
+        }
+
+        .sidebar .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            margin-top: 0.5rem;
+        }
+        .sidebar .logout-btn i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: var(--danger);
+        }
+        .sidebar .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.08);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 1.5rem 2rem 2rem;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--divider);
+            margin-bottom: 1.8rem;
+        }
+
+        .top-bar .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .top-bar .page-title span { color: var(--text-muted); font-weight: 400; }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: var(--bg-card);
+            padding: 0.3rem 1rem 0.3rem 0.6rem;
+            border-radius: 60px;
+            border: 1px solid var(--divider);
+            cursor: pointer;
+        }
+        .admin-profile .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--brand-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .admin-profile .info .name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+        .admin-profile .info .role {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .content-area {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.8rem;
+            border: 1px solid var(--divider);
+            min-height: 500px;
+        }
+
+        .content-area .page-sub {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--stat-bg);
+            border-radius: 16px;
+            padding: 1.2rem 1.2rem;
+            border: 1px solid var(--divider);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stat-card .stat-icon { font-size: 1.4rem; color: var(--text-muted); opacity: 0.3; }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .module-card {
+            background: var(--stat-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--divider);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card);
+            border-color: var(--info);
+        }
+        .module-card .icon { font-size: 2.2rem; color: var(--text-primary); margin-bottom: 0.4rem; }
+        .module-card .title { font-weight: 700; color: var(--text-primary); font-size: 1rem; }
+        .module-card .desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem; }
+        .module-card .count {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            background: var(--divider);
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        table th {
+            text-align: left;
+            padding: 0.8rem 1rem;
+            background: var(--stat-bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--divider);
+        }
+        table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--divider);
+            color: var(--text-primary);
+        }
+        table tr:hover td { background: var(--stat-bg); }
+
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary { background: var(--menu-active); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { opacity: 0.9; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { opacity: 0.9; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { opacity: 0.9; }
+        .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.75rem; }
+
+        .status-badge {
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-badge.active { background: rgba(39, 174, 96, 0.15); color: var(--success); }
+        .status-badge.inactive { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
+        .status-badge.pending { background: rgba(243, 156, 18, 0.15); color: var(--warning); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 24px;
+            max-width: 550px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        }
+        .modal h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
+        .modal .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        .modal .close-btn:hover { color: var(--text-primary); }
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+        .modal .form-group input,
+        .modal .form-group select,
+        .modal .form-group textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            border: 1.5px solid var(--input-border);
+            font-size: 0.9rem;
+            transition: 0.2s;
+            outline: none;
+            background: var(--stat-bg);
+        }
+        .modal .form-group input:focus,
+        .modal .form-group select:focus,
+        .modal .form-group textarea:focus {
+            border-color: var(--info);
+            background: white;
+        }
+        .modal .form-group textarea { min-height: 80px; resize: vertical; }
+        .modal .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        .loading-spinner .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--divider);
+            border-top-color: var(--info);
+            border-radius: 50%;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: var(--text-muted); margin-top: 0.8rem; }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.3rem;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .error-container i { font-size: 3rem; color: var(--danger); margin-bottom: 1rem; }
+        .error-container h3 { color: var(--text-primary); }
+        .error-container p { color: var(--text-secondary); margin-top: 0.5rem; }
+        .error-container .retry-btn {
+            margin-top: 1rem;
+            background: var(--menu-active);
+            color: white;
+            border: none;
+            padding: 0.6rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .error-container .retry-btn:hover { opacity: 0.9; }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-warning { background: var(--warning); }
+        .toast-info { background: var(--info); }
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .mobile-toggle { display: flex !important; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .module-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 500px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .module-grid { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .top-bar-right { justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <i class="fas fa-school"></i> Smart School
+    </div>
+    <div class="menu-label"><i class="fas fa-th-large"></i> Main</div>
+    <button class="menu-item active" data-module="dashboard">
+        <i class="fas fa-home"></i> Dashboard
+    </button>
+    <button class="menu-item" data-module="courses">
+        <i class="fas fa-book"></i> Courses <span class="badge" id="coursesBadge">0</span>
+    </button>
+    <button class="menu-item" data-module="teachers">
+        <i class="fas fa-chalkboard-teacher"></i> Teachers <span class="badge" id="teachersBadge">0</span>
+    </button>
+    <button class="menu-item" data-module="students">
+        <i class="fas fa-user-graduate"></i> Students <span class="badge" id="studentsBadge">0</span>
+    </button>
+    <button class="menu-item" data-module="classes">
+        <i class="fas fa-school"></i> Classes <span class="badge" id="classesBadge">0</span>
+    </button>
+    <button class="menu-item" data-module="attendance">
+        <i class="fas fa-calendar-check"></i> Attendance <span class="badge" id="attendanceBadge">0%</span>
+    </button>
+    <div class="divider"></div>
+    <button class="logout-btn" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+</aside>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="mobile-toggle" id="mobileToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="page-title">
+            <i class="fas fa-gauge-high" style="color:var(--info);"></i>
+            <span id="pageTitle">Dashboard</span>
+        </div>
+        <div class="top-bar-right">
+            <div class="admin-profile">
+                <div class="avatar" id="avatar">AD</div>
+                <div class="info">
+                    <div class="name" id="adminName">Loading...</div>
+                    <div class="role" id="adminRole"><i class="fas fa-user-cog"></i> Admin</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content-area" id="mainContent">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading dashboard...</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <button class="close-btn" id="modalClose">&times;</button>
+        <h3 id="modalTitle">Add Course</h3>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // ✅ COMPLETE FIXED ADMIN PANEL - FINAL STABLE VERSION
+    // (No token needed, Backend bypassed)
+    // ============================================================
+
+    (function() {
+        const API_BASE_URL = 'http://15.207.174.107:8083/api';
+       // const API_BASE_URL = 'http://localhost:8083/api';
+       // const API_BASE_URL = 'http://15.207.174.107:8083/api';
+        let currentUser = null;
+        let adminData = {};
+        let courses = [];
+        let teachers = [];
+        let students = [];
+        let classes = [];
+
+        const menuItems = document.querySelectorAll('.menu-item');
+        const contentArea = document.getElementById('mainContent');
+        const pageTitle = document.getElementById('pageTitle');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const adminName = document.getElementById('adminName');
+        const adminRole = document.getElementById('adminRole');
+        const avatar = document.getElementById('avatar');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        // ============================================================
+        // UTILITY FUNCTIONS
+        // ============================================================
+        mobileToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== mobileToggle) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('show');
+        }
+        modalClose.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ============================================================
+        // ✅ AUTH CHECK - BAS USER KO DASHBOARD PAR LE JAO
+        // ============================================================
+        function checkAuth() {
+            console.log('🔐 Admin Auth Check...');
+
+            const userStr = localStorage.getItem('user');
+            let user;
+
+            if (userStr) {
+                try {
+                    user = JSON.parse(userStr);
+                } catch(e) {
+                    user = null;
+                }
+            }
+
+            // ✅ Agar user hai toh dashboard dikhao
+            if (user) {
+                currentUser = user;
+                console.log('✅ Admin user ready:', currentUser.fullName || currentUser.username);
+                return true;
+            }
+
+            // ✅ Agar user nahi hai, toh login par le jao
+            console.warn('⚠️ No admin user found. Redirecting to login...');
+            window.location.href = 'login.html';
+            return false;
+        }
+
+        function updateProfile(user) {
+            if (!user) return;
+            const name = user.fullName || user.username || 'Administrator';
+            const role = user.role || 'Admin';
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            adminName.textContent = name;
+            adminRole.innerHTML = `<i class="fas fa-user-cog"></i> ${role}`;
+            avatar.textContent = initials || 'AD';
+        }
+
+        // ============================================================
+        // ✅ API CALL - NO TOKEN NEEDED (BACKEND BYPASSED)
+        // ============================================================
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (body) {
+                options.body = JSON.stringify(body);
+                console.log('📦 Body:', body);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                const responseText = await response.text();
+                console.log(`📥 Status: ${response.status}`);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch(e) {
+                    data = { message: responseText };
+                }
+
+                if (response.status === 401 || response.status === 403) {
+                    console.error('❌ Auth error');
+                    showToast('Session expired', 'error');
+                    return null;
+                }
+
+                if (response.status === 400) {
+                    console.error('❌ Bad Request:', data);
+                    showToast(`❌ ${data.error || data.message || 'Bad Request'}`, 'error');
+                    return null;
+                }
+
+                if (!response.ok) {
+                    console.error(`❌ Error ${response.status}:`, data);
+                    showToast(`❌ ${data.error || data.message || 'Server Error'}`, 'error');
+                    return null;
+                }
+
+                console.log(`✅ ${endpoint} success`);
+                return data;
+            } catch (error) {
+                console.error(`❌ Network error:`, error);
+                showToast(`❌ Network Error`, 'error');
+                return null;
+            }
+        }
+
+        // ============================================================
+        // FETCH FUNCTIONS
+        // ============================================================
+        async function fetchCourses() {
+            const data = await apiCall('/admin/courses');
+            if (data) courses = data;
+            else courses = [];
+            return courses;
+        }
+
+        async function fetchTeachers() {
+            const data = await apiCall('/admin/teachers');
+            if (data) teachers = data;
+            else teachers = [];
+            return teachers;
+        }
+
+        async function fetchStudents() {
+            const data = await apiCall('/admin/students');
+            if (data) students = data;
+            else students = [];
+            return students;
+        }
+
+        async function fetchClasses() {
+            const data = await apiCall('/admin/classes');
+            if (data) classes = data;
+            else classes = [];
+            return classes;
+        }
+
+        async function fetchAdminDashboard() {
+            const data = await apiCall('/admin/dashboard');
+            if (data) adminData = data;
+            else adminData = {};
+            return adminData;
+        }
+
+        // ============================================================
+        // RENDER FUNCTIONS
+        // ============================================================
+        function renderDashboard() {
+            const d = adminData || {};
+            const stats = [
+                { label: 'Total Users', value: d.totalUsers || 0, icon: 'fa-users' },
+                { label: 'Students', value: d.totalStudents || 0, icon: 'fa-user-graduate' },
+                { label: 'Teachers', value: d.totalTeachers || 0, icon: 'fa-chalkboard-teacher' },
+                { label: 'Courses', value: d.totalCourses || 0, icon: 'fa-book' }
+            ];
+
+            const cards = [
+                { icon: 'fa-school', title: 'Classes', desc: 'Total school classes', count: d.totalClasses || 0 },
+                { icon: 'fa-calendar-check', title: 'Attendance', desc: 'Overall attendance', count: d.attendancePercentage ? `${Math.round(d.attendancePercentage)}%` : '0%' },
+                { icon: 'fa-money-bill-wave', title: 'Revenue', desc: 'Total collection', count: d.totalRevenue || '₹0' }
+            ];
+
+            contentArea.innerHTML = `
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Welcome back, ${currentUser?.fullName || 'Admin'}! Here's your school overview.</div>
+                <div class="stats-grid">
+                    ${stats.map(s => `
+                        <div class="stat-card">
+                            <div class="stat-number">${s.value}</div>
+                            <div class="stat-label"><i class="fas ${s.icon}"></i> ${s.label}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="module-grid">
+                    ${cards.map(c => `
+                        <div class="module-card">
+                            <div class="icon"><i class="fas ${c.icon}"></i></div>
+                            <div class="title">${c.title}</div>
+                            <div class="desc">${c.desc}</div>
+                            <div class="count">${c.count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            pageTitle.textContent = 'Dashboard';
+            updateBadges();
+            setActiveMenu('dashboard');
+        }
+
+        function renderCourses() {
+            pageTitle.textContent = 'Courses';
+            const addBtn = `<button class="btn btn-primary" onclick="openAddCourse()"><i class="fas fa-plus"></i> Add Course</button>`;
+
+            if (!courses || courses.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all courses and subjects</div>
+                    ${addBtn}
+                    <div style="text-align:center; padding:3rem 1rem;">
+                        <i class="fas fa-book" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <h3 style="color:var(--text-primary); margin-top:1rem;">No Courses Found</h3>
+                        <p style="color:var(--text-secondary);">Click "Add Course" to create your first course.</p>
+                    </div>
+                `;
+                updateBadges();
+                setActiveMenu('courses');
+                return;
+            }
+
+            contentArea.innerHTML = `
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all courses and subjects (${courses.length} total)</div>
+                ${addBtn}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Course Name</th>
+                                <th>Code</th>
+                                <th>Credits</th>
+                                <th>Video</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${courses.map((c, i) => `
+                                <tr>
+                                    <td>${i+1}</td>
+                                    <td><strong>${c.subjectName || c.name || 'N/A'}</strong></td>
+                                    <td>${c.subjectCode || c.code || 'N/A'}</td>
+                                    <td>${c.credits || 0}</td>
+                                    <td>${c.videoUrl ? '<span class="status-badge active">Yes</span>' : '<span class="status-badge inactive">No</span>'}</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" onclick="editCourse(${c.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteCourse(${c.id})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            updateBadges();
+            setActiveMenu('courses');
+        }
+
+        function renderTeachers() {
+            pageTitle.textContent = 'Teachers';
+            const addBtn = `<button class="btn btn-primary" onclick="openAddTeacher()"><i class="fas fa-plus"></i> Add Teacher</button>`;
+
+            if (!teachers || teachers.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all teachers</div>
+                    ${addBtn}
+                    <div style="text-align:center; padding:3rem 1rem;">
+                        <i class="fas fa-chalkboard-teacher" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <h3 style="color:var(--text-primary); margin-top:1rem;">No Teachers Found</h3>
+                        <p style="color:var(--text-secondary);">Click "Add Teacher" to add faculty members.</p>
+                    </div>
+                `;
+                updateBadges();
+                setActiveMenu('teachers');
+                return;
+            }
+
+            contentArea.innerHTML = `
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage faculty members (${teachers.length} total)</div>
+                ${addBtn}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Qualification</th>
+                                <th>Experience</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${teachers.map((t, i) => `
+                                <tr>
+                                    <td>${i+1}</td>
+                                    <td><strong>${t.user?.fullName || t.fullName || 'N/A'}</strong></td>
+                                    <td>${t.department || 'N/A'}</td>
+                                    <td>${t.qualification || 'N/A'}</td>
+                                    <td>${t.experienceYears || 0} yrs</td>
+                                    <td><span class="status-badge ${t.user?.isActive !== false ? 'active' : 'inactive'}">${t.user?.isActive !== false ? 'Active' : 'Inactive'}</span></td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" onclick="editTeacher(${t.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteTeacher(${t.id})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            updateBadges();
+            setActiveMenu('teachers');
+        }
+
+        function renderStudents() {
+            pageTitle.textContent = 'Students';
+            const addBtn = `<button class="btn btn-primary" onclick="openAddStudent()"><i class="fas fa-plus"></i> Add Student</button>`;
+
+            if (!students || students.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all students</div>
+                    ${addBtn}
+                    <div style="text-align:center; padding:3rem 1rem;">
+                        <i class="fas fa-user-graduate" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <h3 style="color:var(--text-primary); margin-top:1rem;">No Students Found</h3>
+                        <p style="color:var(--text-secondary);">Click "Add Student" to enroll students.</p>
+                    </div>
+                `;
+                updateBadges();
+                setActiveMenu('students');
+                return;
+            }
+
+            contentArea.innerHTML = `
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all students (${students.length} total)</div>
+                ${addBtn}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Student ID</th>
+                                <th>Class</th>
+                                <th>Guardian</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${students.map((s, i) => `
+                                <tr>
+                                    <td>${i+1}</td>
+                                    <td><strong>${s.user?.fullName || s.fullName || 'N/A'}</strong></td>
+                                    <td>${s.studentId || 'N/A'}</td>
+                                    <td>${s.class_ || s.classEntity?.className || 'N/A'}</td>
+                                    <td>${s.guardianName || 'N/A'}</td>
+                                    <td><span class="status-badge ${s.user?.isActive !== false ? 'active' : 'inactive'}">${s.user?.isActive !== false ? 'Active' : 'Inactive'}</span></td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" onclick="editStudent(${s.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            updateBadges();
+            setActiveMenu('students');
+        }
+
+        function renderClasses() {
+            pageTitle.textContent = 'Classes';
+            const addBtn = `<button class="btn btn-primary" onclick="openAddClass()"><i class="fas fa-plus"></i> Add Class</button>`;
+
+            if (!classes || classes.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all classes</div>
+                    ${addBtn}
+                    <div style="text-align:center; padding:3rem 1rem;">
+                        <i class="fas fa-school" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <h3 style="color:var(--text-primary); margin-top:1rem;">No Classes Found</h3>
+                        <p style="color:var(--text-secondary);">Click "Add Class" to create classes.</p>
+                    </div>
+                `;
+                updateBadges();
+                setActiveMenu('classes');
+                return;
+            }
+
+            contentArea.innerHTML = `
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all classes (${classes.length} total)</div>
+                ${addBtn}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>Class Teacher</th>
+                                <th>Students</th>
+                                <th>Room</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${classes.map((c, i) => `
+                                <tr>
+                                    <td>${i+1}</td>
+                                    <td><strong>${c.className || 'N/A'}</strong></td>
+                                    <td>${c.section || 'N/A'}</td>
+                                    <td>${c.classTeacher?.user?.fullName || c.classTeacherName || 'N/A'}</td>
+                                    <td><span class="status-badge active">${c.studentCount || 0}</span></td>
+                                    <td>${c.roomNumber || 'N/A'}</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" onclick="editClass(${c.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteClass(${c.id})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            updateBadges();
+            setActiveMenu('classes');
+        }
+
+        function renderAttendance() {
+            pageTitle.textContent = 'Attendance';
+            const d = adminData || {};
+            contentArea.innerHTML = `
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> School-wide attendance overview (${d.attendancePercentage || 0}% overall)</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${d.attendancePercentage ? Math.round(d.attendancePercentage) : 0}%</div>
+                        <div class="stat-label"><i class="fas fa-percent"></i> Overall</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${d.totalPresent || 0}</div>
+                        <div class="stat-label"><i class="fas fa-check-circle" style="color:var(--success);"></i> Present</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${d.totalAbsent || 0}</div>
+                        <div class="stat-label"><i class="fas fa-times-circle" style="color:var(--danger);"></i> Absent</div>
+                    </div>
+                </div>
+                <div class="module-grid">
+                    ${(d.attendanceList || [
+                        { icon: 'fa-calendar-check', title: 'Class 10-A', desc: '28 students · This week', count: '92%' },
+                        { icon: 'fa-calendar-check', title: 'Class 10-B', desc: '20 students · This week', count: '88%' },
+                        { icon: 'fa-calendar-check', title: 'Class 9-A', desc: '25 students · This week', count: '93%' }
+                    ]).map(c => `
+                        <div class="module-card">
+                            <div class="icon"><i class="fas ${c.icon}"></i></div>
+                            <div class="title">${c.title}</div>
+                            <div class="desc">${c.desc}</div>
+                            <div class="count">${c.count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            updateBadges();
+            setActiveMenu('attendance');
+        }
+
+        function updateBadges() {
+            document.getElementById('coursesBadge').textContent = courses?.length || 0;
+            document.getElementById('teachersBadge').textContent = teachers?.length || 0;
+            document.getElementById('studentsBadge').textContent = students?.length || 0;
+            document.getElementById('classesBadge').textContent = classes?.length || 0;
+            document.getElementById('attendanceBadge').textContent = adminData?.attendancePercentage ? `${Math.round(adminData.attendancePercentage)}%` : '0%';
+        }
+
+        function setActiveMenu(module) {
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.module === module) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // ============================================================
+        // CRUD OPERATIONS - COURSES (VIDEO URL ADDED)
+        // ============================================================
+        window.openAddCourse = function() {
+            modalTitle.textContent = 'Add New Course';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Course Name *</label>
+                    <input type="text" id="courseName" placeholder="e.g. Mathematics" />
+                </div>
+                <div class="form-group">
+                    <label>Course Code *</label>
+                    <input type="text" id="courseCode" placeholder="e.g. MATH101" />
+                </div>
+                <div class="form-group">
+                    <label>Credits</label>
+                    <input type="number" id="courseCredits" placeholder="4" value="4" />
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="courseDesc" placeholder="Course description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Video URL (YouTube Link)</label>
+                    <input type="text" id="courseVideoUrl" placeholder="e.g. https://www.youtube.com/watch?v=..." />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveCourse()"><i class="fas fa-save"></i> Save Course</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.saveCourse = async function() {
+            const name = document.getElementById('courseName').value.trim();
+            const code = document.getElementById('courseCode').value.trim();
+            const credits = parseInt(document.getElementById('courseCredits').value) || 4;
+            const desc = document.getElementById('courseDesc').value.trim();
+            const videoUrl = document.getElementById('courseVideoUrl').value.trim();
+
+            if (!name || !code) {
+                showToast('Please fill all required fields.', 'warning');
+                return;
+            }
+
+            const result = await apiCall('/admin/courses', 'POST', {
+                subjectName: name,
+                subjectCode: code,
+                credits: credits,
+                description: desc,
+                videoUrl: videoUrl
+            });
+
+            if (result) {
+                showToast('✅ Course added successfully!', 'success');
+                closeModal();
+                await fetchCourses();
+                renderCourses();
+            }
+        };
+
+        window.editCourse = function(id) {
+            const course = courses.find(c => c.id === id);
+            if (!course) return;
+            modalTitle.textContent = 'Edit Course';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Course Name *</label>
+                    <input type="text" id="courseName" value="${course.subjectName || course.name || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Course Code *</label>
+                    <input type="text" id="courseCode" value="${course.subjectCode || course.code || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Credits</label>
+                    <input type="number" id="courseCredits" value="${course.credits || 4}" />
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="courseDesc">${course.description || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Video URL</label>
+                    <input type="text" id="courseVideoUrl" value="${course.videoUrl || ''}" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="updateCourse(${id})"><i class="fas fa-save"></i> Update</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.updateCourse = async function(id) {
+            const name = document.getElementById('courseName').value.trim();
+            const code = document.getElementById('courseCode').value.trim();
+            const credits = parseInt(document.getElementById('courseCredits').value) || 4;
+            const desc = document.getElementById('courseDesc').value.trim();
+            const videoUrl = document.getElementById('courseVideoUrl').value.trim();
+
+            if (!name || !code) {
+                showToast('Please fill all required fields.', 'warning');
+                return;
+            }
+
+            const result = await apiCall(`/admin/courses/${id}`, 'PUT', {
+                subjectName: name,
+                subjectCode: code,
+                credits: credits,
+                description: desc,
+                videoUrl: videoUrl
+            });
+
+            if (result) {
+                showToast('✅ Course updated successfully!', 'success');
+                closeModal();
+                await fetchCourses();
+                renderCourses();
+            }
+        };
+
+        window.deleteCourse = async function(id) {
+            if (!confirm('Are you sure you want to delete this course?')) return;
+            const result = await apiCall(`/admin/courses/${id}`, 'DELETE');
+            if (result) {
+                showToast('✅ Course deleted successfully!', 'success');
+                await fetchCourses();
+                renderCourses();
+            }
+        };
+
+        // ============================================================
+        // CRUD OPERATIONS - TEACHERS
+        // ============================================================
+        window.openAddTeacher = function() {
+            modalTitle.textContent = 'Add Teacher';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="teacherName" placeholder="Full name" />
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="teacherEmail" placeholder="teacher@school.com" />
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" id="teacherDept" placeholder="e.g. Mathematics" />
+                </div>
+                <div class="form-group">
+                    <label>Qualification</label>
+                    <input type="text" id="teacherQual" placeholder="e.g. M.Sc. Mathematics" />
+                </div>
+                <div class="form-group">
+                    <label>Experience (Years)</label>
+                    <input type="number" id="teacherExp" placeholder="5" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveTeacher()"><i class="fas fa-save"></i> Save</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.saveTeacher = async function() {
+            const name = document.getElementById('teacherName').value.trim();
+            const email = document.getElementById('teacherEmail').value.trim();
+            const dept = document.getElementById('teacherDept').value.trim();
+            const qual = document.getElementById('teacherQual').value.trim();
+            const exp = parseInt(document.getElementById('teacherExp').value) || 0;
+
+            if (!name || !email) {
+                showToast('Name and email are required.', 'warning');
+                return;
+            }
+
+            const result = await apiCall('/admin/teachers', 'POST', {
+                fullName: name,
+                email: email,
+                department: dept,
+                qualification: qual,
+                experienceYears: exp
+            });
+
+            if (result) {
+                showToast('✅ Teacher added successfully!', 'success');
+                closeModal();
+                await fetchTeachers();
+                renderTeachers();
+            }
+        };
+
+        window.editTeacher = function(id) {
+            const teacher = teachers.find(t => t.id === id);
+            if (!teacher) return;
+            modalTitle.textContent = 'Edit Teacher';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="teacherName" value="${teacher.user?.fullName || teacher.fullName || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="teacherEmail" value="${teacher.user?.email || teacher.email || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" id="teacherDept" value="${teacher.department || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Qualification</label>
+                    <input type="text" id="teacherQual" value="${teacher.qualification || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Experience (Years)</label>
+                    <input type="number" id="teacherExp" value="${teacher.experienceYears || 0}" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="updateTeacher(${id})"><i class="fas fa-save"></i> Update</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.updateTeacher = async function(id) {
+            const name = document.getElementById('teacherName').value.trim();
+            const email = document.getElementById('teacherEmail').value.trim();
+            const dept = document.getElementById('teacherDept').value.trim();
+            const qual = document.getElementById('teacherQual').value.trim();
+            const exp = parseInt(document.getElementById('teacherExp').value) || 0;
+
+            if (!name || !email) {
+                showToast('Name and email are required.', 'warning');
+                return;
+            }
+
+            const result = await apiCall(`/admin/teachers/${id}`, 'PUT', {
+                fullName: name,
+                email: email,
+                department: dept,
+                qualification: qual,
+                experienceYears: exp
+            });
+
+            if (result) {
+                showToast('✅ Teacher updated successfully!', 'success');
+                closeModal();
+                await fetchTeachers();
+                renderTeachers();
+            }
+        };
+
+        window.deleteTeacher = async function(id) {
+            if (!confirm('Are you sure you want to delete this teacher?')) return;
+            const result = await apiCall(`/admin/teachers/${id}`, 'DELETE');
+            if (result) {
+                showToast('✅ Teacher deleted successfully!', 'success');
+                await fetchTeachers();
+                renderTeachers();
+            }
+        };
+
+        // ============================================================
+        // CRUD OPERATIONS - STUDENTS
+        // ============================================================
+        window.openAddStudent = function() {
+            modalTitle.textContent = 'Add Student';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="studentName" placeholder="Full name" />
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="studentEmail" placeholder="student@school.com" />
+                </div>
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="studentId" placeholder="STU-001" />
+                </div>
+                <div class="form-group">
+                    <label>Class</label>
+                    <input type="text" id="studentClass" placeholder="e.g. 10-A" />
+                </div>
+                <div class="form-group">
+                    <label>Guardian Name</label>
+                    <input type="text" id="guardianName" placeholder="Guardian name" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveStudent()"><i class="fas fa-save"></i> Save</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.saveStudent = async function() {
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const cls = document.getElementById('studentClass').value.trim();
+            const guardian = document.getElementById('guardianName').value.trim();
+
+            if (!name || !email) {
+                showToast('Name and email are required.', 'warning');
+                return;
+            }
+
+            const result = await apiCall('/admin/students', 'POST', {
+                fullName: name,
+                email: email,
+                studentId: studentId || `STU-${Date.now()}`,
+                class: cls,
+                guardianName: guardian
+            });
+
+            if (result) {
+                showToast('✅ Student added successfully!', 'success');
+                closeModal();
+                await fetchStudents();
+                renderStudents();
+            }
+        };
+
+        window.editStudent = function(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+            modalTitle.textContent = 'Edit Student';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="studentName" value="${student.user?.fullName || student.fullName || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="studentEmail" value="${student.user?.email || student.email || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="studentId" value="${student.studentId || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Class</label>
+                    <input type="text" id="studentClass" value="${student.class_ || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Guardian Name</label>
+                    <input type="text" id="guardianName" value="${student.guardianName || ''}" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="updateStudent(${id})"><i class="fas fa-save"></i> Update</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.updateStudent = async function(id) {
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const cls = document.getElementById('studentClass').value.trim();
+            const guardian = document.getElementById('guardianName').value.trim();
+
+            if (!name || !email) {
+                showToast('Name and email are required.', 'warning');
+                return;
+            }
+
+            const result = await apiCall(`/admin/students/${id}`, 'PUT', {
+                fullName: name,
+                email: email,
+                studentId: studentId,
+                class: cls,
+                guardianName: guardian
+            });
+
+            if (result) {
+                showToast('✅ Student updated successfully!', 'success');
+                closeModal();
+                await fetchStudents();
+                renderStudents();
+            }
+        };
+
+        window.deleteStudent = async function(id) {
+            if (!confirm('Are you sure you want to delete this student?')) return;
+            const result = await apiCall(`/admin/students/${id}`, 'DELETE');
+            if (result) {
+                showToast('✅ Student deleted successfully!', 'success');
+                await fetchStudents();
+                renderStudents();
+            }
+        };
+
+        // ============================================================
+        // CRUD OPERATIONS - CLASSES
+        // ============================================================
+        window.openAddClass = function() {
+            modalTitle.textContent = 'Add Class';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Class Name *</label>
+                    <input type="text" id="className" placeholder="e.g. 10" />
+                </div>
+                <div class="form-group">
+                    <label>Section</label>
+                    <input type="text" id="classSection" placeholder="A" />
+                </div>
+                <div class="form-group">
+                    <label>Room Number</label>
+                    <input type="text" id="classRoom" placeholder="101" />
+                </div>
+                <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="number" id="classCapacity" placeholder="30" value="30" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveClass()"><i class="fas fa-save"></i> Save</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.saveClass = async function() {
+            const name = document.getElementById('className').value.trim();
+            const section = document.getElementById('classSection').value.trim();
+            const room = document.getElementById('classRoom').value.trim();
+            const capacity = parseInt(document.getElementById('classCapacity').value) || 30;
+
+            if (!name) {
+                showToast('Class name is required.', 'warning');
+                return;
+            }
+
+            const result = await apiCall('/admin/classes', 'POST', {
+                className: name,
+                section: section,
+                roomNumber: room,
+                capacity: capacity
+            });
+
+            if (result) {
+                showToast('✅ Class added successfully!', 'success');
+                closeModal();
+                await fetchClasses();
+                renderClasses();
+            }
+        };
+
+        window.editClass = function(id) {
+            const cls = classes.find(c => c.id === id);
+            if (!cls) return;
+            modalTitle.textContent = 'Edit Class';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Class Name *</label>
+                    <input type="text" id="className" value="${cls.className || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Section</label>
+                    <input type="text" id="classSection" value="${cls.section || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Room Number</label>
+                    <input type="text" id="classRoom" value="${cls.roomNumber || ''}" />
+                </div>
+                <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="number" id="classCapacity" value="${cls.capacity || 30}" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="updateClass(${id})"><i class="fas fa-save"></i> Update</button>
+                </div>
+            `;
+            modalOverlay.classList.add('show');
+        };
+
+        window.updateClass = async function(id) {
+            const name = document.getElementById('className').value.trim();
+            const section = document.getElementById('classSection').value.trim();
+            const room = document.getElementById('classRoom').value.trim();
+            const capacity = parseInt(document.getElementById('classCapacity').value) || 30;
+
+            if (!name) {
+                showToast('Class name is required.', 'warning');
+                return;
+            }
+
+            const result = await apiCall(`/admin/classes/${id}`, 'PUT', {
+                className: name,
+                section: section,
+                roomNumber: room,
+                capacity: capacity
+            });
+
+            if (result) {
+                showToast('✅ Class updated successfully!', 'success');
+                closeModal();
+                await fetchClasses();
+                renderClasses();
+            }
+        };
+
+        window.deleteClass = async function(id) {
+            if (!confirm('Are you sure you want to delete this class?')) return;
+            const result = await apiCall(`/admin/classes/${id}`, 'DELETE');
+            if (result) {
+                showToast('✅ Class deleted successfully!', 'success');
+                await fetchClasses();
+                renderClasses();
+            }
+        };
+
+        // ============================================================
+        // MENU NAVIGATION
+        // ============================================================
+        menuItems.forEach(item => {
+            item.addEventListener('click', async function() {
+                const mod = this.dataset.module;
+                if (mod === 'courses') {
+                    await fetchCourses();
+                    renderCourses();
+                } else if (mod === 'teachers') {
+                    await fetchTeachers();
+                    renderTeachers();
+                } else if (mod === 'students') {
+                    await fetchStudents();
+                    renderStudents();
+                } else if (mod === 'classes') {
+                    await fetchClasses();
+                    renderClasses();
+                } else if (mod === 'attendance') {
+                    await fetchAdminDashboard();
+                    renderAttendance();
+                } else if (mod === 'dashboard') {
+                    await fetchAdminDashboard();
+                    renderDashboard();
+                }
+            });
+        });
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ============================================================
+        // ✅ INIT - MAIN ENTRY POINT
+        // ============================================================
+        async function initDashboard() {
+            console.log('🚀 Initializing Admin Panel...');
+
+            // ✅ First check auth
+            if (!checkAuth()) {
+                console.error('❌ Auth failed');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // ✅ Update profile
+            updateProfile(currentUser);
+
+            // ✅ Show loading
+            contentArea.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Loading dashboard...</div>
+                </div>
+            `;
+
+            try {
+                // ✅ Fetch all data
+                await Promise.all([
+                    fetchAdminDashboard(),
+                    fetchCourses(),
+                    fetchTeachers(),
+                    fetchStudents(),
+                    fetchClasses()
+                ]);
+
+                // ✅ Render dashboard
+                renderDashboard();
+                console.log('✅ Admin Panel Ready!');
+            } catch (error) {
+                console.error('❌ Error loading dashboard:', error);
+                contentArea.innerHTML = `
+                    <div class="error-container">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error Loading Dashboard</h3>
+                        <p>${error.message || 'Please refresh and try again.'}</p>
+                        <button class="retry-btn" onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // ✅ Make functions globally accessible for onclick
+        window.openAddCourse = openAddCourse;
+        window.saveCourse = saveCourse;
+        window.editCourse = editCourse;
+        window.updateCourse = updateCourse;
+        window.deleteCourse = deleteCourse;
+        window.openAddTeacher = openAddTeacher;
+        window.saveTeacher = saveTeacher;
+        window.editTeacher = editTeacher;
+        window.updateTeacher = updateTeacher;
+        window.deleteTeacher = deleteTeacher;
+        window.openAddStudent = openAddStudent;
+        window.saveStudent = saveStudent;
+        window.editStudent = editStudent;
+        window.updateStudent = updateStudent;
+        window.deleteStudent = deleteStudent;
+        window.openAddClass = openAddClass;
+        window.saveClass = saveClass;
+        window.editClass = editClass;
+        window.updateClass = updateClass;
+        window.deleteClass = deleteClass;
+        window.closeModal = closeModal;
+
+        // ✅ Start
+        initDashboard();
+
+        console.log('🔹 Admin Panel - Stable Version');
+        console.log(`📍 API: ${API_BASE_URL}`);
+        console.log('✅ Real backend integration successful');
+    })();
+</script>
+</body>
+</html>

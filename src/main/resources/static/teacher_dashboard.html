@@ -1,0 +1,2407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart School · Teacher Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-body: linear-gradient(145deg, #eaf2f8 0%, #d0dfeb 100%);
+            --bg-card: rgba(255, 255, 255, 0.88);
+            --border-card: rgba(255, 255, 255, 0.5);
+            --shadow-card: 0 40px 80px -20px rgba(8, 40, 60, 0.30), 0 20px 40px -12px rgba(0, 20, 30, 0.10);
+            --text-primary: #0b2a3b;
+            --text-secondary: #1b6b8a;
+            --text-muted: #3a6b80;
+            --brand-bg: linear-gradient(135deg, #0b3b4f, #1b6b8a);
+            --brand-text: white;
+            --sidebar-bg: rgba(255, 255, 255, 0.4);
+            --sidebar-border: rgba(255, 255, 255, 0.5);
+            --content-bg: rgba(255, 255, 255, 0.3);
+            --content-border: rgba(255, 255, 255, 0.5);
+            --stat-bg: rgba(255, 255, 255, 0.5);
+            --stat-border: rgba(255, 255, 255, 0.5);
+            --module-bg: rgba(255, 255, 255, 0.5);
+            --module-border: rgba(255, 255, 255, 0.5);
+            --menu-hover: rgba(11, 59, 79, 0.06);
+            --menu-active: #0b3b4f;
+            --menu-active-text: white;
+            --logout-bg: rgba(192, 57, 43, 0.04);
+            --logout-hover: rgba(192, 57, 43, 0.10);
+            --badge-bg: rgba(11, 59, 79, 0.08);
+            --badge-text: #1b6b8a;
+            --profile-bg: rgba(255, 255, 255, 0.5);
+            --profile-border: rgba(255, 255, 255, 0.5);
+            --theme-icon: #1b6b8a;
+            --theme-toggle-bg: rgba(255,255,255,0.5);
+            --divider: rgba(0, 40, 60, 0.06);
+            --online-dot: #2ecc71;
+            --online-bg: rgba(46, 204, 113, 0.12);
+            --loading-color: #1b6b8a;
+            --shadow-hover: 0 12px 28px -12px rgba(8, 50, 70, 0.12);
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --primary: #1b6b8a;
+            --primary-light: #e8f4f8;
+            --graded: #27ae60;
+            --pending: #f39c12;
+            --late: #e74c3c;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: linear-gradient(145deg, #1a2a33 0%, #0d1a22 100%);
+            --bg-card: rgba(30, 45, 55, 0.92);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --shadow-card: 0 40px 80px -20px rgba(0, 0, 0, 0.6), 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+            --text-primary: #e8f0f5;
+            --text-secondary: #7ab8d4;
+            --text-muted: #8aaec0;
+            --brand-bg: linear-gradient(135deg, #1a4a5f, #2a7a9a);
+            --brand-text: white;
+            --sidebar-bg: rgba(20, 35, 45, 0.6);
+            --sidebar-border: rgba(255, 255, 255, 0.06);
+            --content-bg: rgba(20, 35, 45, 0.5);
+            --content-border: rgba(255, 255, 255, 0.06);
+            --stat-bg: rgba(30, 50, 60, 0.5);
+            --stat-border: rgba(255, 255, 255, 0.06);
+            --module-bg: rgba(30, 50, 60, 0.5);
+            --module-border: rgba(255, 255, 255, 0.06);
+            --menu-hover: rgba(255, 255, 255, 0.06);
+            --menu-active: #2a7a9a;
+            --menu-active-text: white;
+            --logout-bg: rgba(192, 57, 43, 0.10);
+            --logout-hover: rgba(192, 57, 43, 0.20);
+            --badge-bg: rgba(255, 255, 255, 0.08);
+            --badge-text: #7ab8d4;
+            --profile-bg: rgba(20, 40, 55, 0.6);
+            --profile-border: rgba(255, 255, 255, 0.06);
+            --theme-icon: #7ab8d4;
+            --theme-toggle-bg: rgba(255,255,255,0.08);
+            --divider: rgba(255, 255, 255, 0.06);
+            --online-dot: #2ecc71;
+            --online-bg: rgba(46, 204, 113, 0.15);
+            --loading-color: #7ab8d4;
+            --shadow-hover: 0 12px 28px -12px rgba(0, 0, 0, 0.3);
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --primary: #7ab8d4;
+            --primary-light: #1a2a33;
+            --graded: #2ecc71;
+            --pending: #f1c40f;
+            --late: #e74c3c;
+        }
+
+        [data-theme="gray"] {
+            --bg-body: linear-gradient(145deg, #d5d5d5 0%, #b8b8b8 100%);
+            --bg-card: rgba(230, 230, 230, 0.90);
+            --border-card: rgba(255, 255, 255, 0.3);
+            --shadow-card: 0 40px 80px -20px rgba(0, 0, 0, 0.25), 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+            --text-primary: #2a2a2a;
+            --text-secondary: #555555;
+            --text-muted: #777777;
+            --brand-bg: linear-gradient(135deg, #4a4a4a, #6a6a6a);
+            --brand-text: white;
+            --sidebar-bg: rgba(200, 200, 200, 0.5);
+            --sidebar-border: rgba(255, 255, 255, 0.2);
+            --content-bg: rgba(200, 200, 200, 0.4);
+            --content-border: rgba(255, 255, 255, 0.2);
+            --stat-bg: rgba(210, 210, 210, 0.6);
+            --stat-border: rgba(255, 255, 255, 0.2);
+            --module-bg: rgba(210, 210, 210, 0.6);
+            --module-border: rgba(255, 255, 255, 0.2);
+            --menu-hover: rgba(0, 0, 0, 0.06);
+            --menu-active: #4a4a4a;
+            --menu-active-text: white;
+            --logout-bg: rgba(192, 57, 43, 0.06);
+            --logout-hover: rgba(192, 57, 43, 0.12);
+            --badge-bg: rgba(0, 0, 0, 0.06);
+            --badge-text: #555555;
+            --profile-bg: rgba(210, 210, 210, 0.5);
+            --profile-border: rgba(255, 255, 255, 0.2);
+            --theme-icon: #555555;
+            --theme-toggle-bg: rgba(255,255,255,0.3);
+            --divider: rgba(0, 0, 0, 0.08);
+            --online-dot: #2ecc71;
+            --online-bg: rgba(46, 204, 113, 0.12);
+            --loading-color: #555555;
+            --shadow-hover: 0 12px 28px -12px rgba(0, 0, 0, 0.15);
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --primary: #555555;
+            --primary-light: #d5d5d5;
+            --graded: #27ae60;
+            --pending: #f39c12;
+            --late: #e74c3c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+
+        body {
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            transition: background 0.3s ease;
+        }
+
+        .dashboard {
+            max-width: 1300px;
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 1.8rem 2rem 2rem;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-card);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1.5px solid var(--divider);
+            margin-bottom: 1.8rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .brand {
+            font-size: 1.2rem;
+            background: var(--brand-bg);
+            padding: 0.35rem 1.8rem;
+            border-radius: 60px;
+            color: var(--brand-text);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(11, 59, 79, 0.20);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .brand i { font-size: 1.1rem; color: rgba(255,255,255,0.9); }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--theme-toggle-bg);
+            padding: 0.3rem 0.3rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-card);
+            backdrop-filter: blur(4px);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .theme-toggle button {
+            background: transparent;
+            border: none;
+            padding: 0.4rem 0.7rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: all 0.25s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .theme-toggle button.active {
+            background: var(--menu-active);
+            color: var(--menu-active-text);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+        }
+
+        .theme-toggle button i { font-size: 0.9rem; }
+        .theme-toggle button:hover:not(.active) { background: var(--menu-hover); }
+
+        .teacher-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--profile-bg);
+            padding: 0.3rem 1.2rem 0.3rem 0.8rem;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--profile-border);
+            transition: all 0.3s ease;
+        }
+
+        .teacher-profile .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--brand-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(11, 59, 79, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .teacher-profile .info .name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+        .teacher-profile .info .role {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+        .teacher-profile .badge-online {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            background: var(--online-bg);
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            transition: all 0.3s ease;
+        }
+        .teacher-profile .badge-online .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--online-dot);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+            margin-top: 0.2rem;
+        }
+
+        .sidebar {
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 1.5rem 0.8rem;
+            border: 1px solid var(--sidebar-border);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .menu-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 0 1rem 0.8rem;
+            border-bottom: 1px solid var(--divider);
+            margin-bottom: 1rem;
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .sidebar .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 60px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 0.2rem;
+            text-decoration: none;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .menu-item i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            transition: 0.2s;
+        }
+
+        .sidebar .menu-item:hover {
+            background: var(--menu-hover);
+            transform: translateX(4px);
+        }
+
+        .sidebar .menu-item.active {
+            background: var(--menu-active);
+            color: var(--menu-active-text);
+            box-shadow: 0 8px 20px -8px rgba(8, 50, 70, 0.30);
+        }
+
+        .sidebar .menu-item.active i { color: var(--menu-active-text); }
+
+        .sidebar .menu-item .badge {
+            margin-left: auto;
+            background: var(--badge-bg);
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--badge-text);
+            transition: all 0.3s ease;
+        }
+        .sidebar .menu-item.active .badge {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .sidebar .divider {
+            height: 1px;
+            background: var(--divider);
+            margin: 0.8rem 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .sidebar .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 60px;
+            color: #c0392b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: var(--logout-bg);
+            width: 100%;
+            text-align: left;
+            margin-top: 0.5rem;
+        }
+        .sidebar .logout-btn i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #c0392b;
+        }
+        .sidebar .logout-btn:hover {
+            background: var(--logout-hover);
+            transform: translateX(4px);
+        }
+
+        .content {
+            background: var(--content-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 1.8rem 2rem;
+            border: 1px solid var(--content-border);
+            min-height: 420px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .content .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .content .page-sub {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--stat-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
+            padding: 1.2rem 1.2rem;
+            border: 1px solid var(--stat-border);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+            transition: color 0.3s ease;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s ease;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .module-card {
+            background: var(--module-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
+            padding: 1.5rem 1.2rem;
+            border: 1px solid var(--module-border);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .module-card .icon { font-size: 2.2rem; color: var(--text-primary); margin-bottom: 0.4rem; transition: color 0.3s ease; }
+        .module-card .title { font-weight: 700; color: var(--text-primary); font-size: 1rem; transition: color 0.3s ease; }
+        .module-card .desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem; transition: color 0.3s ease; }
+        .module-card .count {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            background: var(--badge-bg);
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .loading-spinner .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-card);
+            border-top-color: var(--loading-color);
+            border-radius: 50%;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .item-card {
+            background: var(--stat-bg);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            border: 1px solid var(--border-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .item-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .item-card .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .item-card .item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .item-card .item-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .item-card .item-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .item-status.submitted { background: #d4edda; color: #155724; }
+        .item-status.pending { background: #fff3cd; color: #856404; }
+        .item-status.graded { background: #cce5ff; color: #004085; }
+        .item-status.late { background: #f8d7da; color: #721c24; }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        .btn-primary i { margin-right: 6px; }
+
+        .btn-grade {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn-grade:hover { opacity: 0.9; transform: scale(1.02); }
+
+        .btn-edit-grade {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn-edit-grade:hover { opacity: 0.9; transform: scale(1.02); }
+
+        .btn-attendance-mark {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn-attendance-mark:hover { opacity: 0.9; transform: scale(1.02); }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+
+        @media (max-width: 920px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .sidebar {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 0.3rem;
+                padding: 1rem;
+            }
+            .sidebar .menu-label { display: none; }
+            .sidebar .menu-item { padding: 0.6rem 1rem; font-size: 0.8rem; }
+            .sidebar .logout-btn { margin-top: 0; }
+            .sidebar .divider { display: none; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .teacher-profile { justify-content: center; }
+            .brand { justify-content: center; }
+            .top-bar-right { justify-content: center; flex-wrap: wrap; }
+            .item-card { flex-direction: column; gap: 0.8rem; align-items: flex-start; }
+        }
+
+        @media (max-width: 500px) {
+            .dashboard { padding: 1rem; }
+            .content { padding: 1.2rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .module-grid { grid-template-columns: 1fr 1fr; }
+            .teacher-profile .info .name { font-size: 0.85rem; }
+            .theme-toggle button { padding: 0.3rem 0.5rem; font-size: 0.7rem; }
+        }
+
+        .text-muted { color: var(--text-muted); transition: color 0.3s ease; }
+
+        .logout-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .logout-overlay.show { display: flex; }
+        .logout-box {
+            background: var(--bg-card);
+            padding: 2.5rem 3rem;
+            border-radius: 40px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+            border: 1px solid var(--border-card);
+            transition: all 0.3s ease;
+        }
+        .logout-box h3 { color: var(--text-primary); margin-bottom: 0.5rem; transition: color 0.3s ease; }
+        .logout-box p { color: var(--text-secondary); margin-bottom: 1.5rem; transition: color 0.3s ease; }
+        .logout-box .btn-group { display: flex; gap: 1rem; justify-content: center; }
+        .logout-box .btn-group button {
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .logout-box .btn-confirm { background: #c0392b; color: white; }
+        .logout-box .btn-confirm:hover { background: #a93226; transform: scale(1.02); }
+        .logout-box .btn-cancel { background: var(--stat-bg); color: var(--text-primary); }
+        .logout-box .btn-cancel:hover { background: var(--menu-hover); }
+
+        .footer-note {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1.2rem;
+            border-top: 1px solid var(--divider);
+            padding-top: 0.8rem;
+            text-align: center;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+            max-width: 400px;
+        }
+        .toast.show { display: flex; }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast .toast-icon { font-size: 1.5rem; }
+        .toast .toast-msg { color: var(--text-primary); font-weight: 500; }
+
+        /* ============================================================
+           MODAL STYLES
+           ============================================================ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .modal-overlay.show { display: flex; }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 32px;
+            padding: 2rem 2.5rem;
+            max-width: 750px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-card);
+            box-shadow: var(--shadow-card);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--divider);
+        }
+
+        .modal-header h2 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: var(--menu-hover);
+            color: var(--text-primary);
+        }
+
+        .modal .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .modal .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .modal .form-group input,
+        .modal .form-group textarea,
+        .modal .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-card);
+            background: var(--stat-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal .form-group input:focus,
+        .modal .form-group textarea:focus,
+        .modal .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(27, 107, 138, 0.15);
+        }
+
+        .modal .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .modal .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--divider);
+        }
+
+        .modal .btn-primary-modal {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal .btn-primary-modal:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        .modal .btn-primary-modal:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .modal .btn-secondary-modal {
+            background: var(--stat-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-card);
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal .btn-secondary-modal:hover {
+            background: var(--menu-hover);
+        }
+
+        .modal .form-error {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+        .modal .form-error.show { display: block; }
+
+        .modal .loading-spinner-small {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-card);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        /* Attendance specific styles */
+        .attendance-status-select {
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-card);
+            background: var(--stat-bg);
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .attendance-status-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .attendance-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .attendance-stat-card {
+            background: var(--stat-bg);
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+            border: 1px solid var(--border-card);
+        }
+        .attendance-stat-card .num {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .attendance-stat-card .lbl {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 600px) {
+            .modal { padding: 1.5rem; }
+            .modal .form-row { grid-template-columns: 1fr; }
+            .modal .form-actions { flex-direction: column; }
+            .modal .form-actions button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">✅</span>
+    <span class="toast-msg" id="toastMsg">Success!</span>
+</div>
+
+<!-- ============================================================ -->
+<!-- CREATE ASSIGNMENT MODAL -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="createAssignmentModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-tasks"></i> Create Assignment</h2>
+            <button class="modal-close" onclick="closeModal('createAssignmentModal')">&times;</button>
+        </div>
+        <form id="assignmentForm" onsubmit="submitAssignment(event)">
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="assignmentTitle" placeholder="e.g., Algebra Homework #5" required />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="assignmentDescription" placeholder="Describe the assignment..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Class *</label>
+                    <select id="assignmentClass" required>
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <select id="assignmentSubject" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Due Date *</label>
+                    <input type="datetime-local" id="assignmentDueDate" required />
+                </div>
+                <div class="form-group">
+                    <label>Max Marks</label>
+                    <input type="number" id="assignmentMaxMarks" value="100" min="1" max="1000" />
+                </div>
+            </div>
+            <div class="form-error" id="assignmentError">Please fill all required fields.</div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary-modal" onclick="closeModal('createAssignmentModal')">Cancel</button>
+                <button type="submit" class="btn-primary-modal" id="assignmentSubmitBtn">
+                    <i class="fas fa-plus"></i> Create Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CREATE QUIZ MODAL -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="createQuizModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-pencil-alt"></i> Create Quiz</h2>
+            <button class="modal-close" onclick="closeModal('createQuizModal')">&times;</button>
+        </div>
+        <form id="quizForm" onsubmit="submitQuiz(event)">
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="quizTitle" placeholder="e.g., Math Quiz - Chapter 5" required />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="quizDescription" placeholder="Describe the quiz..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Class *</label>
+                    <select id="quizClass" required>
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <select id="quizSubject" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quiz Date *</label>
+                    <input type="datetime-local" id="quizDate" required />
+                </div>
+                <div class="form-group">
+                    <label>Duration (minutes)</label>
+                    <input type="number" id="quizDuration" value="30" min="5" max="180" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Max Marks</label>
+                <input type="number" id="quizMaxMarks" value="100" min="1" max="1000" />
+            </div>
+            <div class="form-error" id="quizError">Please fill all required fields.</div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary-modal" onclick="closeModal('createQuizModal')">Cancel</button>
+                <button type="submit" class="btn-primary-modal" id="quizSubmitBtn">
+                    <i class="fas fa-plus"></i> Create Quiz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- GRADE SUBMISSION MODAL -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="gradeModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-star"></i> Grade Submission</h2>
+            <button class="modal-close" onclick="closeModal('gradeModal')">&times;</button>
+        </div>
+        <form id="gradeForm" onsubmit="gradeSubmission(event)">
+            <div class="form-group">
+                <label>Student</label>
+                <input type="text" id="gradeStudentName" readonly style="font-weight:600; background:var(--stat-bg);" />
+            </div>
+            <div class="form-group">
+                <label>Assignment</label>
+                <input type="text" id="gradeAssignmentTitle" readonly style="font-weight:600; background:var(--stat-bg);" />
+            </div>
+            <div class="form-group">
+                <label>Marks Obtained *</label>
+                <input type="number" id="gradeMarks" placeholder="Enter marks" min="0" required />
+                <small style="color:var(--text-muted);">Max Marks: <span id="gradeMaxMarks">100</span></small>
+            </div>
+            <div class="form-group">
+                <label>Feedback (Optional)</label>
+                <textarea id="gradeFeedback" placeholder="Write feedback for student..." rows="3"></textarea>
+            </div>
+            <input type="hidden" id="gradeSubmissionId" />
+            <div class="form-error" id="gradeError">Please fill all required fields.</div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary-modal" onclick="closeModal('gradeModal')">Cancel</button>
+                <button type="submit" class="btn-primary-modal" id="gradeSubmitBtn">
+                    <i class="fas fa-check"></i> Submit Grade
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ATTENDANCE MARKING MODAL -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="attendanceModal">
+    <div class="modal" style="max-width: 800px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-calendar-check"></i> Mark Attendance</h2>
+            <button class="modal-close" onclick="closeModal('attendanceModal')">&times;</button>
+        </div>
+        <div id="attendanceContent">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Class *</label>
+                    <select id="attendanceClass" onchange="loadAttendanceStudents()">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <select id="attendanceSubject" onchange="loadAttendanceStudents()">
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+            </div>
+            <div id="attendanceStudentsList">
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>Select class and subject to load students</p>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary-modal" onclick="closeModal('attendanceModal')">Cancel</button>
+                <button type="button" class="btn-primary-modal" id="saveAttendanceBtn" onclick="saveAttendance()">
+                    <i class="fas fa-save"></i> Save Attendance
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MAIN DASHBOARD -->
+<!-- ============================================================ -->
+<div class="dashboard">
+
+    <div class="top-bar">
+        <div class="brand">
+            <i class="fas fa-school"></i> Smart School
+        </div>
+        <div class="top-bar-right">
+            <div class="theme-toggle" id="themeToggle">
+                <button data-theme="light" class="active" title="Light Mode"><i class="fas fa-sun"></i> Light</button>
+                <button data-theme="dark" title="Dark Mode"><i class="fas fa-moon"></i> Dark</button>
+                <button data-theme="gray" title="Gray Mode"><i class="fas fa-circle"></i> Gray</button>
+            </div>
+            <div class="teacher-profile" id="teacherProfile">
+                <div class="avatar" id="avatar">TE</div>
+                <div class="info">
+                    <span class="name" id="teacherName">Loading...</span>
+                    <span class="role" id="teacherRole"><i class="fas fa-chalkboard-teacher"></i> Teacher</span>
+                </div>
+                <div class="badge-online">
+                    <span class="dot"></span> Online
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <aside class="sidebar">
+            <div class="menu-label"><i class="fas fa-th-large"></i> Navigation</div>
+            <button class="menu-item active" data-module="dashboard">
+                <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="menu-item" data-module="assignments">
+                <i class="fas fa-tasks"></i> Assignments <span class="badge" id="assignmentsBadge">0</span>
+            </button>
+            <button class="menu-item" data-module="quizzes">
+                <i class="fas fa-pencil-alt"></i> Quizzes <span class="badge" id="quizzesBadge">0</span>
+            </button>
+            <button class="menu-item" data-module="submissions">
+                <i class="fas fa-file-upload"></i> Submissions <span class="badge" id="submissionsBadge">0</span>
+            </button>
+            <button class="menu-item" data-module="students">
+                <i class="fas fa-user-graduate"></i> Students <span class="badge" id="studentsBadge">0</span>
+            </button>
+            <!-- 🔥🔥🔥 ATTENDANCE TAB 🔥🔥🔥 -->
+            <button class="menu-item" data-module="attendance">
+                <i class="fas fa-calendar-check"></i> Attendance <span class="badge" id="attendanceBadge">0</span>
+            </button>
+
+            <div class="divider"></div>
+
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </aside>
+
+        <main class="content" id="mainContent">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading dashboard...</div>
+            </div>
+        </main>
+
+    </div>
+
+    <div class="footer-note">
+        <i class="fas fa-link"></i> Teacher dashboard · Connected to Backend API
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- LOGOUT OVERLAY -->
+<!-- ============================================================ -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-box">
+        <i class="fas fa-sign-out-alt" style="font-size:2.5rem; color:#c0392b; margin-bottom:0.8rem;"></i>
+        <h3>Logout</h3>
+        <p>Are you sure you want to logout from <strong>Teacher</strong> dashboard?</p>
+        <div class="btn-group">
+            <button class="btn-cancel" id="cancelLogout">Cancel</button>
+            <button class="btn-confirm" id="confirmLogout">Yes, Logout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        //const API_BASE_URL = 'http://localhost:8083/api';
+        const API_BASE_URL = 'http://15.207.174.107:8083/api';
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        let currentUser = null;
+        let teacherData = null;
+        let currentTeacherId = null;
+        let allAssignments = [];
+        let allQuizzes = [];
+        let allSubmissions = [];
+        let allStudents = [];
+        let allTeachers = [];
+        let allClasses = [];
+        let allSubjects = [];
+        let attendanceStudents = [];
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const menuItems = document.querySelectorAll('.menu-item');
+        const contentArea = document.getElementById('mainContent');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const logoutOverlay = document.getElementById('logoutOverlay');
+        const cancelLogout = document.getElementById('cancelLogout');
+        const confirmLogout = document.getElementById('confirmLogout');
+        const teacherName = document.getElementById('teacherName');
+        const teacherRole = document.getElementById('teacherRole');
+        const avatar = document.getElementById('avatar');
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+        const toastIcon = document.getElementById('toastIcon');
+
+        // ============================================================
+        // TOAST NOTIFICATION
+        // ============================================================
+        function showToast(message, type = 'success') {
+            toast.className = 'toast show ' + type;
+            toastIcon.textContent = type === 'success' ? '✅' : '❌';
+            toastMsg.textContent = message;
+            clearTimeout(toast._hideTimeout);
+            toast._hideTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ============================================================
+        // AUTH
+        // ============================================================
+        function checkAuth() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    currentUser = JSON.parse(userStr);
+                    return true;
+                } catch (e) {
+                    currentUser = null;
+                }
+            }
+            currentUser = null; // ❌ Hardcoded user hataya
+            return true;
+        }
+
+        function updateProfile(user) {
+            if (!user) return;
+            const name = user.fullName || user.username || 'Teacher';
+            const role = user.role || 'Teacher';
+            const dept = user.department || teacherData?.department || 'Mathematics';
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            teacherName.textContent = name;
+            teacherRole.innerHTML = `<i class="fas fa-chalkboard-teacher"></i> ${role} · ${dept}`;
+            avatar.textContent = initials || 'TE';
+        }
+
+        // ============================================================
+        // API CALLS
+        // ============================================================
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.warn(`⚠️ API call failed: ${endpoint}`, error);
+                return null;
+            }
+        }
+
+        async function postData(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('❌ POST error:', error);
+                throw error;
+            }
+        }
+
+        // ============================================================
+        // FETCH ALL DATA
+        // ============================================================
+        async function fetchAllData() {
+            try {
+                console.log('🔄 Fetching data from backend...');
+
+                // ✅ Teacher ID ko currentUser se lo
+                const teacherProfile = await fetchData(`/teacher/profile/${currentUser?.userId}`);
+
+                if (teacherProfile && !teacherProfile.error) {
+                    teacherData = teacherProfile;
+                    currentTeacherId = teacherProfile.id;
+                    console.log('✅✅✅ Teacher ID set to:', currentTeacherId);
+                    updateProfile(teacherProfile.user || currentUser);
+                }
+
+                const [assignments, quizzes, submissions, students, teachers, subjects, classes] = await Promise.all([
+                    fetchData('/teacher/assignments'),
+                    fetchData('/teacher/quizzes'),
+                    fetchData('/teacher/submissions'),
+                    fetchData('/admin/students'),
+                    fetchData('/admin/teachers'),
+                    fetchData('/admin/subjects'),
+                    fetchData('/admin/classes')
+                ]);
+
+                allAssignments = Array.isArray(assignments) ? assignments : [];
+                allQuizzes = Array.isArray(quizzes) ? quizzes : [];
+                allSubmissions = Array.isArray(submissions) ? submissions : [];
+                allStudents = Array.isArray(students) ? students : [];
+                allTeachers = Array.isArray(teachers) ? teachers : [];
+                allSubjects = Array.isArray(subjects) ? subjects : [];
+                allClasses = Array.isArray(classes) ? classes : [];
+
+                console.log('✅ Assignments:', allAssignments.length);
+                console.log('✅ Submissions:', allSubmissions.length);
+                console.log('✅ Teacher ID:', currentTeacherId);
+
+                populateDropdowns();
+
+                document.getElementById('assignmentsBadge').textContent = allAssignments.length;
+                document.getElementById('quizzesBadge').textContent = allQuizzes.length;
+                document.getElementById('submissionsBadge').textContent = allSubmissions.length;
+                document.getElementById('studentsBadge').textContent = allStudents.length;
+                document.getElementById('attendanceBadge').textContent = allClasses.length || 0;
+
+                return true;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return false;
+            }
+        }
+
+        // ============================================================
+        // POPULATE DROPDOWNS
+        // ============================================================
+        function populateDropdowns() {
+            // ============================================================
+            // CLASSES DROPDOWN
+            // ============================================================
+            const classSelects = ['assignmentClass', 'quizClass', 'attendanceClass'];
+            classSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">Select Class</option>';
+
+                // Classes available
+                const classes = allClasses && allClasses.length > 0 ? allClasses : [];
+                classes.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.className + (c.section ? ` - ${c.section}` : '');
+                    select.appendChild(option);
+                });
+            });
+
+            // ============================================================
+            // SUBJECTS DROPDOWN
+            // ============================================================
+            const subjectSelects = ['assignmentSubject', 'quizSubject', 'attendanceSubject'];
+            subjectSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">Select Subject</option>';
+
+                // Subjects available
+                const subjects = allSubjects && allSubjects.length > 0 ? allSubjects : [];
+                subjects.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.id;
+                    option.textContent = s.subjectName || s.name || 'Subject';
+                    select.appendChild(option);
+                });
+            });
+
+            // Set default dates
+            const now = new Date();
+            now.setDate(now.getDate() + 7);
+            const dateStr = now.toISOString().slice(0, 16);
+            const dueDateInput = document.getElementById('assignmentDueDate');
+            if (dueDateInput) dueDateInput.value = dateStr;
+            const quizDateInput = document.getElementById('quizDate');
+            if (quizDateInput) quizDateInput.value = dateStr;
+
+            console.log('✅ Dropdowns populated successfully!');
+        }
+
+        // ============================================================
+        // MODAL FUNCTIONS
+        // ============================================================
+        window.openAssignmentModal = function() {
+            document.getElementById('createAssignmentModal').classList.add('show');
+            document.getElementById('assignmentError').classList.remove('show');
+            populateDropdowns();
+        };
+
+        window.openQuizModal = function() {
+            document.getElementById('createQuizModal').classList.add('show');
+            document.getElementById('quizError').classList.remove('show');
+            populateDropdowns();
+        };
+
+        window.openAttendanceModal = function() {
+            document.getElementById('attendanceModal').classList.add('show');
+            populateDropdowns();
+            document.getElementById('attendanceStudentsList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>Select class and subject to load students</p>
+                </div>
+            `;
+        };
+
+        window.closeModal = function(id) {
+            document.getElementById(id).classList.remove('show');
+        };
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+
+        // ============================================================
+        // SUBMIT ASSIGNMENT
+        // ============================================================
+        window.submitAssignment = async function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('assignmentTitle').value.trim();
+            const description = document.getElementById('assignmentDescription').value.trim();
+            const classId = document.getElementById('assignmentClass').value;
+            const subjectId = document.getElementById('assignmentSubject').value;
+            const dueDate = document.getElementById('assignmentDueDate').value;
+            const maxMarks = parseInt(document.getElementById('assignmentMaxMarks').value) || 100;
+            const teacherId = currentTeacherId;
+
+            const errorEl = document.getElementById('assignmentError');
+
+            if (!title || !classId || !subjectId || !dueDate) {
+                errorEl.textContent = 'Please fill all required fields.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const formattedDate = new Date(dueDate).toISOString();
+
+            const btn = document.getElementById('assignmentSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Creating...';
+
+            try {
+                const data = {
+                    title: title,
+                    description: description,
+                    classId: parseInt(classId),
+                    subjectId: parseInt(subjectId),
+                    dueDate: formattedDate,
+                    maxMarks: maxMarks,
+                    teacherId: teacherId
+                };
+
+                const result = await postData('/teacher/assignments', data);
+
+                if (result && !result.error) {
+                    showToast('Assignment created successfully! 🎉', 'success');
+                    closeModal('createAssignmentModal');
+                    document.getElementById('assignmentForm').reset();
+                    await fetchAllData();
+                    renderAssignments();
+                } else {
+                    throw new Error(result?.error || 'Failed to create assignment');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Create Assignment';
+            }
+        };
+
+        // ============================================================
+        // SUBMIT QUIZ
+        // ============================================================
+        window.submitQuiz = async function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('quizTitle').value.trim();
+            const description = document.getElementById('quizDescription').value.trim();
+            const classId = document.getElementById('quizClass').value;
+            const subjectId = document.getElementById('quizSubject').value;
+            const quizDate = document.getElementById('quizDate').value;
+            const duration = parseInt(document.getElementById('quizDuration').value) || 30;
+            const maxMarks = parseInt(document.getElementById('quizMaxMarks').value) || 100;
+            const teacherId = currentTeacherId;
+
+            const errorEl = document.getElementById('quizError');
+
+            if (!title || !classId || !subjectId || !quizDate) {
+                errorEl.textContent = 'Please fill all required fields.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const btn = document.getElementById('quizSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Creating...';
+
+            try {
+                const data = {
+                    title: title,
+                    description: description,
+                    classId: parseInt(classId),
+                    subjectId: parseInt(subjectId),
+                    quizDate: quizDate,
+                    duration: duration,
+                    maxMarks: maxMarks,
+                    teacherId: teacherId
+                };
+
+                const result = await postData('/teacher/quizzes', data);
+
+                if (result && !result.error) {
+                    showToast('Quiz created successfully! 🎉', 'success');
+                    closeModal('createQuizModal');
+                    document.getElementById('quizForm').reset();
+                    await fetchAllData();
+                    renderQuizzes();
+                } else {
+                    throw new Error(result?.error || 'Failed to create quiz');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Create Quiz';
+            }
+        };
+
+        // ============================================================
+        // GRADE SUBMISSION
+        // ============================================================
+        window.openGradeModal = function(submissionId, studentName, assignmentTitle, maxMarks) {
+            document.getElementById('gradeSubmissionId').value = submissionId;
+            document.getElementById('gradeStudentName').value = studentName || 'Student';
+            document.getElementById('gradeAssignmentTitle').value = assignmentTitle || 'Assignment';
+            document.getElementById('gradeMaxMarks').textContent = maxMarks || 100;
+            document.getElementById('gradeMarks').value = '';
+            document.getElementById('gradeFeedback').value = '';
+            document.getElementById('gradeError').classList.remove('show');
+            document.getElementById('gradeModal').classList.add('show');
+        };
+
+        window.gradeSubmission = async function(event) {
+            event.preventDefault();
+
+            const submissionId = document.getElementById('gradeSubmissionId').value;
+            const marksObtained = parseInt(document.getElementById('gradeMarks').value);
+            const feedback = document.getElementById('gradeFeedback').value.trim();
+
+            const errorEl = document.getElementById('gradeError');
+
+            if (isNaN(marksObtained) || marksObtained < 0) {
+                errorEl.textContent = 'Please enter valid marks.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const btn = document.getElementById('gradeSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Grading...';
+
+            try {
+                const data = {
+                    marksObtained: marksObtained,
+                    feedback: feedback
+                };
+
+                const result = await postData(`/teacher/submissions/${submissionId}/grade`, data);
+
+                if (result && result.success !== false) {
+                    showToast('Submission graded successfully! 🎉', 'success');
+                    closeModal('gradeModal');
+                    await fetchAllData();
+                    renderSubmissions();
+                } else {
+                    throw new Error(result?.error || 'Failed to grade submission');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Submit Grade';
+            }
+        };
+
+        // ============================================================
+        // 🔥🔥🔥 ATTENDANCE FUNCTIONS 🔥🔥🔥
+        // ============================================================
+
+        window.loadAttendanceStudents = async function() {
+            const classId = document.getElementById('attendanceClass').value;
+            const subjectId = document.getElementById('attendanceSubject').value;
+
+            console.log('📝 Class ID:', classId, 'Subject ID:', subjectId);
+
+            if (!classId || !subjectId) {
+                console.log('⚠️ Class or Subject not selected');
+                document.getElementById('attendanceStudentsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Please select both class and subject</p>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('attendanceStudentsList').innerHTML = `
+                <div class="loading-spinner" style="padding:1rem;">
+                    <div class="spinner" style="width:30px;height:30px;"></div>
+                    <div class="loading-text" style="font-size:0.8rem;">Loading students...</div>
+                </div>
+            `;
+
+            try {
+                const url = `/teacher/attendance/class/${classId}/subject/${subjectId}`;
+                console.log('📤 Fetching:', url);
+
+                const data = await fetchData(url);
+                console.log('📥 Response:', data);
+
+                if (data && data.students) {
+                    attendanceStudents = data.students || [];
+                    if (attendanceStudents.length === 0) {
+                        document.getElementById('attendanceStudentsList').innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>No students found in this class</p>
+                            </div>
+                        `;
+                    } else {
+                        renderAttendanceStudents();
+                    }
+                } else {
+                    attendanceStudents = [];
+                    document.getElementById('attendanceStudentsList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>No students found</p>
+                            <p style="font-size:0.8rem; color:var(--text-muted);">Response: ${JSON.stringify(data)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading students:', error);
+                document.getElementById('attendanceStudentsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color:#e74c3c;"></i>
+                        <p>Error loading students</p>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">${error.message}</p>
+                        <button class="btn-primary" onclick="loadAttendanceStudents()" style="margin-top:1rem; padding:0.3rem 1rem; font-size:0.8rem;">
+                            <i class="fas fa-sync"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        };
+
+        window.renderAttendanceStudents = function() {
+            const container = document.getElementById('attendanceStudentsList');
+
+            if (!attendanceStudents || attendanceStudents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>No students found in this class</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                    <span style="font-weight:600; color:var(--text-primary);">
+                        <i class="fas fa-users"></i> Total: ${attendanceStudents.length} students
+                    </span>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-primary" onclick="markAllAttendance('PRESENT')" style="padding:0.3rem 1rem; font-size:0.75rem; background:#27ae60;">
+                            <i class="fas fa-check"></i> All Present
+                        </button>
+                        <button class="btn-primary" onclick="markAllAttendance('ABSENT')" style="padding:0.3rem 1rem; font-size:0.75rem; background:#e74c3c;">
+                            <i class="fas fa-times"></i> All Absent
+                        </button>
+                        <button class="btn-primary" onclick="markAllAttendance('LATE')" style="padding:0.3rem 1rem; font-size:0.75rem; background:#f39c12;">
+                            <i class="fas fa-clock"></i> All Late
+                        </button>
+                    </div>
+                </div>
+                <div class="item-list" style="max-height:400px; overflow-y:auto;">
+            `;
+
+            attendanceStudents.forEach((s) => {
+                const studentId = s.studentId || s.id;
+                const studentName = s.studentName || s.fullName || 'Student';
+                const rollNumber = s.rollNumber || 'N/A';
+                const currentStatus = s.status || 'NOT_MARKED';
+                const isMarked = s.marked || false;
+
+                html += `
+                    <div class="item-card" style="padding:0.6rem 1rem;">
+                        <div class="item-info">
+                            <div class="item-title">${studentName}</div>
+                            <div class="item-meta">
+                                <span><i class="fas fa-id-card"></i> ${studentId}</span>
+                                <span><i class="fas fa-sort-numeric-up"></i> Roll: ${rollNumber}</span>
+                                ${isMarked ? '<span style="color:#27ae60;font-size:0.7rem;">✅ Already Marked</span>' : ''}
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <select id="attStatus_${studentId}" class="attendance-status-select">
+                                <option value="PRESENT" ${currentStatus === 'PRESENT' ? 'selected' : ''}>✅ Present</option>
+                                <option value="ABSENT" ${currentStatus === 'ABSENT' ? 'selected' : ''}>❌ Absent</option>
+                                <option value="LATE" ${currentStatus === 'LATE' ? 'selected' : ''}>⏰ Late</option>
+                                <option value="EXCUSED" ${currentStatus === 'EXCUSED' ? 'selected' : ''}>📝 Excused</option>
+                            </select>
+                            ${isMarked ? '<span style="font-size:0.65rem; color:#27ae60;">✅</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        };
+
+        window.markAllAttendance = function(status) {
+            attendanceStudents.forEach(s => {
+                const studentId = s.studentId || s.id;
+                const select = document.getElementById(`attStatus_${studentId}`);
+                if (select) select.value = status;
+            });
+            showToast(`All students marked as ${status}`, 'success');
+        };
+
+        window.saveAttendance = async function() {
+            const classId = document.getElementById('attendanceClass').value;
+            const subjectId = document.getElementById('attendanceSubject').value;
+            const teacherId = currentTeacherId;
+
+            if (!classId || !subjectId) {
+                showToast('Please select class and subject', 'error');
+                return;
+            }
+
+            const attendanceData = attendanceStudents.map(s => {
+                const studentId = s.studentId || s.id;
+                return {
+                    studentId: studentId,
+                    status: document.getElementById(`attStatus_${studentId}`).value,
+                    remarks: ''
+                };
+            });
+
+            const data = {
+                classId: parseInt(classId),
+                subjectId: parseInt(subjectId),
+                teacherId: teacherId,
+                date: new Date().toISOString().split('T')[0],
+                attendanceData: attendanceData
+            };
+
+            const btn = document.getElementById('saveAttendanceBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Saving...';
+
+            try {
+                const result = await postData('/teacher/attendance/mark', data);
+                if (result && result.success !== false) {
+                    showToast(`✅ Attendance saved! ${result.count || 0} students marked`, 'success');
+                    closeModal('attendanceModal');
+                    await fetchAllData();
+                    renderAttendance();
+                } else {
+                    throw new Error(result?.error || 'Failed to save attendance');
+                }
+            } catch (error) {
+                showToast('❌ Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Attendance';
+            }
+        };
+
+        // ============================================================
+        // RENDER ATTENDANCE
+        // ============================================================
+        window.renderAttendance = async function() {
+            const teacherId = currentTeacherId;
+
+            try {
+                const info = await fetchData(`/teacher/attendance/teacher/${teacherId}`);
+
+                if (!info || !info.classes || info.classes.length === 0) {
+                    contentArea.innerHTML = `
+                        <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+                        <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-check" style="font-size:3rem; color:#f39c12;"></i>
+                            <p style="margin-top:1rem;">No classes assigned to you.</p>
+                            <button class="btn-primary" onclick="openAttendanceModal()" style="margin-top:1rem;">
+                                <i class="fas fa-plus"></i> Mark Attendance
+                            </button>
+                        </div>
+                    `;
+                    setActiveMenu('attendance');
+                    return;
+                }
+
+                const totalClasses = info.classes ? info.classes.length : 0;
+                const totalSubjects = info.subjects ? info.subjects.length : 0;
+
+                const stats = [
+                    { label: 'My Classes', value: totalClasses, icon: 'fa-users' },
+                    { label: 'My Subjects', value: totalSubjects, icon: 'fa-book' }
+                ];
+
+                const statsHTML = stats.map(stat => `
+                    <div class="stat-card">
+                        <div class="stat-number">${stat.value}</div>
+                        <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                    </div>
+                `).join('');
+
+                let classesHTML = '';
+                if (info.classes && info.classes.length > 0) {
+                    classesHTML = info.classes.map(c => `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <div class="item-title">${c.className || 'Class'} ${c.section ? `- ${c.section}` : ''}</div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-users"></i> ${c.students ? c.students.length : 0} students</span>
+                                    <span><i class="fas fa-chalkboard-teacher"></i> Room: ${c.roomNumber || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-attendance-mark" onclick="openAttendanceModal()">
+                                    <i class="fas fa-calendar-check"></i> Mark
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                const html = `
+                    <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance for your classes</div>
+                    <div class="stats-grid">${statsHTML}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; flex-wrap:wrap; gap:0.5rem;">
+                        <h3 style="color: var(--text-primary); font-size:1.1rem;">
+                            <i class="fas fa-chalkboard"></i> My Classes
+                        </h3>
+                        <button class="btn-primary" onclick="openAttendanceModal()">
+                            <i class="fas fa-plus"></i> Mark Attendance
+                        </button>
+                    </div>
+                    <div class="item-list">${classesHTML}</div>
+                `;
+
+                contentArea.innerHTML = html;
+                setActiveMenu('attendance');
+
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+                contentArea.innerHTML = `
+                    <div class="page-title">Attendance</div>
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
+                        <p style="margin-top:1rem;">Could not load attendance data.</p>
+                        <button class="btn-primary" onclick="renderAttendance()" style="margin-top:1rem;">
+                            <i class="fas fa-sync"></i> Retry
+                        </button>
+                    </div>
+                `;
+                setActiveMenu('attendance');
+            }
+        };
+
+        // ============================================================
+        // RENDER FUNCTIONS - DASHBOARD, ASSIGNMENTS, QUIZZES, SUBMISSIONS, STUDENTS
+        // ============================================================
+        function renderDashboard() {
+            const totalStudents = allStudents.length || 0;
+            const totalTeachers = allTeachers.length || 0;
+            const totalAssignments = allAssignments.length || 0;
+            const totalQuizzes = allQuizzes.length || 0;
+            const totalSubmissions = allSubmissions.length || 0;
+
+            const pendingSubmissions = allSubmissions.filter(s =>
+                s.status === 'PENDING' || s.status === 'SUBMITTED'
+            ).length;
+
+            const stats = [
+                { label: 'Total Students', value: totalStudents, icon: 'fa-user-graduate' },
+                { label: 'Total Teachers', value: totalTeachers, icon: 'fa-chalkboard-teacher' },
+                { label: 'Assignments', value: totalAssignments, icon: 'fa-tasks' },
+                { label: 'Quizzes', value: totalQuizzes, icon: 'fa-pencil-alt' },
+                { label: 'Submissions', value: totalSubmissions, icon: 'fa-file-upload' },
+                { label: 'Pending Grading', value: pendingSubmissions, icon: 'fa-clock' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            const recentAssignments = allAssignments.slice(0, 3);
+            let assignmentsHTML = '';
+            if (recentAssignments.length > 0) {
+                assignmentsHTML = recentAssignments.map(a => `
+                    <div class="module-card">
+                        <div class="icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="title">${a.title || 'Untitled'}</div>
+                        <div class="desc">${a.subjectName || ''} · ${a.className || ''}</div>
+                        <div class="count">Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                `).join('');
+            } else {
+                assignmentsHTML = `
+                    <div class="module-card">
+                        <div class="icon"><i class="fas fa-plus-circle"></i></div>
+                        <div class="title">No Assignments</div>
+                        <div class="desc">Create your first assignment</div>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="page-title">Dashboard</div>
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Welcome back, ${currentUser?.fullName || 'Teacher'}! Here's your teaching overview.</div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
+                        <i class="fas fa-clock"></i> Recent Assignments
+                    </h3>
+                    <div class="module-grid">${assignmentsHTML}</div>
+                </div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('dashboard');
+        }
+
+        function renderAssignments() {
+            const stats = [
+                { label: 'Total', value: allAssignments.length, icon: 'fa-tasks' },
+                { label: 'Active', value: allAssignments.filter(a => new Date(a.dueDate) > new Date()).length, icon: 'fa-clock' },
+                { label: 'Overdue', value: allAssignments.filter(a => new Date(a.dueDate) < new Date()).length, icon: 'fa-exclamation-triangle' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            let listHTML = '';
+            if (allAssignments.length > 0) {
+                listHTML = allAssignments.map(a => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-title">${a.title || 'Untitled'}</div>
+                            <div class="item-meta">
+                                <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
+                                <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
+                                <span><i class="fas fa-calendar"></i> Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</span>
+                                <span><i class="fas fa-star"></i> Max: ${a.maxMarks || 100}</span>
+                            </div>
+                        </div>
+                        <span class="item-status ${new Date(a.dueDate) < new Date() ? 'late' : 'pending'}">
+                            ${new Date(a.dueDate) < new Date() ? 'Overdue' : 'Active'}
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <p>No assignments created yet. Click "Create" to add one.</p>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="page-title">Assignments</div>
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i> Manage your assignments (${allAssignments.length} total)
+                    <button class="btn-primary" onclick="openAssignmentModal()" style="margin-left: auto;">
+                        <i class="fas fa-plus"></i> Create
+                    </button>
+                </div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('assignments');
+        }
+
+        function renderQuizzes() {
+            const stats = [
+                { label: 'Total', value: allQuizzes.length, icon: 'fa-pencil-alt' },
+                { label: 'Upcoming', value: allQuizzes.filter(q => new Date(q.quizDate) > new Date()).length, icon: 'fa-calendar' },
+                { label: 'Completed', value: allQuizzes.filter(q => new Date(q.quizDate) < new Date()).length, icon: 'fa-check-circle' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            let listHTML = '';
+            if (allQuizzes.length > 0) {
+                listHTML = allQuizzes.map(q => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-title">${q.title || 'Untitled Quiz'}</div>
+                            <div class="item-meta">
+                                <span><i class="fas fa-book"></i> ${q.subjectName || 'N/A'}</span>
+                                <span><i class="fas fa-users"></i> ${q.className || 'N/A'}</span>
+                                <span><i class="fas fa-calendar"></i> ${q.quizDate ? new Date(q.quizDate).toLocaleDateString() : 'N/A'}</span>
+                                <span><i class="fas fa-clock"></i> ${q.duration || 30} min</span>
+                                <span><i class="fas fa-star"></i> ${q.maxMarks || 100}</span>
+                            </div>
+                        </div>
+                        <span class="item-status ${new Date(q.quizDate) < new Date() ? 'graded' : 'pending'}">
+                            ${new Date(q.quizDate) < new Date() ? 'Completed' : 'Upcoming'}
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-pencil-alt"></i>
+                        <p>No quizzes created yet.</p>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="page-title">Quizzes & Tests</div>
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i> Manage your quizzes (${allQuizzes.length} total)
+                    <button class="btn-primary" onclick="openQuizModal()" style="margin-left: auto;">
+                        <i class="fas fa-plus"></i> Create
+                    </button>
+                </div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('quizzes');
+        }
+
+        // ============================================================
+        // RENDER SUBMISSIONS - WITH GRADE BUTTON
+        // ============================================================
+        function renderSubmissions() {
+            const total = allSubmissions.length || 0;
+            const pending = allSubmissions.filter(s => s.status === 'PENDING' || s.status === 'SUBMITTED').length || 0;
+            const graded = allSubmissions.filter(s => s.status === 'GRADED').length || 0;
+            const late = allSubmissions.filter(s => s.status === 'LATE').length || 0;
+
+            const stats = [
+                { label: 'Total', value: total, icon: 'fa-file-upload' },
+                { label: 'Pending', value: pending, icon: 'fa-clock' },
+                { label: 'Graded', value: graded, icon: 'fa-check-circle' },
+                { label: 'Late', value: late, icon: 'fa-exclamation-triangle' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            let listHTML = '';
+            if (total > 0) {
+                listHTML = allSubmissions.map(s => {
+                    const studentName = s.student?.fullName || s.studentName || 'Student';
+                    const assignmentTitle = s.assignment?.title || s.assignmentTitle || 'Assignment';
+                    const status = s.status || 'PENDING';
+                    const isGraded = status === 'GRADED';
+                    const maxMarks = s.assignment?.maxMarks || 100;
+                    const statusClass = status.toLowerCase();
+
+                    return `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <div class="item-title">${assignmentTitle}</div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-user"></i> ${studentName}</span>
+                                    <span><i class="fas fa-calendar"></i> ${s.submissionDate ? new Date(s.submissionDate).toLocaleDateString() : 'N/A'}</span>
+                                    ${isGraded ? `<span><i class="fas fa-star" style="color:#f39c12;"></i> ${s.marksObtained}/${maxMarks}</span>` : ''}
+                                    ${s.feedback ? `<span><i class="fas fa-comment"></i> ${s.feedback}</span>` : ''}
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <span class="item-status ${statusClass}">
+                                    ${isGraded ? '✅ Graded' : '📝 Pending'}
+                                </span>
+                                ${!isGraded ? `
+                                    <button class="btn-grade" onclick="openGradeModal(${s.id}, '${studentName.replace(/'/g, "\\'")}', '${assignmentTitle.replace(/'/g, "\\'")}', ${maxMarks})">
+                                        <i class="fas fa-star"></i> Grade
+                                    </button>
+                                ` : `
+                                    <button class="btn-edit-grade" onclick="openGradeModal(${s.id}, '${studentName.replace(/'/g, "\\'")}', '${assignmentTitle.replace(/'/g, "\\'")}', ${maxMarks})">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-upload"></i>
+                        <p>No submissions yet.</p>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="page-title">Submissions</div>
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage student submissions (${total} total)</div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('submissions');
+        }
+
+        function renderStudents() {
+            const stats = [
+                { label: 'Total', value: allStudents.length, icon: 'fa-user-graduate' },
+                { label: 'Active', value: allStudents.filter(s => s.isActive !== false).length, icon: 'fa-check-circle' },
+                { label: 'Classes', value: allClasses.length, icon: 'fa-users' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            let listHTML = '';
+            if (allStudents.length > 0) {
+                listHTML = allStudents.slice(0, 15).map(s => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-title">${s.fullName || 'Student'}</div>
+                            <div class="item-meta">
+                                <span><i class="fas fa-id-card"></i> ${s.studentId || 'N/A'}</span>
+                                <span><i class="fas fa-envelope"></i> ${s.email || 'N/A'}</span>
+                                <span><i class="fas fa-users"></i> ${s.className || s.class || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <span class="item-status ${s.isActive !== false ? 'submitted' : 'late'}">
+                            ${s.isActive !== false ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-graduate"></i>
+                        <p>No students enrolled yet.</p>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="page-title">Students</div>
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> All students (${allStudents.length} total)</div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('students');
+        }
+
+        function setActiveMenu(module) {
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.module === module) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const mod = this.dataset.module;
+                switch(mod) {
+                    case 'dashboard': renderDashboard(); break;
+                    case 'assignments': renderAssignments(); break;
+                    case 'quizzes': renderQuizzes(); break;
+                    case 'submissions': renderSubmissions(); break;
+                    case 'students': renderStudents(); break;
+                    case 'attendance': renderAttendance(); break;
+                    default: renderDashboard();
+                }
+            });
+        });
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        logoutBtn.addEventListener('click', () => logoutOverlay.classList.add('show'));
+        cancelLogout.addEventListener('click', () => logoutOverlay.classList.remove('show'));
+        confirmLogout.addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        });
+        logoutOverlay.addEventListener('click', (e) => {
+            if (e.target === this) this.classList.remove('show');
+        });
+
+        // ============================================================
+        // THEME
+        // ============================================================
+        const themeButtons = document.querySelectorAll('.theme-toggle button');
+        const htmlElement = document.documentElement;
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            themeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            localStorage.setItem('theme', theme);
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        async function initDashboard() {
+            if (!checkAuth()) return;
+
+            contentArea.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Loading dashboard...</div>
+                </div>
+            `;
+
+            try {
+                const success = await fetchAllData();
+                if (success) {
+                    renderDashboard();
+                    showToast('Dashboard loaded successfully!', 'success');
+                } else {
+                    renderDashboard();
+                    showToast('Some data could not be loaded', 'error');
+                }
+            } catch (error) {
+                console.error('Init error:', error);
+                renderDashboard();
+                showToast('Error loading dashboard', 'error');
+            }
+        }
+
+        initDashboard();
+
+        console.log('🔹 Teacher Dashboard - Dynamic Backend Connected');
+        console.log(`📍 API: ${API_BASE_URL}`);
+        console.log('✅ Connected to Smart School Backend');
+
+    })();
+</script>
+</body>
+</html>

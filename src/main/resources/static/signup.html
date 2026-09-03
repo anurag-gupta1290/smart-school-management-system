@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart School · Signup · 3‑Module</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e8f0f5 0%, #cbdde9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .signup-card {
+            max-width: 960px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 56px;
+            padding: 2.8rem 3rem 3rem;
+            box-shadow: 0 30px 60px -20px rgba(8, 40, 60, 0.30),
+                        0 10px 30px -10px rgba(0, 20, 30, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        .header-mini {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.2rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: #0b2a3b;
+            border-bottom: 1px solid rgba(0, 40, 60, 0.08);
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.6rem 1rem;
+        }
+
+        .header-mini .damin {
+            font-size: 1.3rem;
+            background: rgba(10, 50, 70, 0.05);
+            padding: 0.3rem 1.6rem;
+            border-radius: 60px;
+            color: #0b3347;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: 1px solid rgba(30, 80, 110, 0.15);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-mini .damin i {
+            color: #1b6b8a;
+            font-size: 1.2rem;
+        }
+
+        .header-mini .year {
+            font-size: 0.9rem;
+            color: #1b4b63;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.25rem 1.4rem;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-weight: 500;
+        }
+
+        .header-mini .year i {
+            margin-right: 6px;
+            color: #2c7a9c;
+        }
+
+        .alert {
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.15);
+            color: #1a7a4a;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.15);
+            color: #a93226;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .alert-warning {
+            background: rgba(241, 196, 15, 0.15);
+            color: #7d6608;
+            border: 1px solid rgba(241, 196, 15, 0.3);
+        }
+
+        .module-tabs {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 2.2rem;
+            flex-wrap: wrap;
+        }
+
+        .module-btn {
+            padding: 0.7rem 1.8rem;
+            border-radius: 60px;
+            border: none;
+            background: rgba(220, 237, 248, 0.6);
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #154053;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+        }
+
+        .module-btn i {
+            font-size: 1rem;
+            color: #1b6685;
+        }
+
+        .module-btn.active {
+            background: #0b3b4f;
+            color: white;
+            box-shadow: 0 8px 20px -8px rgba(8, 50, 70, 0.35);
+            border-color: #0b3b4f;
+        }
+
+        .module-btn.active i {
+            color: white;
+        }
+
+        .module-btn:hover:not(.active) {
+            background: rgba(190, 218, 235, 0.7);
+            border-color: #aac7dd;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem 2.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 550;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+            color: #0f3f55;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        label i {
+            color: #1b6b8a;
+            width: 18px;
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 30px;
+            border: 1px solid #cfe0ec;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(2px);
+            font-size: 0.95rem;
+            transition: 0.2s;
+            outline: none;
+            color: #0b2a3b;
+            font-weight: 450;
+        }
+
+        input:focus {
+            border-color: #0b3b4f;
+            background: white;
+            box-shadow: 0 4px 16px rgba(12, 60, 80, 0.08);
+        }
+
+        input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .password-strength {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .strength-bar {
+            display: flex;
+            gap: 5px;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .strength-bar span {
+            height: 6px;
+            width: 100%;
+            background: #c9dde9;
+            border-radius: 20px;
+            transition: 0.2s;
+        }
+
+        .strength-text {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #154053;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .strength-text i {
+            margin-right: 4px;
+        }
+
+        .social-row {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem 1.5rem;
+            margin-top: 0.5rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(0, 40, 60, 0.06);
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 0.6rem 1.6rem;
+            border-radius: 60px;
+            border: 1px solid #c6dcec;
+            color: #0b3b4f;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .social-btn i {
+            font-size: 1.2rem;
+        }
+
+        .social-btn.google {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #DB4437;
+        }
+
+        .social-btn.google:hover {
+            background: #DB4437;
+            color: white;
+            border-color: #DB4437;
+        }
+
+        .social-btn.google:hover i {
+            color: white;
+        }
+
+        .social-btn.github i { color: #24292e; }
+
+        .social-btn:hover {
+            background: white;
+            border-color: #0b3b4f;
+            box-shadow: 0 8px 18px -10px rgba(8, 50, 70, 0.15);
+            transform: scale(1.01);
+        }
+
+        .submit-area {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .signup-btn {
+            background: #0b3b4f;
+            border: none;
+            color: white;
+            padding: 0.9rem 3rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 12px 28px -12px rgba(8, 50, 70, 0.35);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .signup-btn i {
+            font-size: 1.1rem;
+        }
+
+        .signup-btn:hover:not(:disabled) {
+            background: #082e3f;
+            transform: scale(1.02);
+            box-shadow: 0 18px 30px -14px #052433;
+        }
+
+        .signup-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .signup-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .login-hint {
+            color: #1a546e;
+            font-size: 0.9rem;
+        }
+        .login-hint a {
+            color: #0b3b4f;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dotted #95bcd3;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 700px) {
+            .signup-card { padding: 1.8rem 1.5rem; }
+            .form-grid { grid-template-columns: 1fr; gap: 1.2rem; }
+            .header-mini { flex-direction: column; align-items: start; gap: 6px; }
+            .module-tabs { gap: 0.4rem; }
+            .module-btn { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+            .submit-area { flex-direction: column-reverse; align-items: stretch; }
+            .signup-btn { justify-content: center; }
+        }
+
+        .note-module {
+            margin-top: 1rem;
+            color: #1b5f7a;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            text-align: right;
+            letter-spacing: 0.2px;
+        }
+        .note-module i {
+            color: #1b6b8a;
+        }
+
+        .badge-smart {
+            background: rgba(11, 59, 79, 0.06);
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1b5f7a;
+            border: 1px solid rgba(11, 59, 79, 0.08);
+        }
+
+        .strength-text.weak { color: #e74c3c; }
+        .strength-text.fair { color: #f39c12; }
+        .strength-text.good { color: #2ecc71; }
+        .strength-text.strong { color: #27ae60; }
+        .strength-text.very-strong { color: #1a7a4a; }
+    </style>
+</head>
+<body>
+<div class="signup-card">
+
+    <div class="header-mini">
+        <div class="damin">
+            <i class="fas fa-school"></i> Smart School <span style="font-weight:300; margin:0 4px;">·</span> Management System
+        </div>
+        <div class="year">
+            <i class="fas fa-id-badge"></i> Sign Up
+        </div>
+    </div>
+
+    <div id="alertMessage" class="alert">
+        <i class="fas fa-info-circle"></i>
+        <span id="alertText">Message</span>
+    </div>
+
+    <div class="module-tabs">
+        <button class="module-btn active" data-module="admin"><i class="fas fa-user-cog"></i> Admin</button>
+        <button class="module-btn" data-module="student"><i class="fas fa-user-graduate"></i> Student</button>
+        <button class="module-btn" data-module="teacher"><i class="fas fa-chalkboard-teacher"></i> Teacher</button>
+    </div>
+
+    <form id="signupForm" class="form-grid">
+
+        <div class="field-group">
+            <label for="fullName"><i class="fas fa-user"></i> Full name</label>
+            <input type="text" id="fullName" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="field-group">
+            <label for="email"><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="email" placeholder="you@example.com" required>
+            <div style="font-size:0.7rem; color:#1a5f7a; margin-top:2px;">
+                <i class="fas fa-check-circle" style="color:#1f7a5c;"></i> valid email required
+            </div>
+        </div>
+
+        <div class="field-group">
+            <label for="password"><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+
+        <div class="field-group">
+            <label for="repeatPassword"><i class="fas fa-redo-alt"></i> Repeat password</label>
+            <input type="password" id="repeatPassword" placeholder="••••••••" required>
+            <div id="passwordMatch" style="font-size:0.7rem; margin-top:2px; display:none;">
+                <i class="fas fa-check-circle" style="color:#1f7a5c;"></i> Passwords match
+            </div>
+        </div>
+
+        <div class="field-group full-width">
+            <div class="password-strength">
+                <span style="font-weight:450; font-size:0.85rem; color:#0f3f55;">
+                    <i class="fas fa-fingerprint"></i> Strength
+                </span>
+                <div class="strength-bar" id="strengthBar">
+                    <span id="s1"></span>
+                    <span id="s2"></span>
+                    <span id="s3"></span>
+                    <span id="s4"></span>
+                </div>
+                <span class="strength-text" id="strengthText"><i class="fas fa-shield-alt"></i> weak</span>
+            </div>
+            <div style="display: flex; gap: 1.2rem; flex-wrap: wrap; font-size:0.8rem; color:#195f7a; margin-top: 0.2rem;">
+                <span><i class="fas fa-check-circle" style="color:#1f7a5c;"></i> 8+ chars</span>
+                <span><i class="fas fa-check-circle" style="color:#1f7a5c;"></i> letter & number</span>
+                <span><i class="fas fa-check-circle" style="color:#1f7a5c;"></i> special char</span>
+            </div>
+        </div>
+
+        <div class="social-row">
+            <span style="font-weight:500; color:#0b3b4f; font-size:0.9rem;">
+                <i class="fas fa-plug"></i> Sign up with
+            </span>
+            <button type="button" class="social-btn google" id="googleSignupBtn">
+                <i class="fab fa-google"></i> Sign up with Google
+            </button>
+            <button type="button" class="social-btn github" onclick="socialSignup('github')">
+                <i class="fab fa-github"></i> GitHub
+            </button>
+            <span style="font-size:0.75rem; color:#1b6b8a; margin-left: auto;">
+                <i class="fas fa-shield-alt"></i> secure
+            </span>
+        </div>
+
+        <div class="submit-area">
+            <div class="login-hint">
+                <i class="fas fa-arrow-right"></i> Already have account? <a href="login.html">Log in</a>
+            </div>
+            <button type="submit" class="signup-btn" id="signupBtn">
+                <i class="fas fa-user-plus"></i> Create account
+            </button>
+        </div>
+
+        <input type="hidden" id="moduleType" value="admin">
+    </form>
+
+    <div class="note-module">
+        <i class="fas fa-database" style="margin-right: 6px;"></i>
+        Backend API Ready · module: <span id="currentModuleLabel">Admin</span>
+        <span class="badge-smart" style="margin-left: 12px;">
+            <i class="fas fa-graduation-cap"></i> v3.0
+        </span>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://15.207.174.107:8083/api';
+    const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
+   //const API_BASE_URL = 'http://localhost:8083/api';
+    //const OAUTH2_BASE_URL = 'http://localhost:8083';
+    //const API_BASE_URL = 'http://15.207.174.107:8083/api';
+    //const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
+
+    const moduleBtns = document.querySelectorAll('.module-btn');
+    const moduleHidden = document.getElementById('moduleType');
+    const currentModuleLabel = document.getElementById('currentModuleLabel');
+    const form = document.getElementById('signupForm');
+    const passwordInput = document.getElementById('password');
+    const repeatInput = document.getElementById('repeatPassword');
+    const strengthText = document.getElementById('strengthText');
+    const bars = [document.getElementById('s1'), document.getElementById('s2'), document.getElementById('s3'), document.getElementById('s4')];
+    const alertMessage = document.getElementById('alertMessage');
+    const alertText = document.getElementById('alertText');
+    const signupBtn = document.getElementById('signupBtn');
+    const passwordMatch = document.getElementById('passwordMatch');
+    const googleSignupBtn = document.getElementById('googleSignupBtn');
+
+    googleSignupBtn.addEventListener('click', function() {
+        const moduleType = moduleHidden.value;
+        localStorage.setItem('signupModule', moduleType);
+        const googleAuthUrl = `${OAUTH2_BASE_URL}/oauth2/authorization/google`;
+        console.log('🔐 Redirecting to Google OAuth2 for signup:', googleAuthUrl);
+        window.location.href = googleAuthUrl;
+    });
+
+    function handleOAuth2Redirect() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const isOAuth2 = urlParams.get('oauth2');
+        const error = urlParams.get('error');
+
+        if (error) {
+            showAlert(`❌ Google Signup failed: ${error}`, 'error');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+        }
+
+        if (token && isOAuth2) {
+            console.log('✅ OAuth2 signup successful');
+            const moduleType = localStorage.getItem('signupModule') || 'student';
+            localStorage.setItem('token', token);
+
+            fetch(`${API_BASE_URL}/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to fetch user info');
+                return response.json();
+            })
+            .then(userData => {
+                console.log('👤 User data:', userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.setItem('module', moduleType);
+                showAlert(`✅ Welcome ${userData.fullName || userData.username}!`, 'success');
+                setTimeout(() => {
+                    const dashboardMap = {
+                        'admin': 'admin_dashboard.html',
+                        'teacher': 'teacher_dashboard.html',
+                        'student': 'student_dashboard.html'
+                    };
+                    window.location.href = dashboardMap[moduleType] || 'student_dashboard.html';
+                }, 1500);
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                showAlert('❌ Error fetching user data. Please try again.', 'error');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
+    }
+
+    function setActiveModule(module) {
+        moduleBtns.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.module === module) {
+                btn.classList.add('active');
+            }
+        });
+        moduleHidden.value = module;
+        const names = { admin: 'Admin', student: 'Student', teacher: 'Teacher' };
+        currentModuleLabel.textContent = names[module] || 'Admin';
+    }
+
+    moduleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const mod = this.dataset.module;
+            setActiveModule(mod);
+            this.style.transform = 'scale(0.96)';
+            setTimeout(() => this.style.transform = '', 100);
+            clearAlert();
+        });
+    });
+
+    function showAlert(message, type = 'error') {
+        alertMessage.className = `alert show alert-${type}`;
+        alertText.textContent = message;
+        clearTimeout(window.alertTimeout);
+        window.alertTimeout = setTimeout(clearAlert, 5000);
+    }
+
+    function clearAlert() {
+        alertMessage.className = 'alert';
+        alertText.textContent = '';
+    }
+
+    function evaluateStrength(pw) {
+        let score = 0;
+        if (pw.length >= 8) score++;
+        if (/[a-zA-Z]/.test(pw) && /\d/.test(pw)) score++;
+        if (pw.length >= 12) score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        return Math.min(score, 4);
+    }
+
+    function updateStrength() {
+        const pw = passwordInput.value;
+        const score = evaluateStrength(pw);
+        const colors = ['#c9dde9', '#e74c3c', '#f39c12', '#2ecc71', '#27ae60'];
+        const labels = ['weak', 'weak', 'fair', 'good', 'strong'];
+        const icons = ['fa-shield-alt', 'fa-shield-alt', 'fa-shield-alt', 'fa-shield-check', 'fa-shield-check'];
+
+        bars.forEach((bar, idx) => {
+            const isActive = idx < score;
+            bar.style.background = isActive ? colors[score] : '#c9dde9';
+            bar.style.opacity = isActive ? '1' : '0.4';
+        });
+
+        strengthText.innerHTML = `<i class="fas ${icons[score]}"></i> ${labels[score]}`;
+        strengthText.className = `strength-text ${labels[score]}`;
+        return score;
+    }
+
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const repeat = repeatInput.value;
+        if (repeat.length > 0 && password === repeat) {
+            passwordMatch.style.display = 'block';
+            passwordMatch.innerHTML = '<i class="fas fa-check-circle" style="color:#1f7a5c;"></i> Passwords match';
+        } else if (repeat.length > 0 && password !== repeat) {
+            passwordMatch.style.display = 'block';
+            passwordMatch.innerHTML = '<i class="fas fa-times-circle" style="color:#e74c3c;"></i> Passwords do not match';
+            passwordMatch.style.color = '#e74c3c';
+        } else {
+            passwordMatch.style.display = 'none';
+        }
+    }
+
+    passwordInput.addEventListener('input', () => {
+        updateStrength();
+        checkPasswordMatch();
+    });
+    repeatInput.addEventListener('input', checkPasswordMatch);
+
+    function socialSignup(provider) {
+        const moduleType = moduleHidden.value;
+        localStorage.setItem('signupModule', moduleType);
+        window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/${provider}`;
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearAlert();
+
+        const name = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = passwordInput.value;
+        const repeat = repeatInput.value;
+        const moduleType = moduleHidden.value;
+
+        if (!name || !email || !password || !repeat) {
+            showAlert('⚠️ Please fill all fields.', 'warning');
+            return;
+        }
+        if (password !== repeat) {
+            showAlert('❌ Passwords do not match.', 'error');
+            return;
+        }
+        if (password.length < 6) {
+            showAlert('❌ Password must be at least 6 characters.', 'error');
+            return;
+        }
+        if (!email.includes('@') || !email.includes('.')) {
+            showAlert('❌ Please enter a valid email address.', 'error');
+            return;
+        }
+
+        const score = evaluateStrength(password);
+        if (score < 2) {
+            if (!confirm('⚠️ Your password is weak. Continue anyway?')) {
+                return;
+            }
+        }
+
+        signupBtn.disabled = true;
+        signupBtn.innerHTML = '<span class="loading-spinner"></span> Creating...';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: email,
+                    email: email,
+                    password: password,
+                    fullName: name,
+                    role: moduleType.toUpperCase()
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showAlert(`✅ Account created successfully! Welcome, ${name}. Redirecting to login...`, 'success');
+                localStorage.setItem('registeredEmail', email);
+                localStorage.setItem('registeredName', name);
+                localStorage.setItem('registeredRole', moduleType);
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else {
+                const errorMsg = data.error || data.message || 'Registration failed';
+                showAlert(`❌ ${errorMsg}`, 'error');
+                signupBtn.disabled = false;
+                signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create account';
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            if (error.message.includes('Failed to fetch')) {
+                showAlert('⚠️ Backend server not running. Using demo mode.', 'warning');
+                setTimeout(() => {
+                    showAlert(`✅ Demo account created successfully! Redirecting to login...`, 'success');
+                    localStorage.setItem('registeredEmail', email);
+                    localStorage.setItem('registeredName', name);
+                    localStorage.setItem('registeredRole', moduleType);
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }, 1000);
+            } else {
+                showAlert(`❌ ${error.message || 'Registration failed'}`, 'error');
+                signupBtn.disabled = false;
+                signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create account';
+            }
+        }
+    });
+
+    setActiveModule('admin');
+    updateStrength();
+    handleOAuth2Redirect();
+
+    const token = localStorage.getItem('token');
+    if (token) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user && user.username) {
+            const role = user.role ? user.role.toLowerCase() : 'admin';
+            const dashboardMap = {
+                'admin': 'admin_dashboard.html',
+                'teacher': 'teacher_dashboard.html',
+                'student': 'student_dashboard.html'
+            };
+            if (!window.location.search.includes('oauth2=true')) {
+                window.location.href = dashboardMap[role] || 'dashboard.html';
+            }
+        }
+    }
+
+    console.log('📝 Smart School Signup Page');
+    console.log(`📍 API: ${API_BASE_URL}`);
+    console.log('💡 After registration, redirect to login page');
+</script>
+</body>
+</html>

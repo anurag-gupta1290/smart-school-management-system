@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart School · Premium Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e2eef9 0%, #c5d8e8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+        }
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: #1b6b8a;
+            top: -100px;
+            right: -100px;
+        }
+        body::after {
+            width: 300px;
+            height: 300px;
+            background: #0b3b4f;
+            bottom: -80px;
+            left: -80px;
+        }
+
+        .login-card {
+            max-width: 920px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 64px;
+            padding: 3rem 3.2rem 3.2rem;
+            box-shadow: 0 40px 80px -20px rgba(8, 40, 60, 0.35),
+                        0 20px 40px -12px rgba(0, 20, 30, 0.10),
+                        inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-mini {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            color: #0b2a3b;
+            border-bottom: 1px solid rgba(0, 40, 60, 0.06);
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.6rem 1rem;
+        }
+
+        .header-mini .brand {
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, #0b3b4f, #1b6b8a);
+            padding: 0.35rem 1.8rem;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(11, 59, 79, 0.25);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .header-mini .brand i {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .header-mini .badge-login {
+            font-size: 0.85rem;
+            color: #1b4b63;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 0.3rem 1.6rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.5);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-mini .badge-login i {
+            color: #1b6b8a;
+            font-size: 0.9rem;
+        }
+
+        .alert {
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.15);
+            color: #1a7a4a;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.15);
+            color: #a93226;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .alert-warning {
+            background: rgba(241, 196, 15, 0.15);
+            color: #7d6608;
+            border: 1px solid rgba(241, 196, 15, 0.3);
+        }
+
+        .module-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background: rgba(220, 237, 248, 0.3);
+            padding: 0.4rem;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .module-btn {
+            padding: 0.65rem 2rem;
+            border-radius: 60px;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: #154053;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .module-btn i {
+            font-size: 1rem;
+            color: #1b6685;
+            transition: 0.2s;
+        }
+
+        .module-btn.active {
+            background: #0b3b4f;
+            color: white;
+            box-shadow: 0 8px 24px -8px rgba(8, 50, 70, 0.35);
+        }
+
+        .module-btn.active i {
+            color: white;
+        }
+
+        .module-btn:hover:not(.active) {
+            background: rgba(190, 218, 235, 0.5);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem 2rem;
+            margin-top: 0.5rem;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.82rem;
+            letter-spacing: 0.3px;
+            color: #0f3f55;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label i {
+            color: #1b6b8a;
+            width: 18px;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border-radius: 30px;
+            border: 1.5px solid #dce8f2;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(2px);
+            font-size: 0.95rem;
+            transition: 0.25s ease;
+            outline: none;
+            color: #0b2a3b;
+            font-weight: 450;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #0b3b4f;
+            background: white;
+            box-shadow: 0 4px 20px rgba(12, 60, 80, 0.10), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #8aacbf;
+            font-weight: 400;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8aacbf;
+            font-size: 1rem;
+            pointer-events: none;
+            transition: 0.2s;
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: #0b3b4f;
+        }
+
+        .extra-row {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 0.2rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #0f3f55;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #0b3b4f;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1.5px solid #c6dcec;
+            transition: 0.15s;
+        }
+
+        .remember-me input[type="checkbox"]:checked {
+            border-color: #0b3b4f;
+        }
+
+        .forgot-link {
+            color: #1b6b8a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .forgot-link:hover {
+            color: #0b3b4f;
+            border-bottom-color: #0b3b4f;
+        }
+
+        .forgot-link i {
+            font-size: 0.8rem;
+        }
+
+        .social-row {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem 1.5rem;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1.5px solid rgba(0, 40, 60, 0.06);
+        }
+
+        .social-row .label {
+            font-weight: 600;
+            color: #0f3f55;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.65rem 1.8rem;
+            border-radius: 60px;
+            border: 1.5px solid #dce8f2;
+            color: #0b3b4f;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .social-btn i {
+            font-size: 1.2rem;
+        }
+
+        .social-btn.google i { color: #DB4437; }
+        .social-btn.github i { color: #24292e; }
+
+        .social-btn:hover {
+            background: white;
+            border-color: #0b3b4f;
+            box-shadow: 0 8px 24px -12px rgba(8, 50, 70, 0.20);
+            transform: translateY(-2px);
+        }
+
+        .social-btn:active {
+            transform: scale(0.97);
+        }
+
+        .submit-area {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #0b3b4f, #1a607a);
+            border: none;
+            color: white;
+            padding: 0.95rem 3.2rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            box-shadow: 0 12px 32px -12px rgba(8, 50, 70, 0.40);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .login-btn i {
+            font-size: 1.1rem;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 20px 40px -14px #052433;
+            background: linear-gradient(135deg, #0a3142, #15546b);
+        }
+
+        .login-btn:active {
+            transform: scale(0.97);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .signup-hint {
+            color: #1a546e;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .signup-hint a {
+            color: #0b3b4f;
+            font-weight: 700;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .signup-hint a:hover {
+            border-bottom-color: #0b3b4f;
+        }
+
+        @media (max-width: 740px) {
+            .login-card { padding: 1.8rem 1.5rem; border-radius: 40px; }
+            .form-grid { grid-template-columns: 1fr; gap: 1.2rem; }
+            .header-mini { flex-direction: column; align-items: stretch; }
+            .header-mini .brand { justify-content: center; font-size: 1rem; padding: 0.3rem 1.2rem; }
+            .header-mini .badge-login { justify-content: center; }
+            .module-tabs { flex-direction: column; border-radius: 30px; padding: 0.3rem; }
+            .module-btn { flex: none; padding: 0.6rem 1rem; }
+            .submit-area { flex-direction: column-reverse; align-items: stretch; }
+            .login-btn { justify-content: center; }
+            .extra-row { flex-direction: column; align-items: flex-start; }
+            .social-row { justify-content: center; }
+            .social-btn { flex: 1; justify-content: center; }
+        }
+
+        .note-module {
+            margin-top: 1.2rem;
+            color: #1b5f7a;
+            font-size: 0.78rem;
+            opacity: 0.7;
+            text-align: right;
+            letter-spacing: 0.2px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .note-module i {
+            color: #1b6b8a;
+        }
+
+        .badge-smart {
+            background: rgba(11, 59, 79, 0.06);
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1b5f7a;
+            border: 1px solid rgba(11, 59, 79, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .glow-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+            margin-right: 4px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .social-btn.google {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #DB4437;
+        }
+
+        .social-btn.google:hover {
+            background: #DB4437;
+            color: white;
+            border-color: #DB4437;
+        }
+
+        .social-btn.google:hover i {
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+<div class="login-card">
+
+    <div class="header-mini">
+        <div class="brand">
+            <i class="fas fa-school"></i> Smart School
+        </div>
+        <div class="badge-login">
+            <i class="fas fa-sign-in-alt"></i> Secure Login
+            <span class="glow-dot"></span>
+        </div>
+    </div>
+
+    <div id="alertMessage" class="alert">
+        <i class="fas fa-info-circle"></i>
+        <span id="alertText">Message</span>
+    </div>
+
+    <div class="module-tabs">
+        <button class="module-btn active" data-module="admin"><i class="fas fa-user-cog"></i> Admin</button>
+        <button class="module-btn" data-module="student"><i class="fas fa-user-graduate"></i> Student</button>
+        <button class="module-btn" data-module="teacher"><i class="fas fa-chalkboard-teacher"></i> Teacher</button>
+    </div>
+
+    <form id="loginForm" class="form-grid">
+
+        <div class="field-group full-width">
+            <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+            <div class="input-wrapper">
+                <input type="email" id="email" placeholder="you@example.com" value="admin@smartschool.com" required />
+                <span class="input-icon"><i class="fas fa-check-circle" style="color:#2ecc71;"></i></span>
+            </div>
+            <div style="font-size:0.7rem; color:#1a5f7a; margin-top:2px; display:flex; align-items:center; gap:6px;">
+                <i class="fas fa-info-circle" style="color:#1b6b8a;"></i> valid email required
+            </div>
+        </div>
+
+        <div class="field-group full-width">
+            <label for="password"><i class="fas fa-lock"></i> Password</label>
+            <div class="input-wrapper">
+                <input type="password" id="password" placeholder="••••••••" value="admin123" required />
+                <span class="input-icon"><i class="fas fa-eye-slash" style="cursor:pointer;" id="togglePassword"></i></span>
+            </div>
+        </div>
+
+        <div class="extra-row">
+            <label class="remember-me">
+                <input type="checkbox" checked /> <span>Remember me</span>
+            </label>
+            <a href="forgot-password.html" class="forgot-link">
+                <i class="fas fa-key"></i> Forgot password?
+            </a>
+        </div>
+
+        <div class="social-row">
+            <span class="label"><i class="fas fa-plug"></i> Continue with</span>
+            <button type="button" class="social-btn google" id="googleLoginBtn">
+                <i class="fab fa-google"></i> Sign in with Google
+            </button>
+            <button type="button" class="social-btn github" onclick="socialLogin('github')">
+                <i class="fab fa-github"></i> GitHub
+            </button>
+            <span style="font-size:0.7rem; color:#1b6b8a; margin-left: auto; display:flex; align-items:center; gap:4px;">
+                <i class="fas fa-shield-alt"></i> 256-bit SSL
+            </span>
+        </div>
+
+        <div class="submit-area">
+            <div class="signup-hint">
+                <i class="fas fa-arrow-right"></i> New here? <a href="signup.html">Create account</a>
+            </div>
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Log in
+            </button>
+        </div>
+
+        <input type="hidden" id="moduleType" value="admin" />
+    </form>
+
+    <div class="note-module">
+        <span><i class="fas fa-database"></i> Backend API Ready · module: <span id="currentModuleLabel" style="font-weight:600;">Admin</span></span>
+        <span class="badge-smart"><i class="fas fa-graduation-cap"></i> v3.0</span>
+    </div>
+
+</div>
+
+<script>
+    const API_BASE_URL = 'http://15.207.174.107:8083/api';
+    const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
+   //const API_BASE_URL = 'http://localhost:8083/api';
+    //const OAUTH2_BASE_URL = 'http://localhost:8083';
+   //const API_BASE_URL = 'http://15.207.174.107:8083/api';
+   //const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
+
+   // DOM refs
+   const moduleBtns = document.querySelectorAll('.module-btn');
+   const moduleHidden = document.getElementById('moduleType');
+   const currentModuleLabel = document.getElementById('currentModuleLabel');
+   const form = document.getElementById('loginForm');
+   const togglePassword = document.getElementById('togglePassword');
+   const passwordInput = document.getElementById('password');
+   const emailInput = document.getElementById('email');
+   const loginBtn = document.getElementById('loginBtn');
+   const alertMessage = document.getElementById('alertMessage');
+   const alertText = document.getElementById('alertText');
+   const googleLoginBtn = document.getElementById('googleLoginBtn');
+
+   // Toggle password
+   if (togglePassword && passwordInput) {
+       togglePassword.addEventListener('click', function() {
+           const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+           passwordInput.setAttribute('type', type);
+           this.classList.toggle('fa-eye');
+           this.classList.toggle('fa-eye-slash');
+       });
+   }
+
+   function setActiveModule(module) {
+       moduleBtns.forEach(btn => {
+           btn.classList.remove('active');
+           if (btn.dataset.module === module) {
+               btn.classList.add('active');
+           }
+       });
+       moduleHidden.value = module;
+       const names = { admin: 'Admin', student: 'Student', teacher: 'Teacher' };
+       currentModuleLabel.textContent = names[module] || 'Admin';
+   }
+
+   moduleBtns.forEach(btn => {
+       btn.addEventListener('click', function() {
+           const mod = this.dataset.module;
+           setActiveModule(mod);
+           this.style.transform = 'scale(0.95)';
+           setTimeout(() => this.style.transform = '', 120);
+           clearAlert();
+       });
+   });
+
+   function showAlert(message, type = 'error') {
+       alertMessage.className = `alert show alert-${type}`;
+       alertText.textContent = message;
+       clearTimeout(window.alertTimeout);
+       window.alertTimeout = setTimeout(clearAlert, 5000);
+   }
+
+   function clearAlert() {
+       alertMessage.className = 'alert';
+       alertText.textContent = '';
+   }
+
+   // Google Login
+   googleLoginBtn.addEventListener('click', function() {
+       window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/google`;
+   });
+
+   function socialLogin(provider) {
+       window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/${provider}`;
+   }
+
+   // OAuth2 Redirect handler
+   function handleOAuth2Redirect() {
+       const urlParams = new URLSearchParams(window.location.search);
+       const token = urlParams.get('token');
+       const isOAuth2 = urlParams.get('oauth2');
+       const error = urlParams.get('error');
+
+       if (error) {
+           showAlert(`❌ Login failed: ${error}`, 'error');
+           window.history.replaceState({}, document.title, window.location.pathname);
+           return;
+       }
+
+       if (token && isOAuth2) {
+           localStorage.setItem('token', token);
+
+           fetch(`${API_BASE_URL}/auth/me`, {
+               headers: { 'Authorization': `Bearer ${token}` }
+           })
+           .then(response => {
+               if (!response.ok) throw new Error('Failed to fetch user info');
+               return response.json();
+           })
+           .then(userData => {
+               const role = userData.role || 'STUDENT';
+               userData.role = role.toUpperCase();
+               localStorage.setItem('user', JSON.stringify(userData));
+               localStorage.setItem('module', role.toLowerCase());
+               showAlert(`✅ Welcome ${userData.fullName || userData.username}!`, 'success');
+               setTimeout(() => {
+                   const dashboardMap = {
+                       'admin': 'admin_dashboard.html',
+                       'teacher': 'teacher_dashboard.html',
+                       'student': 'student_dashboard.html'
+                   };
+                   const target = dashboardMap[role.toLowerCase()] || 'student_dashboard.html';
+                   window.location.href = target;
+               }, 1500);
+           })
+           .catch(error => {
+               showAlert('❌ Error fetching user data. Please try again.', 'error');
+               window.history.replaceState({}, document.title, window.location.pathname);
+           });
+       }
+   }
+
+   // ===== MAIN LOGIN SUBMIT =====
+   form.addEventListener('submit', async function(e) {
+       e.preventDefault();
+       clearAlert();
+
+       // ✅ FIX: Purana fake token aur data hatao
+       localStorage.clear();
+
+       const email = emailInput.value.trim();
+       const password = passwordInput.value;
+       const moduleType = moduleHidden.value;
+
+       if (!email || !password) {
+           showAlert('⚠️ Please fill in all fields.', 'warning');
+           return;
+       }
+       if (!email.includes('@') || !email.includes('.')) {
+           showAlert('❌ Please enter a valid email address.', 'error');
+           return;
+       }
+       if (password.length < 6) {
+           showAlert('❌ Password must be at least 6 characters.', 'error');
+           return;
+       }
+
+       loginBtn.disabled = true;
+       loginBtn.innerHTML = '<span class="loading-spinner"></span> Authenticating...';
+
+       try {
+           const response = await fetch(`${API_BASE_URL}/auth/login`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ username: email, password: password })
+           });
+
+           const data = await response.json();
+
+           if (response.ok && data.token) {
+               // ✅ FIX: Only save REAL token
+               const userRole = data.role || 'ADMIN';
+               const userData = {
+                   ...data,
+                   role: userRole.toUpperCase(),
+                   userId: data.userId || data.id || 1
+               };
+
+               localStorage.setItem('token', data.token);
+               localStorage.setItem('user', JSON.stringify(userData));
+               localStorage.setItem('module', moduleType);
+
+               showAlert(`✅ Welcome ${userData.fullName || userData.username}! Redirecting...`, 'success');
+
+               setTimeout(() => {
+                   const role = userData.role.toLowerCase();
+                   const dashboardMap = {
+                       'admin': 'admin_dashboard.html',
+                       'teacher': 'teacher_dashboard.html',
+                       'student': 'student_dashboard.html'
+                   };
+                   const target = dashboardMap[role] || 'dashboard.html';
+                   window.location.href = target;
+               }, 1500);
+           } else {
+               const errorMsg = data.error || data.message || 'Invalid credentials';
+               showAlert(`❌ ${errorMsg}`, 'error');
+               loginBtn.disabled = false;
+               loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
+           }
+       } catch (error) {
+           console.error('Login error:', error);
+           // ✅ FIX: Fake/demo token use karna band kar diya
+           showAlert('❌ Backend server not running. Please check your connection.', 'error');
+           loginBtn.disabled = false;
+           loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
+       }
+   });
+
+   // Set default
+   setActiveModule('admin');
+   handleOAuth2Redirect();
+</script>
+</body>
+</html>
