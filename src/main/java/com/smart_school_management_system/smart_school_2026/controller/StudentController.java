@@ -4,11 +4,17 @@ import com.smart_school_management_system.smart_school_2026.entity.*;
 import com.smart_school_management_system.smart_school_2026.repository.*;
 import com.smart_school_management_system.smart_school_2026.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,9 +30,11 @@ public class StudentController {
     private final QuizRepository quizRepository;
     private final SubmissionRepository submissionRepository;
     private final StudentRepository studentRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
     private final AttendanceRepository attendanceRepository;
     private final QuizResultRepository quizResultRepository;
     private final ClassEntityRepository classEntityRepository;
+    private final NoteRepository noteRepository;
 
     @GetMapping("/dashboard/{userId}")
     public ResponseEntity<?> getStudentDashboard(@PathVariable Long userId) {
@@ -42,8 +50,6 @@ public class StudentController {
     public ResponseEntity<?> getStudentProfile(@PathVariable Long userId) {
         try {
             Student student = studentService.getStudentByUserId(userId);
-
-            // ✅ DTO Return karo (JSON Serialization error fix)
             Map<String, Object> studentDTO = new HashMap<>();
             studentDTO.put("id", student.getId());
             studentDTO.put("studentId", student.getStudentId());
@@ -83,13 +89,9 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ ASSIGNMENTS - GET ALL (Sabhi Students Ko Dikhenge)
-    // ============================================================
     @GetMapping("/assignments/{studentId}")
     public ResponseEntity<?> getAssignmentsForStudent(@PathVariable Long studentId) {
         try {
-            // ✅ Ab class match nahi karenge - saare assignments dikhenge
             List<Assignment> assignments = assignmentRepository.findAll();
             List<Map<String, Object>> result = new ArrayList<>();
 
@@ -118,13 +120,9 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ QUIZZES - GET ALL (Sabhi Students Ko Dikhenge)
-    // ============================================================
     @GetMapping("/quizzes/{studentId}")
     public ResponseEntity<?> getQuizzesForStudent(@PathVariable Long studentId) {
         try {
-            // ✅ Ab class match nahi karenge - saare quizzes dikhenge
             List<Quiz> quizzes = quizRepository.findAll();
             List<Map<String, Object>> result = new ArrayList<>();
 
@@ -140,10 +138,30 @@ public class StudentController {
                 map.put("subjectName", q.getSubject() != null ? q.getSubject().getSubjectName() : "N/A");
                 map.put("teacherName", q.getTeacher() != null && q.getTeacher().getUser() != null ? q.getTeacher().getUser().getFullName() : "N/A");
 
+                List<QuizQuestion> questions = quizQuestionRepository.findByQuizId(q.getId());
+                List<Map<String, Object>> questionList = new ArrayList<>();
+                for (QuizQuestion question : questions) {
+                    Map<String, Object> qMap = new HashMap<>();
+                    qMap.put("id", question.getId());
+                    qMap.put("question", question.getQuestion());
+                    qMap.put("optionA", question.getOptionA());
+                    qMap.put("optionB", question.getOptionB());
+                    qMap.put("optionC", question.getOptionC());
+                    qMap.put("optionD", question.getOptionD());
+                    qMap.put("correctAnswer", question.getCorrectAnswer());
+                    qMap.put("marks", question.getMarks() != null ? question.getMarks() : 1);
+                    questionList.add(qMap);
+                }
+                map.put("questions", questionList);
+
+                // ✅ Check if student has attempted quiz - SIRF current student ke liye
                 boolean attempted = quizResultRepository
                         .findByQuizIdAndStudentId(q.getId(), studentId)
                         .isPresent();
+
+                // ✅ Agar attempted false hai toh "UPCOMING", warna "COMPLETED"
                 map.put("attempted", attempted);
+                map.put("status", attempted ? "COMPLETED" : "UPCOMING");
 
                 result.add(map);
             }
@@ -154,27 +172,20 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ ASSIGNMENT SUBMIT
-    // ============================================================
     @PostMapping("/assignments/{assignmentId}/submit")
     public ResponseEntity<?> submitAssignment(@PathVariable Long assignmentId, @RequestBody Map<String, Object> request) {
         try {
-            // ✅ Student ID ko request se lo (SecurityContextHolder se nahi)
             Long studentId = null;
 
-            // Pehle request se try karo
             if (request.get("studentId") != null) {
                 studentId = Long.parseLong(request.get("studentId").toString());
             }
 
-            // Agar request mein nahi hai, toh getCurrentStudentId() se try karo
             if (studentId == null) {
                 try {
                     studentId = studentService.getCurrentStudentId();
                 } catch (Exception ex) {
-                    // Log the error but continue
-                    System.out.println("⚠️ Could not get student ID from security context: " + ex.getMessage());
+                    System.out.println("⚠️ Could not get student ID: " + ex.getMessage());
                 }
             }
 
@@ -222,24 +233,40 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ QUIZ SUBMIT - Student submits quiz answers
-    // ============================================================
     @PostMapping("/quizzes/{quizId}/submit")
     public ResponseEntity<?> submitQuiz(@PathVariable Long quizId, @RequestBody Map<String, Object> request) {
         try {
             Long studentId = request.get("studentId") != null ? Long.parseLong(request.get("studentId").toString()) : null;
-            Integer marksObtained = request.get("marksObtained") != null ?
-                    Integer.parseInt(request.get("marksObtained").toString()) : null;
 
             if (studentId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Student ID is required"));
             }
-            if (marksObtained == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Marks are required"));
+
+            // ✅ Answers ko process karo aur marks calculate karo
+            List<Map<String, Object>> answers = (List<Map<String, Object>>) request.get("answers");
+            int marksObtained = 0;
+
+            if (answers != null) {
+                for (Map<String, Object> ans : answers) {
+                    Long questionId = Long.parseLong(ans.get("questionId").toString());
+                    String selectedAnswer = String.valueOf(ans.get("selectedAnswer")).toUpperCase(); // 'a' -> 'A'
+
+                    // ✅ Sahi answer dhundho
+                    QuizQuestion question = quizQuestionRepository.findById(questionId).orElse(null);
+
+                    // 🔥 Logs (Debugging ke liye)
+                    System.out.println("QID: " + questionId + " | Selected: " + selectedAnswer + " | Correct: " + (question != null ? question.getCorrectAnswer() : "NULL"));
+
+                    if (question != null && question.getCorrectAnswer() != null) {
+                        // ✅ Case-Insensitive compare (A aur a dono match)
+                        if (question.getCorrectAnswer().equalsIgnoreCase(selectedAnswer)) {
+                            marksObtained += question.getMarks() != null ? question.getMarks() : 1;
+                        }
+                    }
+                }
             }
 
-            // Check if already attempted
+            // ✅ Check if already attempted
             boolean alreadyAttempted = quizResultRepository
                     .findByQuizIdAndStudentId(quizId, studentId)
                     .isPresent();
@@ -255,7 +282,6 @@ public class StudentController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Quiz or Student not found"));
             }
 
-            // Calculate percentage and grade
             double percentage = (marksObtained * 100.0) / quiz.getMaxMarks();
             String grade = calculateGrade(percentage);
 
@@ -275,6 +301,7 @@ public class StudentController {
             response.put("message", "Quiz submitted successfully!");
             response.put("percentage", saved.getPercentage());
             response.put("grade", saved.getGrade());
+            response.put("marksObtained", saved.getMarksObtained());
             response.put("success", true);
 
             return ResponseEntity.ok(response);
@@ -283,10 +310,6 @@ public class StudentController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
-    // ============================================================
-    // ✅ QUIZ RESULTS - GET STUDENT QUIZ RESULTS
-    // ============================================================
     @GetMapping("/quiz-results/{studentId}")
     public ResponseEntity<?> getQuizResults(@PathVariable Long studentId) {
         try {
@@ -314,9 +337,6 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ GET STUDENT SUBMISSIONS
-    // ============================================================
     @GetMapping("/submissions/{studentId}")
     public ResponseEntity<?> getStudentSubmissions(@PathVariable Long studentId) {
         try {
@@ -340,9 +360,6 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ GET STUDENT RESULTS (Assignments)
-    // ============================================================
     @GetMapping("/results/{studentId}")
     public ResponseEntity<?> getStudentResults(@PathVariable Long studentId) {
         try {
@@ -351,7 +368,7 @@ public class StudentController {
             Map<String, Object> result = new HashMap<>();
             List<Map<String, Object>> subjectWiseMarks = new ArrayList<>();
             int totalMarks = 0;
-            int totalMaxMarks = 0;  // ✅ Add this
+            int totalMaxMarks = 0;
             int gradedCount = 0;
 
             for (Submission s : submissions) {
@@ -370,12 +387,11 @@ public class StudentController {
 
                     subjectWiseMarks.add(mark);
                     totalMarks += s.getMarksObtained();
-                    totalMaxMarks += s.getAssignment() != null ? s.getAssignment().getMaxMarks() : 100;  // ✅ Add this
+                    totalMaxMarks += s.getAssignment() != null ? s.getAssignment().getMaxMarks() : 100;
                     gradedCount++;
                 }
             }
 
-            // ✅ Correct overall percentage calculation
             double overallPercentage = totalMaxMarks > 0 ?
                     (totalMarks * 100.0) / totalMaxMarks : 0;
 
@@ -398,9 +414,6 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ HELPER METHOD - CALCULATE GRADE
-    // ============================================================
     private String calculateGrade(double percentage) {
         if (percentage >= 90) return "A+";
         else if (percentage >= 80) return "A";
@@ -428,6 +441,103 @@ public class StudentController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    // ============================================================
+    // ✅ NOTES - GET ALL NOTES FOR STUDENT (Free ya Purchased)
+    // ============================================================
+    @GetMapping("/notes/{studentId}")
+    public ResponseEntity<?> getNotesForStudent(@PathVariable Long studentId) {
+        try {
+            List<Note> notes = noteRepository.findAccessibleNotesForStudent(studentId);
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Note n : notes) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", n.getId());
+                map.put("title", n.getTitle());
+                map.put("description", n.getDescription());
+
+                // ✅ Subject Name
+                if (n.getSubject() != null) {
+                    map.put("subjectName", n.getSubject().getSubjectName());
+                } else {
+                    map.put("subjectName", "N/A");
+                }
+
+                // ✅ Class Name
+                if (n.getClassEntity() != null) {
+                    map.put("className", n.getClassEntity().getClassName());
+                } else {
+                    map.put("className", "N/A");
+                }
+
+                map.put("price", n.getPrice() != null ? n.getPrice() : 0);
+                map.put("isFree", n.getIsFree() != null ? n.getIsFree() : (n.getPrice() == null || n.getPrice() == 0));
+
+                // ✅ Upload Date (createdAt use kiya hai)
+                map.put("uploadDate", n.getCreatedAt() != null ? n.getCreatedAt().toString() : "");
+
+                // ✅ Teacher Name
+                if (n.getTeacher() != null && n.getTeacher().getUser() != null) {
+                    map.put("teacherName", n.getTeacher().getUser().getFullName());
+                } else {
+                    map.put("teacherName", "N/A");
+                }
+
+                // ✅ Purchase Status Check
+                boolean isPurchased = noteRepository.findPurchasedNotesByStudent(studentId)
+                        .stream().anyMatch(p -> p.getId().equals(n.getId()));
+                map.put("purchased", isPurchased);
+
+                result.add(map);
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // ============================================================
+    // ✅ NOTES - DOWNLOAD FILE BY NOTE ID
+    // ============================================================
+    @GetMapping("/notes/download/{noteId}")
+    public ResponseEntity<?> downloadNote(@PathVariable Long noteId) {
+        try {
+            Note note = noteRepository.findById(noteId).orElse(null);
+            if (note == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Note not found"));
+            }
+
+            String fileUrlStr = note.getFileUrl(); // Database me saved URL
+            if (fileUrlStr == null || fileUrlStr.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "File URL not found for this note"));
+            }
+
+            // ✅ Filename nikaalo (Last / ke baad wala part)
+            String fileName = fileUrlStr.substring(fileUrlStr.lastIndexOf('/') + 1);
+
+            // ✅ YAHAN FIX HAI: File "uploads/notes" folder me hai
+            Path filePath = Paths.get("uploads", "notes", fileName).normalize();
+
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "File not found on server. Checked path: " + filePath.toString()));
+            }
+
+            String originalFileName = note.getFileName();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalFileName + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error downloading file: " + e.getMessage()));
         }
     }
 }

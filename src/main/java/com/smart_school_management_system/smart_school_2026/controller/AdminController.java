@@ -1,10 +1,13 @@
 package com.smart_school_management_system.smart_school_2026.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.smart_school_management_system.smart_school_2026.entity.*;
+import com.smart_school_management_system.smart_school_2026.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,17 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smart_school_management_system.smart_school_2026.entity.ClassEntity;
-import com.smart_school_management_system.smart_school_2026.entity.Role;
-import com.smart_school_management_system.smart_school_2026.entity.Student;
-import com.smart_school_management_system.smart_school_2026.entity.Subject;
-import com.smart_school_management_system.smart_school_2026.entity.Teacher;
-import com.smart_school_management_system.smart_school_2026.entity.User;
-import com.smart_school_management_system.smart_school_2026.repository.ClassEntityRepository;
-import com.smart_school_management_system.smart_school_2026.repository.StudentRepository;
-import com.smart_school_management_system.smart_school_2026.repository.SubjectRepository;
-import com.smart_school_management_system.smart_school_2026.repository.TeacherRepository;
-import com.smart_school_management_system.smart_school_2026.repository.UserRepository;
 import com.smart_school_management_system.smart_school_2026.service.AdminService;
 import com.smart_school_management_system.smart_school_2026.service.UserService;
 
@@ -56,6 +48,7 @@ public class AdminController {
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final SubjectRepository subjectRepository;
+    private final AttendanceRepository attendanceRepository;
     private final ClassEntityRepository classEntityRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -599,6 +592,91 @@ public class AdminController {
         try {
             adminService.deleteClass(id);
             return ResponseEntity.ok(Map.of("message", "Class deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ============================================================
+    // ✅ ATTENDANCE - GET OVERALL STATS
+    // ============================================================
+    @GetMapping("/attendance/stats")
+    public ResponseEntity<?> getAttendanceStats() {
+        try {
+            long totalStudents = studentRepository.count();
+            long presentStudents = 0;
+            long absentStudents = 0;
+
+            // Aaj ki attendance
+            LocalDate today = LocalDate.now();
+            List<Attendance> todayAttendance = attendanceRepository.findAll();
+
+            for (Attendance a : todayAttendance) {
+                if (a.getAttendanceDate().equals(today)) {
+                    if (a.getStatus() == AttendanceStatus.PRESENT) {
+                        presentStudents++;
+                    } else if (a.getStatus() == AttendanceStatus.ABSENT) {
+                        absentStudents++;
+                    }
+                }
+            }
+
+            double overallPercentage = totalStudents > 0 ?
+                    Math.round((presentStudents * 100.0) / totalStudents * 100.0) / 100.0 : 0;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalStudents", totalStudents);
+            response.put("present", presentStudents);
+            response.put("absent", absentStudents);
+            response.put("overallPercentage", overallPercentage);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ============================================================
+    // ✅ ATTENDANCE - GET CLASS WISE STATS
+    // ============================================================
+    @GetMapping("/attendance/classes")
+    public ResponseEntity<?> getClassAttendanceStats() {
+        try {
+            List<ClassEntity> classes = classEntityRepository.findAll();
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (ClassEntity cls : classes) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("classId", cls.getId());
+                map.put("className", cls.getClassName());
+                map.put("section", cls.getSection());
+
+                List<Student> students = studentRepository.findByClassEntityId(cls.getId());
+                int totalStudents = students.size();
+                int presentStudents = 0;
+
+                // Class ki aaj ki attendance
+                for (Student s : students) {
+                    List<Attendance> attendanceList = attendanceRepository.findByStudentId(s.getId());
+                    for (Attendance a : attendanceList) {
+                        if (a.getAttendanceDate().equals(LocalDate.now()) && a.getStatus() == AttendanceStatus.PRESENT) {
+                            presentStudents++;
+                            break;
+                        }
+                    }
+                }
+
+                double percentage = totalStudents > 0 ?
+                        Math.round((presentStudents * 100.0) / totalStudents * 100.0) / 100.0 : 0;
+
+                map.put("totalStudents", totalStudents);
+                map.put("presentStudents", presentStudents);
+                map.put("percentage", percentage);
+
+                result.add(map);
+            }
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

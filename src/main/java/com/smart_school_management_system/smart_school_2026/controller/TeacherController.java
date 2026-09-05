@@ -2,6 +2,7 @@ package com.smart_school_management_system.smart_school_2026.controller;
 
 import com.smart_school_management_system.smart_school_2026.entity.*;
 import com.smart_school_management_system.smart_school_2026.repository.*;
+import com.smart_school_management_system.smart_school_2026.service.NoteService;
 import com.smart_school_management_system.smart_school_2026.service.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,12 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;        // ✅ ADD THIS
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;   // ✅ ADD THIS
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/teacher")
@@ -30,10 +35,13 @@ public class TeacherController {
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
     private final SubmissionRepository submissionRepository;
-    private final StudentRepository studentRepository;      // ✅ ADD THIS
-    private final AttendanceRepository attendanceRepository; // ✅ ADD THIS
+    private final StudentRepository studentRepository;
+    private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NoteService noteService;
+    private final NoteRepository noteRepository;
 
     // ============================================================
     // ✅ PROFILE & DASHBOARD
@@ -54,7 +62,6 @@ public class TeacherController {
         try {
             Teacher teacher = teacherService.getTeacherByUserId(userId);
 
-            // ✅ DTO Return karo (Lazy Loading error fix)
             Map<String, Object> teacherDTO = new HashMap<>();
             teacherDTO.put("id", teacher.getId());
             teacherDTO.put("teacherId", teacher.getTeacherId());
@@ -95,12 +102,12 @@ public class TeacherController {
     }
 
     // ============================================================
-    // ✅ ASSIGNMENTS - GET ALL
+    // ✅ ASSIGNMENTS
     // ============================================================
+
     @GetMapping("/assignments")
     public ResponseEntity<?> getAllAssignments() {
         try {
-            // ✅ Ab sabhi assignments dikhayenge (filter nahi karenge)
             List<Assignment> assignments = assignmentRepository.findAll();
 
             List<Map<String, Object>> result = new ArrayList<>();
@@ -122,9 +129,6 @@ public class TeacherController {
         }
     }
 
-    // ============================================================
-    // ✅ CREATE ASSIGNMENT
-    // ============================================================
     @PostMapping("/assignments")
     public ResponseEntity<?> createAssignment(@RequestBody Map<String, Object> request) {
         try {
@@ -240,12 +244,12 @@ public class TeacherController {
     }
 
     // ============================================================
-    // ✅ QUIZZES - GET ALL
+    // ✅ QUIZZES
     // ============================================================
+
     @GetMapping("/quizzes")
     public ResponseEntity<?> getAllQuizzes() {
         try {
-            // ✅ Ab sabhi quizzes dikhayenge (filter nahi karenge)
             List<Quiz> quizzes = quizRepository.findAll();
 
             List<Map<String, Object>> result = new ArrayList<>();
@@ -268,9 +272,6 @@ public class TeacherController {
         }
     }
 
-    // ============================================================
-    // ✅ CREATE QUIZ
-    // ============================================================
     @PostMapping("/quizzes")
     public ResponseEntity<?> createQuiz(@RequestBody Map<String, Object> request) {
         try {
@@ -285,17 +286,13 @@ public class TeacherController {
             Long subjectId = request.get("subjectId") != null ? Long.parseLong(request.get("subjectId").toString()) : null;
             Long teacherId = request.get("teacherId") != null ? Long.parseLong(request.get("teacherId").toString()) : null;
 
+            List<Map<String, Object>> questions = (List<Map<String, Object>>) request.get("questions");
+
             if (title == null || title.isEmpty()) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Title is required");
-                error.put("success", false);
-                return ResponseEntity.badRequest().body(error);
+                return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
             }
             if (quizDateStr == null || quizDateStr.isEmpty()) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Quiz date is required");
-                error.put("success", false);
-                return ResponseEntity.badRequest().body(error);
+                return ResponseEntity.badRequest().body(Map.of("error", "Quiz date is required"));
             }
 
             LocalDateTime quizDate;
@@ -319,39 +316,24 @@ public class TeacherController {
                 if (!teachers.isEmpty()) {
                     teacher = teachers.get(0);
                 } else {
-                    Map<String, Object> error = new HashMap<>();
-                    error.put("error", "No teacher found");
-                    error.put("success", false);
-                    return ResponseEntity.badRequest().body(error);
+                    return ResponseEntity.badRequest().body(Map.of("error", "No teacher found"));
                 }
             }
 
             if (classId == null) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Class is required");
-                error.put("success", false);
-                return ResponseEntity.badRequest().body(error);
+                return ResponseEntity.badRequest().body(Map.of("error", "Class is required"));
             }
             var classEntity = classEntityRepository.findById(classId).orElse(null);
             if (classEntity == null) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Class not found");
-                error.put("success", false);
-                return ResponseEntity.badRequest().body(error);
+                return ResponseEntity.badRequest().body(Map.of("error", "Class not found"));
             }
 
             if (subjectId == null) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Subject is required");
-                error.put("success", false);
-                return ResponseEntity.badRequest().body(error);
+                return ResponseEntity.badRequest().body(Map.of("error", "Subject is required"));
             }
             var subject = subjectRepository.findById(subjectId).orElse(null);
             if (subject == null) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Subject not found");
-                error.put("success", false);
-                return ResponseEntity.badRequest().body(error);
+                return ResponseEntity.badRequest().body(Map.of("error", "Subject not found"));
             }
 
             Quiz quiz = new Quiz();
@@ -365,28 +347,47 @@ public class TeacherController {
             quiz.setSubject(subject);
             quiz.setTeacher(teacher);
 
-            Quiz saved = quizRepository.save(quiz);
+            Quiz savedQuiz = quizRepository.save(quiz);
+
+            if (questions != null && !questions.isEmpty()) {
+                for (Map<String, Object> q : questions) {
+                    QuizQuestion quizQuestion = new QuizQuestion();
+                    quizQuestion.setQuiz(savedQuiz);
+                    quizQuestion.setQuestion((String) q.get("question"));
+                    quizQuestion.setOptionA((String) q.get("optionA"));
+                    quizQuestion.setOptionB((String) q.get("optionB"));
+                    quizQuestion.setOptionC((String) q.get("optionC"));
+                    quizQuestion.setOptionD((String) q.get("optionD"));
+
+                    // ✅ YAHAN FIX HAI: Correct Answer Save Karo (Case-Insensitive)
+                    String correctAnswer = (String) q.get("correctAnswer");
+                    if (correctAnswer != null) {
+                        quizQuestion.setCorrectAnswer(correctAnswer.toUpperCase()); // 'a', 'b', 'c', 'd' ko 'A', 'B', 'C', 'D' banao
+                    }
+
+                    quizQuestion.setMarks(q.get("marks") != null ? Integer.parseInt(q.get("marks").toString()) : 1);
+                    quizQuestionRepository.save(quizQuestion);
+                }
+            }
 
             Map<String, Object> response = new HashMap<>();
-            response.put("id", saved.getId());
-            response.put("title", saved.getTitle());
-            response.put("message", "Quiz created successfully");
+            response.put("id", savedQuiz.getId());
+            response.put("title", savedQuiz.getTitle());
+            response.put("message", "Quiz with questions created successfully");
             response.put("success", true);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            error.put("success", false);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
     // ============================================================
     // ✅ SUBMISSIONS
     // ============================================================
+
     @GetMapping("/submissions")
     public ResponseEntity<?> getAllSubmissions() {
         try {
@@ -519,10 +520,9 @@ public class TeacherController {
     }
 
     // ============================================================
-    // ✅ ATTENDANCE - TEACHER MARKS ATTENDANCE
+    // ✅ ATTENDANCE
     // ============================================================
 
-    // Get students for attendance marking
     @GetMapping("/attendance/class/{classId}/subject/{subjectId}")
     public ResponseEntity<?> getStudentsForAttendance(@PathVariable Long classId, @PathVariable Long subjectId) {
         try {
@@ -565,7 +565,6 @@ public class TeacherController {
         }
     }
 
-    // Mark attendance for students
     @PostMapping("/attendance/mark")
     public ResponseEntity<?> markAttendance(@RequestBody Map<String, Object> request) {
         try {
@@ -634,7 +633,6 @@ public class TeacherController {
         }
     }
 
-    // Get attendance report for a class and subject
     @GetMapping("/attendance/report/{classId}/{subjectId}")
     public ResponseEntity<?> getAttendanceReport(@PathVariable Long classId, @PathVariable Long subjectId) {
         try {
@@ -662,7 +660,6 @@ public class TeacherController {
         }
     }
 
-    // Get teacher's subjects and classes
     @GetMapping("/attendance/teacher/{teacherId}")
     public ResponseEntity<?> getTeacherAttendanceInfo(@PathVariable Long teacherId) {
         try {
@@ -671,7 +668,6 @@ public class TeacherController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Teacher not found"));
             }
 
-            // ✅ FIXED: Using correct method name
             List<Subject> subjects = subjectRepository.findSubjectsByTeacherId(teacherId);
             List<ClassEntity> classes = classEntityRepository.findByClassTeacherId(teacherId);
 
@@ -682,6 +678,125 @@ public class TeacherController {
             response.put("classes", classes != null ? classes : new ArrayList<>());
 
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ============================================================
+// ✅ NOTES ENDPOINTS - Add/Update in TeacherController
+// ============================================================
+
+    @GetMapping("/notes")
+    public ResponseEntity<?> getTeacherNotes(@RequestParam(required = false) Long teacherId) {
+        try {
+            System.out.println("📝 Getting notes for teacher ID: " + teacherId);
+
+            if (teacherId == null) {
+                // Try to get from session or use default
+                return ResponseEntity.badRequest().body(Map.of("error", "Teacher ID is required"));
+            }
+
+            List<Map<String, Object>> notes = noteService.getNotesForTeacher(teacherId);
+            System.out.println("✅ Found " + notes.size() + " notes");
+
+            return ResponseEntity.ok(notes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/notes/upload")
+    public ResponseEntity<?> uploadNote(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("teacherId") Long teacherId,
+            @RequestParam("classId") Long classId,
+            @RequestParam("subjectId") Long subjectId,
+            @RequestParam("title") String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "price", defaultValue = "0") Double price,
+            @RequestParam(value = "isFree", defaultValue = "true") Boolean isFree
+    ) {
+        try {
+            System.out.println("📤 Uploading note:");
+            System.out.println("  Title: " + title);
+            System.out.println("  Teacher ID: " + teacherId);
+            System.out.println("  Class ID: " + classId);
+            System.out.println("  Subject ID: " + subjectId);
+            System.out.println("  Price: " + price);
+            System.out.println("  Is Free: " + isFree);
+            System.out.println("  File: " + file.getOriginalFilename());
+            System.out.println("  File Size: " + file.getSize());
+            System.out.println("  Content Type: " + file.getContentType());
+
+            // Validate file
+            if (file.isEmpty()) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "File is required");
+                error.put("success", false);
+                return ResponseEntity.badRequest().body(error);
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.equals("application/pdf")) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Only PDF files are allowed. Received: " + contentType);
+                error.put("success", false);
+                return ResponseEntity.badRequest().body(error);
+            }
+
+            if (file.getSize() > 10 * 1024 * 1024) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "File size must be less than 10MB. Current: " + (file.getSize() / 1024 / 1024) + "MB");
+                error.put("success", false);
+                return ResponseEntity.badRequest().body(error);
+            }
+
+            Note note = noteService.uploadNote(
+                    file, teacherId, classId, subjectId,
+                    title, description, price, isFree
+            );
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", note.getId());
+            response.put("message", "Note uploaded successfully!");
+            response.put("success", true);
+            response.put("fileUrl", note.getFileUrl());
+            response.put("fileName", note.getFileName());
+
+            System.out.println("✅ Note uploaded with ID: " + note.getId());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            error.put("success", false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    @GetMapping("/notes/download/{fileName}")
+    public ResponseEntity<?> downloadNote(@PathVariable String fileName) {
+        try {
+            Path filePath = Paths.get("uploads/notes/" + fileName);
+            System.out.println("📥 Downloading file: " + filePath.toString());
+
+            if (!Files.exists(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            byte[] fileBytes = Files.readAllBytes(filePath);
+            String contentType = Files.probeContentType(filePath);
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", contentType != null ? contentType : "application/pdf")
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .body(fileBytes);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

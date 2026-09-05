@@ -508,9 +508,104 @@
             .top-bar { flex-direction: column; align-items: stretch; }
             .top-bar-right { justify-content: space-between; }
         }
+                :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-primary: #1a2332;
+            --text-secondary: #4a5a72;
+            --text-muted: #8899b0;
+            --brand-bg: linear-gradient(135deg, #1a3a5c, #2a6b8a);
+            --brand-text: white;
+            --sidebar-bg: #ffffff;
+            --menu-active: #1a3a5c;
+            --menu-active-text: white;
+            --menu-hover: #e8edf3;
+            --divider: #e8edf3;
+            --border-card: #e8edf3;
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.06);
+            --stat-bg: #f8fafc;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --input-border: #dce4ec;
+        }
+
+        /* ✅ DARK THEME */
+        [data-theme="dark"] {
+            --bg-body: #0d1a22;
+            --bg-card: #1a2a33;
+            --text-primary: #e8f0f5;
+            --text-secondary: #7ab8d4;
+            --text-muted: #8aaec0;
+            --brand-bg: linear-gradient(135deg, #1a4a5f, #2a7a9a);
+            --brand-text: white;
+            --sidebar-bg: #1a2a33;
+            --menu-active: #2a7a9a;
+            --menu-active-text: white;
+            --menu-hover: #2a3a45;
+            --divider: #2a3a45;
+            --border-card: #2a3a45;
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
+            --stat-bg: #1e3038;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --info: #7ab8d4;
+            --input-border: #2a3a45;
+        }
+
+        /* ✅ GRAY THEME */
+        [data-theme="gray"] {
+            --bg-body: #d5d5d5;
+            --bg-card: #e8e8e8;
+            --text-primary: #2a2a2a;
+            --text-secondary: #555555;
+            --text-muted: #777777;
+            --brand-bg: linear-gradient(135deg, #4a4a4a, #6a6a6a);
+            --brand-text: white;
+            --sidebar-bg: #e8e8e8;
+            --menu-active: #4a4a4a;
+            --menu-active-text: white;
+            --menu-hover: #d0d0d0;
+            --divider: #d0d0d0;
+            --border-card: #d0d0d0;
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.1);
+            --stat-bg: #d0d0d0;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #555555;
+            --input-border: #d0d0d0;
+        }
+                .theme-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--stat-bg);
+            padding: 0.3rem;
+            border-radius: 40px;
+            border: 1px solid var(--divider);
+        }
+        .theme-toggle button {
+            background: transparent;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            transition: all 0.25s ease;
+        }
+        .theme-toggle button.active {
+            background: var(--menu-active);
+            color: var(--menu-active-text);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .theme-toggle button:hover:not(.active) { background: var(--menu-hover); }
     </style>
 </head>
 <body>
+
 
 <aside class="sidebar" id="sidebar">
     <div class="brand">
@@ -543,6 +638,12 @@
 
 <div class="main-content">
     <div class="top-bar">
+        <!-- ✅ THEME TOGGLE -->
+        <div class="theme-toggle" id="themeToggle">
+            <button data-theme="light" class="active" title="Light Mode"><i class="fas fa-sun"></i></button>
+            <button data-theme="dark" title="Dark Mode"><i class="fas fa-moon"></i></button>
+            <button data-theme="gray" title="Gray Mode"><i class="fas fa-circle"></i></button>
+        </div>
         <button class="mobile-toggle" id="mobileToggle">
             <i class="fas fa-bars"></i>
         </button>
@@ -583,8 +684,8 @@
     // ============================================================
 
     (function() {
-        const API_BASE_URL = 'http://15.207.174.107:8083/api';
-       // const API_BASE_URL = 'http://localhost:8083/api';
+        //const API_BASE_URL = 'http://15.207.174.107:8083/api';
+         const API_BASE_URL = 'http://localhost:8083/api';
        // const API_BASE_URL = 'http://15.207.174.107:8083/api';
         let currentUser = null;
         let adminData = {};
@@ -760,10 +861,29 @@
             return classes;
         }
 
-        async function fetchAdminDashboard() {
+               async function fetchAdminDashboard() {
+            // ✅ Main dashboard data fetch karo
             const data = await apiCall('/admin/dashboard');
             if (data) adminData = data;
             else adminData = {};
+
+            // ✅ Attendance APIs fetch karo
+            const attendanceStats = await apiCall('/admin/attendance/stats');
+            const classAttendance = await apiCall('/admin/attendance/classes');
+
+            // ✅ AdminData mein attendance data store karo
+            adminData.attendancePercentage = attendanceStats?.overallPercentage || 0;
+            adminData.totalPresent = attendanceStats?.present || 0;
+            adminData.totalAbsent = attendanceStats?.absent || 0;
+
+            // ✅ Class-wise attendance list
+            adminData.attendanceList = (classAttendance || []).map(cls => ({
+                icon: 'fa-calendar-check',
+                title: `${cls.className || 'Class'} ${cls.section ? `- ${cls.section}` : ''}`,
+                desc: `${cls.totalStudents || 0} students · This week`,
+                count: `${Math.round(cls.percentage || 0)}%`
+            }));
+
             return adminData;
         }
 
@@ -1041,7 +1161,7 @@
             setActiveMenu('classes');
         }
 
-        function renderAttendance() {
+                   function renderAttendance() {
             pageTitle.textContent = 'Attendance';
             const d = adminData || {};
             contentArea.innerHTML = `
@@ -1061,11 +1181,7 @@
                     </div>
                 </div>
                 <div class="module-grid">
-                    ${(d.attendanceList || [
-                        { icon: 'fa-calendar-check', title: 'Class 10-A', desc: '28 students · This week', count: '92%' },
-                        { icon: 'fa-calendar-check', title: 'Class 10-B', desc: '20 students · This week', count: '88%' },
-                        { icon: 'fa-calendar-check', title: 'Class 9-A', desc: '25 students · This week', count: '93%' }
-                    ]).map(c => `
+                    ${(d.attendanceList || []).map(c => `
                         <div class="module-card">
                             <div class="icon"><i class="fas ${c.icon}"></i></div>
                             <div class="title">${c.title}</div>
@@ -1734,6 +1850,27 @@
         console.log(`📍 API: ${API_BASE_URL}`);
         console.log('✅ Real backend integration successful');
     })();
+
+            // ============================================================
+        // THEME TOGGLE
+        // ============================================================
+        const themeButtons = document.querySelectorAll('.theme-toggle button');
+        const htmlElement = document.documentElement;
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            themeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            localStorage.setItem('adminTheme', theme);
+        }
+
+        const savedAdminTheme = localStorage.getItem('adminTheme') || 'light';
+        setTheme(savedAdminTheme);
+
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+        });
 </script>
 </body>
 </html>

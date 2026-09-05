@@ -976,6 +976,11 @@
                 <i class="fas fa-star"></i> Results <span class="badge" id="resultsBadge">0</span>
             </button>
 
+            <!-- 🔥🔥🔥 NOTES TAB 🔥🔥🔥 -->
+            <button class="menu-item" data-module="notes">
+                <i class="fas fa-file-alt"></i> Notes <span class="badge" id="notesBadge">0</span>
+            </button>
+
             <div class="divider"></div>
 
             <button class="logout-btn" id="logoutBtn">
@@ -1044,13 +1049,27 @@
     </div>
 </div>
 
+
+<!-- ============================================================ -->
+<!-- QUIZ ATTEMPT MODAL -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="quizAttemptModal">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-pencil-alt"></i> Attempt Quiz</h2>
+            <button class="modal-close" onclick="closeModal('quizAttemptModal')">&times;</button>
+        </div>
+        <div id="quizAttemptContent"></div>
+    </div>
+</div>
+
+
 <script>
     (function() {
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        //const API_BASE_URL = 'http://localhost:8083/api';
-        const API_BASE_URL = 'http://15.207.174.107:8083/api';
+        const API_BASE_URL = 'http://localhost:8083/api';
 
         // ============================================================
         // STATE
@@ -1058,13 +1077,14 @@
         let currentUser = null;
         let studentData = null;
         let allCourses = [];
+        let allNotes = [];
         let allAssignments = [];
         let allQuizzes = [];
         let allStudents = [];
         let allTeachers = [];
         let allClasses = [];
         let allSubjects = [];
-        let allAttendance = []; // ✅ ADD THIS
+        let allAttendance = [];
 
         // ============================================================
         // DOM REFS
@@ -1098,7 +1118,7 @@
         // ============================================================
         // AUTH
         // ============================================================
-       function checkAuth() {
+        function checkAuth() {
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 try {
@@ -1108,8 +1128,6 @@
                     currentUser = null;
                 }
             }
-
-            // ❌ Hardcoded user hataya - Ab user ko localStorage se aayega
             currentUser = null;
             return true;
         }
@@ -1166,76 +1184,65 @@
         // ============================================================
         // FETCH ALL DATA
         // ============================================================
-      async function fetchAllData() {
-    try {
-        console.log('🔄 Fetching student data...');
+        async function fetchAllData() {
+            try {
+                console.log('🔄 Fetching student data...');
+                const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
+                if (studentProfile && !studentProfile.error) {
+                    studentData = studentProfile;
+                    updateProfile(studentProfile.user || currentUser);
+                }
+                const STUDENT_ID = studentData?.id;
+                const assignmentUrl = `/student/assignments/${STUDENT_ID}`;
+                const quizUrl = `/student/quizzes/${STUDENT_ID}`;
+                const resultsUrl = `/student/results/${STUDENT_ID}`;
+                const attendanceUrl = `/student/attendance/${STUDENT_ID}`;
+                const notesUrl = `/student/notes/${STUDENT_ID}`;
 
-        // ✅ Student ID ko currentUser se lo
-        const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
-        if (studentProfile && !studentProfile.error) {
-            studentData = studentProfile;
-            updateProfile(studentProfile.user || currentUser);
+                const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance, notes] = await Promise.all([
+                    fetchData(assignmentUrl),
+                    fetchData(quizUrl),
+                    fetchData('/admin/courses'),
+                    fetchData('/admin/students'),
+                    fetchData('/admin/teachers'),
+                    fetchData('/admin/classes'),
+                    fetchData('/admin/subjects'),
+                    fetchData(resultsUrl),
+                    fetchData(attendanceUrl),
+                    fetchData(notesUrl)
+                ]);
+
+                allAssignments = Array.isArray(assignments) ? assignments : [];
+                allQuizzes = Array.isArray(quizzes) ? quizzes : [];
+                allCourses = Array.isArray(courses) ? courses : [];
+                allStudents = Array.isArray(students) ? students : [];
+                allTeachers = Array.isArray(teachers) ? teachers : [];
+                allClasses = Array.isArray(classes) ? classes : [];
+                allSubjects = Array.isArray(subjects) ? subjects : [];
+                allAttendance = Array.isArray(attendance) ? attendance : [];
+                allNotes = Array.isArray(notes) ? notes : [];
+
+                if (results && results.performance) {
+                    document.getElementById('resultsBadge').textContent = results.performance.gradedCount || 0;
+                }
+
+                document.getElementById('coursesBadge').textContent = allCourses.length || 0;
+                document.getElementById('assignmentsBadge').textContent = allAssignments.length || 0;
+                document.getElementById('quizzesBadge').textContent = allQuizzes.length || 0;
+                document.getElementById('notesBadge').textContent = allNotes.length || 0;
+
+                const totalAttendanceDays = allAttendance.length;
+                const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
+                const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays * 100.0) / totalAttendanceDays) : 0;
+                document.getElementById('attendanceBadge').textContent = attendancePercentage + '%';
+
+                return true;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return false;
+            }
         }
 
-        // ✅ Yahi se Student ID milega (Backend se)
-        const STUDENT_ID = studentData?.id;
-
-        const assignmentUrl = `/student/assignments/${STUDENT_ID}`;
-        const quizUrl = `/student/quizzes/${STUDENT_ID}`;
-        const resultsUrl = `/student/results/${STUDENT_ID}`;
-        const attendanceUrl = `/student/attendance/${STUDENT_ID}`; // ✅ ADD THIS
-
-        console.log('📤 Fetching assignments from:', assignmentUrl);
-        console.log('📤 Fetching quizzes from:', quizUrl);
-        console.log('📤 Fetching results from:', resultsUrl);
-        console.log('📤 Fetching attendance from:', attendanceUrl); // ✅ ADD THIS
-
-        const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance] = await Promise.all([
-            fetchData(assignmentUrl),
-            fetchData(quizUrl),
-            fetchData('/admin/courses'),
-            fetchData('/admin/students'),
-            fetchData('/admin/teachers'),
-            fetchData('/admin/classes'),
-            fetchData('/admin/subjects'),
-            fetchData(resultsUrl),
-            fetchData(attendanceUrl) // ✅ ADD THIS
-        ]);
-
-        allAssignments = Array.isArray(assignments) ? assignments : [];
-        allQuizzes = Array.isArray(quizzes) ? quizzes : [];
-        allCourses = Array.isArray(courses) ? courses : [];
-        allStudents = Array.isArray(students) ? students : [];
-        allTeachers = Array.isArray(teachers) ? teachers : [];
-        allClasses = Array.isArray(classes) ? classes : [];
-        allSubjects = Array.isArray(subjects) ? subjects : [];
-        allAttendance = Array.isArray(attendance) ? attendance : []; // ✅ ADD THIS
-
-        // Update results badge
-        if (results && results.performance) {
-            document.getElementById('resultsBadge').textContent = results.performance.gradedCount || 0;
-        }
-
-        console.log('✅ Assignments loaded:', allAssignments.length);
-        console.log('✅ Quizzes loaded:', allQuizzes.length);
-        console.log('✅ Courses loaded:', allCourses.length);
-        console.log('✅ Attendance loaded:', allAttendance.length); // ✅ ADD THIS
-
-        document.getElementById('coursesBadge').textContent = allCourses.length || 0;
-        document.getElementById('assignmentsBadge').textContent = allAssignments.length || 0;
-        document.getElementById('quizzesBadge').textContent = allQuizzes.length || 0;
-                // ✅ Actual Attendance Percentage Calculate Karo
-        const totalAttendanceDays = allAttendance.length;
-        const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
-        const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays * 100.0) / totalAttendanceDays) : 0;
-        document.getElementById('attendanceBadge').textContent = attendancePercentage + '%'; // ✅ Actual Data
-
-        return true;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        return false;
-    }
-}
         // ============================================================
         // HELPERS
         // ============================================================
@@ -1274,14 +1281,11 @@
         // ============================================================
         // RENDER FUNCTIONS
         // ============================================================
-             function renderDashboard() {
+        function renderDashboard() {
             const totalCourses = allCourses.length || 0;
-            const totalStudents = allStudents.length || 0;
-            const totalTeachers = allTeachers.length || 0;
             const totalAssignments = allAssignments.length || 0;
             const totalQuizzes = allQuizzes.length || 0;
 
-            // ✅ Actual Attendance Percentage Calculate Karo
             const totalAttendanceDays = allAttendance.length;
             const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
             const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays * 100.0) / totalAttendanceDays) : 0;
@@ -1290,7 +1294,7 @@
                 { label: 'Courses', value: totalCourses, icon: 'fa-book' },
                 { label: 'Assignments', value: totalAssignments, icon: 'fa-tasks' },
                 { label: 'Quizzes', value: totalQuizzes, icon: 'fa-pencil-alt' },
-                { label: 'Attendance', value: attendancePercentage + '%', icon: 'fa-calendar-check' } // ✅ Actual Data
+                { label: 'Attendance', value: attendancePercentage + '%', icon: 'fa-calendar-check' }
             ];
 
             const statsHTML = stats.map(stat => `
@@ -1309,9 +1313,6 @@
                         <div class="title">${a.title || 'Assignment'}</div>
                         <div class="desc">${a.subjectName || ''} · ${a.className || ''}</div>
                         <div class="count">Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</div>
-                        <span class="item-status ${new Date(a.dueDate) < new Date() ? 'late' : 'pending'}" style="margin-top:8px;display:inline-block;">
-                            ${new Date(a.dueDate) < new Date() ? 'Overdue' : 'Pending'}
-                        </span>
                     </div>
                 `).join('');
             } else {
@@ -1358,7 +1359,7 @@
             }, 100);
         }
 
-              function renderCharts() {
+        function renderCharts() {
             const creditsCtx = document.getElementById('creditsChart');
             if (creditsCtx && allCourses.length > 0) {
                 new Chart(creditsCtx, {
@@ -1379,7 +1380,6 @@
 
             const assignmentCtx = document.getElementById('assignmentChart');
             if (assignmentCtx && allAssignments.length > 0) {
-                // ✅ Actual Data Se Calculate Karo
                 const now = new Date();
                 const pending = allAssignments.filter(a => !a.submitted && new Date(a.dueDate) >= now).length;
                 const overdue = allAssignments.filter(a => !a.submitted && new Date(a.dueDate) < now).length;
@@ -1400,9 +1400,6 @@
             }
         }
 
-        // ============================================================
-        // RENDER ASSIGNMENTS
-        // ============================================================
         function renderAssignments() {
             const total = allAssignments.length || 0;
             const pending = allAssignments.filter(a => new Date(a.dueDate) > new Date()).length || 0;
@@ -1426,7 +1423,7 @@
                 listHTML = allAssignments.map(a => {
                     const isOverdue = new Date(a.dueDate) < new Date();
                     const isSubmitted = a.submitted || false;
-                    const studentId = studentData?.id; // ✅ Fallback 1 nahi
+                    const studentId = studentData?.id;
 
                     return `
                         <div class="item-card">
@@ -1472,9 +1469,7 @@
             setActiveMenu('assignments');
         }
 
-        // ============================================================
         // SUBMIT ASSIGNMENT FUNCTIONS
-        // ============================================================
         window.openSubmitModal = function(assignmentId, assignmentTitle, studentId) {
             console.log('📝 Opening submit modal for assignment:', assignmentId, assignmentTitle);
 
@@ -1486,16 +1481,13 @@
             document.getElementById('submitAssignmentModal').classList.add('show');
         };
 
-                   window.submitAssignment = async function(event) {
+        window.submitAssignment = async function(event) {
             event.preventDefault();
 
             const assignmentId = document.getElementById('submitAssignmentId').value;
             const fileUrl = document.getElementById('submitFileUrl').value.trim();
             const comments = document.getElementById('submitComments').value.trim();
-
-            // ✅ Student ID ko studentData?.id se lo (student table ka id, userId nahi)
             const studentId = studentData?.id;
-
             const errorEl = document.getElementById('submitError');
 
             if (!fileUrl) {
@@ -1514,8 +1506,6 @@
                     fileUrl: fileUrl,
                     comments: comments
                 };
-
-                console.log('📤 Submitting assignment:', data);
 
                 const result = await postData(`/student/assignments/${assignmentId}/submit`, data);
 
@@ -1538,18 +1528,20 @@
                 btn.innerHTML = '<i class="fas fa-upload"></i> Submit Assignment';
             }
         };
-          window.closeModal = function(id) {
+
+        window.closeModal = function(id) {
             const modal = document.getElementById(id);
             if (modal) {
                 modal.classList.remove('show');
             }
         };
+
         // ============================================================
-        // RENDER QUIZZES
+        // RENDER QUIZZES (Cleaned & Fixed)
         // ============================================================
         function renderQuizzes() {
-            const upcoming = allQuizzes.filter(q => new Date(q.quizDate) > new Date()).length;
-            const completed = allQuizzes.filter(q => new Date(q.quizDate) < new Date()).length;
+            const upcoming = allQuizzes.filter(q => q.status === 'UPCOMING' || (!q.attempted && new Date(q.quizDate) > new Date())).length;
+            const completed = allQuizzes.filter(q => q.status === 'COMPLETED' || q.attempted).length;
             const total = allQuizzes.length;
 
             const stats = [
@@ -1568,9 +1560,12 @@
             let listHTML = '';
             if (allQuizzes.length > 0) {
                 listHTML = allQuizzes.map(q => {
-                    const isCompleted = new Date(q.quizDate) < new Date();
+                    const isAttempted = q.attempted || q.status === 'COMPLETED';
+                    const isUpcoming = !isAttempted;
+                    const questions = q.questions || [];
+
                     return `
-                        <div class="item-card">
+                        <div class="item-card" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
                             <div class="item-info">
                                 <div class="item-title">${q.title || 'Quiz'}</div>
                                 <div class="item-meta">
@@ -1581,9 +1576,16 @@
                                     <span><i class="fas fa-star"></i> ${q.maxMarks || 100}</span>
                                 </div>
                             </div>
-                            <span class="item-status ${isCompleted ? 'graded' : 'pending'}">
-                                ${isCompleted ? 'Completed' : 'Upcoming'}
-                            </span>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <span class="item-status ${isAttempted ? 'graded' : 'pending'}">
+                                    ${isAttempted ? '✅ Attempted' : '📝 Upcoming'}
+                                </span>
+                                ${isUpcoming && questions.length > 0 ? `
+                                    <button class="btn-primary" onclick="openQuizModal(${q.id})" style="padding:0.3rem 0.8rem; font-size:0.75rem; white-space:nowrap;">
+                                        <i class="fas fa-pencil-alt"></i> Attempt Quiz
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1606,6 +1608,105 @@
             contentArea.innerHTML = html;
             setActiveMenu('quizzes');
         }
+
+        // ============================================================
+        // ✅ FIXED QUIZ ATTEMPT & SUBMIT (IIFE ke andar)
+        // ============================================================
+        window.openQuizModal = function(quizId) {
+            const modal = document.getElementById('quizAttemptModal');
+            const content = document.getElementById('quizAttemptContent');
+
+            // ✅ Quiz ko allQuizzes array se dhoondo (JSON string se problem nahi hogi)
+            const quiz = allQuizzes.find(q => q.id === quizId);
+            if (!quiz) {
+                showToast('Quiz not found!', 'error');
+                return;
+            }
+
+            const questions = quiz.questions || [];
+
+            content.innerHTML = `
+                <div class="form-group">
+                    <label>Quiz: ${quiz.title || 'Quiz'}</label>
+                    ${questions.map((q, index) => `
+                        <div style="border:1px solid var(--border-card); padding:1rem; border-radius:12px; margin-bottom:1rem;">
+                            <p style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">
+                                Q${index+1}. ${q.question}
+                            </p>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="radio" name="q_${q.id}" value="A" /> ${q.optionA}
+                                </label>
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="radio" name="q_${q.id}" value="B" /> ${q.optionB}
+                                </label>
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="radio" name="q_${q.id}" value="C" /> ${q.optionC}
+                                </label>
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="radio" name="q_${q.id}" value="D" /> ${q.optionD}
+                                </label>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary-modal" onclick="closeModal('quizAttemptModal')">Cancel</button>
+                    <button type="button" class="btn-primary-modal" onclick="submitQuizAttempt(${quizId})">
+                        <i class="fas fa-check"></i> Submit Quiz
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('show');
+        };
+
+                    window.submitQuizAttempt = async function(quizId) {
+            try {
+                const answers = [];
+                const questionElements = document.querySelectorAll('#quizAttemptContent div[style*="border"]');
+
+                questionElements.forEach(qDiv => {
+                    const radio = qDiv.querySelector('input[type="radio"]:checked');
+                    if (radio) {
+                        answers.push({
+                            questionId: parseInt(radio.name.split('_')[1]),
+                            selectedAnswer: radio.value
+                        });
+                    }
+                });
+
+                if (answers.length === 0) {
+                    showToast('Please select at least one answer.', 'warning');
+                    return;
+                }
+
+                // 🔥 Debug: Console me answers check karo
+                console.log('📤 Submitting answers:', answers);
+
+                const data = {
+                    studentId: studentData?.id,
+                    answers: answers,
+                    marksObtained: 0 // Backend isko khud calculate karega
+                };
+
+                const result = await postData(`/student/quizzes/${quizId}/submit`, data);
+
+                if (result && result.success !== false) {
+                    // ✅ Result show karo
+                    console.log('✅ Result from backend:', result);
+                    showToast(`Quiz submitted! Marks: ${result.marksObtained}, Percentage: ${result.percentage}%, Grade: ${result.grade}`, 'success');
+
+                    closeModal('quizAttemptModal');
+                    await fetchAllData();
+                    renderQuizzes();
+                } else {
+                    throw new Error(result?.error || 'Failed to submit quiz');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
 
         // ============================================================
         // RENDER COURSES
@@ -1664,12 +1765,10 @@
         // ============================================================
         function renderAttendance() {
             const attendanceList = allAttendance || [];
-
             const totalDays = attendanceList.length;
             const presentDays = attendanceList.filter(a => a.status === 'PRESENT').length;
             const absentDays = attendanceList.filter(a => a.status === 'ABSENT').length;
             const lateDays = attendanceList.filter(a => a.status === 'LATE').length;
-
             const percentage = totalDays > 0 ? Math.round((presentDays * 100.0) / totalDays) : 0;
 
             const stats = [
@@ -1720,162 +1819,654 @@
 
             contentArea.innerHTML = html;
             setActiveMenu('attendance');
-            // ✅ Sidebar Badge Ko Actual Percentage Se Update Karo
             document.getElementById('attendanceBadge').textContent = percentage + '%';
         }
 
         // ============================================================
-        // 🔥🔥🔥 RENDER RESULTS - STUDENT MARKS 🔥🔥🔥
+        // RENDER RESULTS
         // ============================================================
         async function renderResults() {
-            const studentId = studentData?.id || 1;
+            const studentId = studentData?.id;
 
-            try {
-                const results = await fetchData(`/student/results/${studentId}`);
-
-                if (!results || !results.performance) {
-                    contentArea.innerHTML = `
-                        <div class="page-title"><i class="fas fa-star" style="color:#f39c12;"></i> My Results</div>
-                        <div class="page-sub"><i class="fas fa-arrow-right"></i> Your academic performance</div>
-                        <div class="empty-state">
-                            <i class="fas fa-star" style="font-size:3rem; color:#f39c12;"></i>
-                            <p style="margin-top:1rem;">No graded assignments yet.</p>
-                            <p style="font-size:0.8rem; color:var(--text-muted);">Complete your assignments and wait for teacher's feedback!</p>
-                        </div>
-                    `;
-                    setActiveMenu('results');
-                    return;
-                }
-
-                const perf = results.performance;
-                const marks = results.subjectWiseMarks || [];
-
-                const stats = [
-                    { label: 'Total Assignments', value: perf.totalAssignments, icon: 'fa-tasks' },
-                    { label: 'Graded', value: perf.gradedCount, icon: 'fa-check-circle' },
-                    { label: 'Pending', value: perf.pendingCount, icon: 'fa-clock' },
-                    { label: 'Average Marks', value: perf.averageMarks + '/100', icon: 'fa-star' }
-                ];
-
-                const statsHTML = stats.map(stat => `
-                    <div class="stat-card">
-                        <div class="stat-number">${stat.value}</div>
-                        <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
-                    </div>
-                `).join('');
-
-                const grade = perf.grade || 'N/A';
-                const gradeColor = getGradeColor(grade);
-                const gradeClass = getGradeClass(grade);
-                const percentage = perf.overallPercentage || 0;
-
-                const gradeCard = `
-                    <div class="grade-card ${gradeClass}" style="border-color: ${gradeColor};">
-                        <div class="grade-letter">${grade}</div>
-                        <div class="grade-label"><i class="fas fa-star" style="color: ${gradeColor};"></i> Overall Grade</div>
-                        <div class="grade-percentage">${percentage}%</div>
-                    </div>
-                `;
-
-                const progressCard = `
-                    <div class="stat-card" style="text-align: center;">
-                        <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary);">${perf.gradedCount}/${perf.totalAssignments}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);"><i class="fas fa-check-circle" style="color:#27ae60;"></i> Assignments Graded</div>
-                        <div style="margin-top: 8px;">
-                            <div class="progress-bar-container" style="height: 6px;">
-                                <div class="progress-bar-fill" style="width: ${perf.totalAssignments > 0 ? (perf.gradedCount/perf.totalAssignments)*100 : 0}%; background: ${gradeColor};"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                const progressBar = `
-                    <div style="background: var(--stat-bg); border-radius: 16px; padding: 1rem 1.5rem; margin-top: 0.5rem; border: 1px solid var(--stat-border);">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="font-weight: 600; color: var(--text-primary);">Overall Performance</span>
-                            <span style="font-weight: 700; color: ${gradeColor};">${percentage}%</span>
-                        </div>
-                        <div class="progress-bar-container" style="height: 12px; background: rgba(0,0,0,0.1); border-radius: 50px; overflow: hidden;">
-                            <div class="progress-bar-fill" style="width: ${percentage}%; height: 100%; background: ${gradeColor}; border-radius: 50px;"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
-                            <span style="font-size: 0.65rem; color: var(--text-muted);">0%</span>
-                            <span style="font-size: 0.65rem; color: var(--text-muted);">100%</span>
-                        </div>
-                    </div>
-                `;
-
-                let marksHTML = '';
-                if (marks.length > 0) {
-                    marksHTML = marks.map(m => {
-                        const percentageVal = Math.round(m.percentage * 10) / 10;
-                        let color = '#27ae60';
-                        if (percentageVal >= 80) color = '#27ae60';
-                        else if (percentageVal >= 60) color = '#f39c12';
-                        else if (percentageVal >= 40) color = '#e67e22';
-                        else color = '#e74c3c';
-
-                        return `
-                            <div class="item-card">
-                                <div class="item-info">
-                                    <div class="item-title">${m.assignmentTitle || 'Assignment'}</div>
-                                    <div class="item-meta">
-                                        <span><i class="fas fa-book"></i> ${m.subjectName || 'N/A'}</span>
-                                        <span><i class="fas fa-calendar"></i> ${m.submissionDate ? new Date(m.submissionDate).toLocaleDateString() : 'N/A'}</span>
-                                        ${m.feedback ? `<span><i class="fas fa-comment"></i> "${m.feedback}"</span>` : ''}
-                                    </div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 1.2rem; font-weight: 700; color: ${color};">${m.marksObtained}/${m.maxMarks}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${percentageVal}%</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    marksHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-star" style="font-size:2rem; color:#f39c12;"></i>
-                            <p>No graded assignments yet.</p>
-                        </div>
-                    `;
-                }
-
-                const html = `
-                    <div class="page-title"><i class="fas fa-star" style="color:#f39c12;"></i> My Results</div>
-                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Your academic performance summary</div>
-                    <div class="stats-grid">${statsHTML}</div>
-                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
-                        ${gradeCard}
-                        ${progressCard}
-                    </div>
-                    ${progressBar}
-                    <h3 style="color: var(--text-primary); font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.8rem;">
-                        <i class="fas fa-list"></i> Subject-wise Marks
-                    </h3>
-                    <div class="item-list">${marksHTML}</div>
-                `;
-
-                contentArea.innerHTML = html;
-                setActiveMenu('results');
-
-                document.getElementById('resultsBadge').textContent = perf.gradedCount || 0;
-
-            } catch (error) {
-                console.error('Error loading results:', error);
+            if (!studentId) {
                 contentArea.innerHTML = `
-                    <div class="page-title"><i class="fas fa-star" style="color:#f39c12;"></i> My Results</div>
-                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Your academic performance</div>
+                    <div class="page-title">
+                        <i class="fas fa-star" style="color:#f39c12;"></i> My Results
+                    </div>
+                    <div class="page-sub">
+                        <i class="fas fa-arrow-right"></i> Your academic performance
+                    </div>
                     <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
-                        <p style="margin-top:1rem;">Could not load results.</p>
-                        <p style="font-size:0.8rem; color:var(--text-muted);">Please try again later.</p>
-                        <button class="btn-primary" onclick="renderResults()" style="margin-top:1rem;">
-                            <i class="fas fa-sync"></i> Retry
+                        <i class="fas fa-user-slash" style="font-size:3rem; color:#e74c3c;"></i>
+                        <p style="margin-top:1rem;">Student information is not available.</p>
+                        <button class="btn-primary" onclick="initDashboard()" style="margin-top:1rem;">
+                            <i class="fas fa-sync-alt"></i> Retry
                         </button>
                     </div>
                 `;
                 setActiveMenu('results');
+                return;
+            }
+
+            try {
+                // --------------------------------------------------------
+                // 1. Fetch assignment results
+                // --------------------------------------------------------
+                const resultsResponse = await fetchData(`/student/results/${studentId}`);
+
+                // --------------------------------------------------------
+                // 2. Fetch quiz results
+                // --------------------------------------------------------
+                const quizResultsResponse = await fetchData(`/student/quiz-results/${studentId}`);
+
+                // Some APIs return a direct array, while others return
+                // { data: [...] }. Support both without changing backend.
+                const quizResults = Array.isArray(quizResultsResponse)
+                    ? quizResultsResponse
+                    : (Array.isArray(quizResultsResponse?.data)
+                        ? quizResultsResponse.data
+                        : []);
+
+                const results = resultsResponse?.data && !resultsResponse?.performance
+                    ? resultsResponse.data
+                    : resultsResponse;
+
+                // --------------------------------------------------------
+                // 3. QUIZ OVERALL PERFORMANCE
+                //    Overall percentage = total obtained / total marks * 100
+                //    This is weighted and is more accurate than averaging
+                //    individual quiz percentages.
+                // --------------------------------------------------------
+                const totalQuizCount = Array.isArray(allQuizzes)
+                    ? allQuizzes.length
+                    : 0;
+
+                const attemptedQuizCount = quizResults.length;
+
+                // One quiz result is treated as one attempted quiz.
+                const pendingQuizCount = Math.max(
+                    totalQuizCount - attemptedQuizCount,
+                    0
+                );
+
+                let quizTotalObtained = 0;
+                let quizTotalMarks = 0;
+
+                quizResults.forEach(qr => {
+                    const obtained = Number(qr?.marksObtained);
+                    const total = Number(qr?.totalMarks);
+
+                    if (Number.isFinite(obtained)) {
+                        quizTotalObtained += obtained;
+                    }
+
+                    if (Number.isFinite(total) && total > 0) {
+                        quizTotalMarks += total;
+                    }
+                });
+
+                const quizOverallPercentage = quizTotalMarks > 0
+                    ? Math.round(
+                        (quizTotalObtained / quizTotalMarks) * 10000
+                    ) / 100
+                    : 0;
+
+                const getOverallGrade = (percentage) => {
+                    if (percentage >= 90) return 'A+';
+                    if (percentage >= 80) return 'A';
+                    if (percentage >= 70) return 'B';
+                    if (percentage >= 60) return 'C';
+                    if (percentage >= 50) return 'D';
+                    if (percentage >= 40) return 'E';
+                    return 'F';
+                };
+
+                const quizGrade = quizTotalMarks > 0
+                    ? getOverallGrade(quizOverallPercentage)
+                    : 'N/A';
+
+                // --------------------------------------------------------
+                // 4. Check whether any result exists
+                // --------------------------------------------------------
+                const hasAssignmentResults = Boolean(
+                    results?.performance
+                );
+
+                const hasQuizResults = quizResults.length > 0;
+
+                if (!hasAssignmentResults && !hasQuizResults) {
+                    contentArea.innerHTML = `
+                        <div class="page-title">
+                            <i class="fas fa-star" style="color:#f39c12;"></i> My Results
+                        </div>
+                        <div class="page-sub">
+                            <i class="fas fa-arrow-right"></i> Your academic performance
+                        </div>
+
+                        <div class="empty-state">
+                            <i class="fas fa-star"
+                               style="font-size:3rem; color:#f39c12;"></i>
+                            <p style="margin-top:1rem;">
+                                No results available yet.
+                            </p>
+                            <p class="text-muted" style="margin-top:0.4rem;">
+                                Your assignment and quiz results will appear here
+                                after they are evaluated.
+                            </p>
+                        </div>
+                    `;
+
+                    setActiveMenu('results');
+                    document.getElementById('resultsBadge').textContent = '0';
+                    return;
+                }
+
+                // --------------------------------------------------------
+                // 5. Page heading
+                // --------------------------------------------------------
+                let html = `
+                    <div class="page-title">
+                        <i class="fas fa-star" style="color:#f39c12;"></i>
+                        My Results
+                    </div>
+                    <div class="page-sub">
+                        <i class="fas fa-arrow-right"></i>
+                        Your academic performance
+                    </div>
+                `;
+
+                // --------------------------------------------------------
+                // 6. ASSIGNMENT RESULTS
+                // --------------------------------------------------------
+                if (hasAssignmentResults) {
+                    const perf = results.performance || {};
+                    const marks = Array.isArray(results.subjectWiseMarks)
+                        ? results.subjectWiseMarks
+                        : [];
+
+                    const totalAssignments = Number(perf.totalAssignments) || 0;
+                    const gradedAssignments = Number(perf.gradedCount) || 0;
+                    const pendingAssignments = Number(perf.pendingCount) || 0;
+                    const averageAssignmentMarks =
+                        Number(perf.averageMarks) || 0;
+
+                    const assignmentStats = [
+                        {
+                            label: 'Total Assignments',
+                            value: totalAssignments,
+                            icon: 'fa-tasks'
+                        },
+                        {
+                            label: 'Graded',
+                            value: gradedAssignments,
+                            icon: 'fa-check-circle'
+                        },
+                        {
+                            label: 'Pending',
+                            value: pendingAssignments,
+                            icon: 'fa-clock'
+                        },
+                        {
+                            label: 'Average Marks',
+                            value: `${averageAssignmentMarks}/100`,
+                            icon: 'fa-star'
+                        }
+                    ];
+
+                    const assignmentStatsHTML = assignmentStats.map(stat => `
+                        <div class="stat-card">
+                            <div class="stat-number">${stat.value}</div>
+                            <div class="stat-label">
+                                <i class="fas ${stat.icon}"></i>
+                                ${stat.label}
+                            </div>
+                        </div>
+                    `).join('');
+
+                    const assignmentGrade = perf.grade || 'N/A';
+                    const assignmentPercentage =
+                        Number(perf.overallPercentage) || 0;
+
+                    html += `
+                        <h3 style="color:var(--text-primary);
+                                   font-size:1rem;
+                                   margin-top:0.5rem;
+                                   margin-bottom:0.8rem;">
+                            <i class="fas fa-tasks"></i>
+                            Assignment Results
+                        </h3>
+
+                        <div class="stats-grid">
+                            ${assignmentStatsHTML}
+                        </div>
+
+                        <div class="stats-grid"
+                             style="grid-template-columns:
+                                    repeat(auto-fit, minmax(150px, 1fr));">
+
+                            <div class="grade-card ${getGradeClass(assignmentGrade)}"
+                                 style="border-color:
+                                        ${getGradeColor(assignmentGrade)};">
+
+                                <div class="grade-letter">
+                                    ${assignmentGrade}
+                                </div>
+
+                                <div class="grade-label">
+                                    <i class="fas fa-star"
+                                       style="color:
+                                              ${getGradeColor(assignmentGrade)};">
+                                    </i>
+                                    Overall Assignment Grade
+                                </div>
+
+                                <div class="grade-percentage">
+                                    ${assignmentPercentage}%
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // ----------------------------------------------------
+                    // Individual assignment marks
+                    // ----------------------------------------------------
+                    if (marks.length > 0) {
+                        html += `
+                            <h3 style="color:var(--text-primary);
+                                       font-size:1rem;
+                                       margin-top:1.5rem;
+                                       margin-bottom:0.8rem;">
+                                <i class="fas fa-list"></i>
+                                Assignment Marks
+                            </h3>
+
+                            <div class="item-list">
+                        `;
+
+                        html += marks.map(m => {
+                            const obtained = Number(m?.marksObtained) || 0;
+                            const maxMarks = Number(m?.maxMarks) || 0;
+
+                            let percentageVal = Number(m?.percentage);
+
+                            if (!Number.isFinite(percentageVal) &&
+                                maxMarks > 0) {
+                                percentageVal =
+                                    (obtained / maxMarks) * 100;
+                            }
+
+                            if (!Number.isFinite(percentageVal)) {
+                                percentageVal = 0;
+                            }
+
+                            percentageVal =
+                                Math.round(percentageVal * 10) / 10;
+
+                            const grade =
+                                m?.grade || getOverallGrade(percentageVal);
+
+                            const color =
+                                getGradeColor(grade);
+
+                            return `
+                                <div class="item-card">
+                                    <div class="item-info">
+                                        <div class="item-title">
+                                            ${m?.assignmentTitle || 'Assignment'}
+                                        </div>
+
+                                        <div class="item-meta">
+                                            <span>
+                                                <i class="fas fa-book"></i>
+                                                ${m?.subjectName || 'N/A'}
+                                            </span>
+
+                                            <span>
+                                                <i class="fas fa-calendar"></i>
+                                                ${m?.submissionDate
+                                                    ? new Date(
+                                                        m.submissionDate
+                                                      ).toLocaleDateString()
+                                                    : 'N/A'}
+                                            </span>
+
+                                            <span>
+                                                <i class="fas fa-award"></i>
+                                                Grade: ${grade}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div style="text-align:right;">
+                                        <div style="
+                                            font-size:1.2rem;
+                                            font-weight:700;
+                                            color:${color};">
+                                            ${obtained}/${maxMarks}
+                                        </div>
+
+                                        <div style="
+                                            font-size:0.75rem;
+                                            color:var(--text-secondary);">
+                                            ${percentageVal}%
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        html += `</div>`;
+                    }
+                }
+
+                // --------------------------------------------------------
+                // 7. QUIZ OVERALL RESULTS
+                // --------------------------------------------------------
+                html += `
+                    <h3 style="color:var(--text-primary);
+                               font-size:1rem;
+                               margin-top:2rem;
+                               margin-bottom:0.8rem;">
+                        <i class="fas fa-pencil-alt"></i>
+                        Quiz Overall Results
+                    </h3>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">
+                                ${totalQuizCount}
+                            </div>
+                            <div class="stat-label">
+                                <i class="fas fa-pencil-alt"></i>
+                                Total Quizzes
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">
+                                ${attemptedQuizCount}
+                            </div>
+                            <div class="stat-label">
+                                <i class="fas fa-check-circle"></i>
+                                Attempted
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">
+                                ${pendingQuizCount}
+                            </div>
+                            <div class="stat-label">
+                                <i class="fas fa-clock"></i>
+                                Pending
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">
+                                ${quizOverallPercentage}/100
+                            </div>
+                            <div class="stat-label">
+                                <i class="fas fa-chart-line"></i>
+                                Average Marks
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid"
+                         style="grid-template-columns:
+                                repeat(auto-fit, minmax(150px, 1fr));">
+
+                        <div class="grade-card ${getGradeClass(quizGrade)}"
+                             style="border-color:
+                                    ${getGradeColor(quizGrade)};">
+
+                            <div class="grade-letter">
+                                ${quizGrade}
+                            </div>
+
+                            <div class="grade-label">
+                                <i class="fas fa-star"
+                                   style="color:
+                                          ${getGradeColor(quizGrade)};">
+                                </i>
+                                Overall Quiz Grade
+                            </div>
+
+                            <div class="grade-percentage">
+                                ${quizOverallPercentage}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // --------------------------------------------------------
+                // 8. INDIVIDUAL QUIZ RESULTS
+                // --------------------------------------------------------
+                if (hasQuizResults) {
+                    html += `
+                        <h3 style="color:var(--text-primary);
+                                   font-size:1rem;
+                                   margin-top:1.5rem;
+                                   margin-bottom:0.8rem;">
+                            <i class="fas fa-list"></i>
+                            Quiz Marks
+                        </h3>
+
+                        <div class="item-list">
+                    `;
+
+                    html += quizResults.map(qr => {
+                        const obtained =
+                            Number(qr?.marksObtained) || 0;
+
+                        const total =
+                            Number(qr?.totalMarks) || 0;
+
+                        let percentageVal =
+                            Number(qr?.percentage);
+
+                        if (!Number.isFinite(percentageVal) &&
+                            total > 0) {
+                            percentageVal =
+                                (obtained / total) * 100;
+                        }
+
+                        if (!Number.isFinite(percentageVal)) {
+                            percentageVal = 0;
+                        }
+
+                        percentageVal =
+                            Math.round(percentageVal * 10) / 10;
+
+                        const grade =
+                            qr?.grade ||
+                            getOverallGrade(percentageVal);
+
+                        const color =
+                            getGradeColor(grade);
+
+                        return `
+                            <div class="item-card">
+                                <div class="item-info">
+                                    <div class="item-title">
+                                        ${qr?.quizTitle || 'Quiz'}
+                                    </div>
+
+                                    <div class="item-meta">
+                                        <span>
+                                            <i class="fas fa-book"></i>
+                                            ${qr?.subjectName || 'N/A'}
+                                        </span>
+
+                                        <span>
+                                            <i class="fas fa-calendar"></i>
+                                            ${qr?.attemptDate
+                                                ? new Date(
+                                                    qr.attemptDate
+                                                  ).toLocaleDateString()
+                                                : 'N/A'}
+                                        </span>
+
+                                        <span>
+                                            <i class="fas fa-award"></i>
+                                            Grade: ${grade}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style="text-align:right;">
+                                    <div style="
+                                        font-size:1.2rem;
+                                        font-weight:700;
+                                        color:${color};">
+                                        ${obtained}/${total}
+                                    </div>
+
+                                    <div style="
+                                        font-size:0.75rem;
+                                        color:var(--text-secondary);">
+                                        ${percentageVal}%
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    html += `</div>`;
+                } else {
+                    html += `
+                        <div class="empty-state"
+                             style="padding:2rem 1rem;">
+                            <i class="fas fa-pencil-alt"
+                               style="font-size:2.5rem;
+                                      color:var(--text-muted);">
+                            </i>
+                            <p style="margin-top:0.8rem;">
+                                No quiz has been attempted yet.
+                            </p>
+                        </div>
+                    `;
+                }
+
+                // --------------------------------------------------------
+                // 9. Render page
+                // --------------------------------------------------------
+                contentArea.innerHTML = html;
+                setActiveMenu('results');
+
+                // Badge = graded assignments + attempted quizzes
+                const gradedAssignmentCount =
+                    Number(results?.performance?.gradedCount) || 0;
+
+                document.getElementById('resultsBadge').textContent =
+                    gradedAssignmentCount + attemptedQuizCount;
+
+            } catch (error) {
+                console.error('Error loading results:', error);
+
+                contentArea.innerHTML = `
+                    <div class="page-title">
+                        <i class="fas fa-star"
+                           style="color:#f39c12;"></i>
+                        My Results
+                    </div>
+
+                    <div class="page-sub">
+                        <i class="fas fa-arrow-right"></i>
+                        Your academic performance
+                    </div>
+
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"
+                           style="font-size:3rem; color:#e74c3c;">
+                        </i>
+
+                        <p style="margin-top:1rem;">
+                            Could not load results.
+                        </p>
+
+                        <p class="text-muted"
+                           style="margin-top:0.4rem;">
+                            Please check the backend API and try again.
+                        </p>
+
+                        <button class="btn-primary"
+                                onclick="renderResults()"
+                                style="margin-top:1rem;">
+                            <i class="fas fa-sync-alt"></i>
+                            Try Again
+                        </button>
+                    </div>
+                `;
+
+                setActiveMenu('results');
+            }
+        }
+
+        // ============================================================
+        // RENDER NOTES
+        // ============================================================
+        async function renderNotes() {
+            const studentId = studentData?.id;
+            try {
+                const notes = await fetchData(`/student/notes/${studentId}`);
+
+                if (!notes || notes.length === 0) {
+                    contentArea.innerHTML = `
+                        <div class="page-title"><i class="fas fa-file-alt"></i> Notes & Study Material</div>
+                        <div class="page-sub"><i class="fas fa-arrow-right"></i> No notes available</div>
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt" style="font-size:3rem; color:var(--text-muted);"></i>
+                            <p style="margin-top:1rem;">No notes uploaded by your teachers yet.</p>
+                        </div>
+                    `;
+                    setActiveMenu('notes');
+                    return;
+                }
+
+                let listHTML = '';
+                if (notes.length > 0) {
+                    listHTML = notes.map(n => {
+                        const isFree = n.isFree;
+                        return `
+                            <div class="item-card">
+                                <div class="item-info">
+                                    <div class="item-title">${n.title}</div>
+                                    <div class="item-meta">
+                                        <span><i class="fas fa-book"></i> ${n.subjectName}</span>
+                                        <span><i class="fas fa-users"></i> ${n.className}</span>
+                                        <span><i class="fas fa-calendar"></i> ${n.uploadDate || 'N/A'}</span>
+                                        <span><i class="fas fa-rupee-sign"></i> ${isFree ? 'Free' : '₹' + n.price}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="http://localhost:8083/api/student/notes/download/${n.id}" target="_blank" class="btn-primary" style="text-decoration:none; color:white;">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                contentArea.innerHTML = `
+                    <div class="page-title"><i class="fas fa-file-alt"></i> Notes & Study Material</div>
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Download your study material</div>
+                    <div class="item-list">${listHTML}</div>
+                `;
+                setActiveMenu('notes');
+
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                contentArea.innerHTML = `
+                    <div class="page-title"><i class="fas fa-file-alt"></i> Notes & Study Material</div>
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
+                        <p style="margin-top:1rem;">Could not load notes. Please try again.</p>
+                    </div>
+                `;
+                setActiveMenu('notes');
             }
         }
 
@@ -1904,6 +2495,7 @@
                     case 'quizzes': renderQuizzes(); break;
                     case 'attendance': renderAttendance(); break;
                     case 'results': renderResults(); break;
+                    case 'notes': renderNotes(); break;
                     default: renderDashboard();
                 }
             });
@@ -1919,7 +2511,9 @@
             window.location.href = 'login.html';
         });
         logoutOverlay.addEventListener('click', (e) => {
-            if (e.target === this) this.classList.remove('show');
+            if (e.target === logoutOverlay) {
+                logoutOverlay.classList.remove('show');
+            }
         });
 
         // ============================================================
@@ -1979,75 +2573,6 @@
         console.log('✅ Connected to Smart School Backend');
 
     })();
-
-    function renderQuizzes() {
-    const upcoming = allQuizzes.filter(q => new Date(q.quizDate) > new Date()).length;
-    const completed = allQuizzes.filter(q => new Date(q.quizDate) < new Date()).length;
-    const total = allQuizzes.length;
-
-    const stats = [
-        { label: 'Total', value: total, icon: 'fa-pencil-alt' },
-        { label: 'Upcoming', value: upcoming, icon: 'fa-calendar' },
-        { label: 'Completed', value: completed, icon: 'fa-check-circle' }
-    ];
-
-    const statsHTML = stats.map(stat => `
-        <div class="stat-card">
-            <div class="stat-number">${stat.value}</div>
-            <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
-        </div>
-    `).join('');
-
-    let listHTML = '';
-    if (total > 0) {
-        listHTML = allQuizzes.map(q => {
-            const isCompleted = new Date(q.quizDate) < new Date();
-            const isAttempted = q.attempted || false;
-
-            return `
-                <div class="item-card">
-                    <div class="item-info">
-                        <div class="item-title">${q.title || 'Quiz'}</div>
-                        <div class="item-meta">
-                            <span><i class="fas fa-book"></i> ${q.subjectName || 'N/A'}</span>
-                            <span><i class="fas fa-users"></i> ${q.className || 'N/A'}</span>
-                            <span><i class="fas fa-calendar"></i> ${q.quizDate ? new Date(q.quizDate).toLocaleDateString() : 'N/A'}</span>
-                            <span><i class="fas fa-clock"></i> ${q.duration || 30} min</span>
-                            <span><i class="fas fa-star"></i> ${q.maxMarks || 100}</span>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <span class="item-status ${isAttempted ? 'graded' : (isCompleted ? 'graded' : 'pending')}">
-                            ${isAttempted ? '✅ Attempted' : (isCompleted ? 'Completed' : 'Upcoming')}
-                        </span>
-                        ${!isAttempted ? `
-                            <button class="btn-primary" onclick="openQuizModal(${q.id}, '${q.title.replace(/'/g, "\\'")}', ${q.maxMarks})" style="padding:0.3rem 0.8rem; font-size:0.75rem; white-space:nowrap;">
-                                <i class="fas fa-pencil-alt"></i> Attempt
-                            </button>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    } else {
-        listHTML = `
-            <div class="empty-state">
-                <i class="fas fa-pencil-alt"></i>
-                <p>No quizzes available.</p>
-            </div>
-        `;
-    }
-
-    const html = `
-        <div class="page-title">Quizzes & Tests</div>
-        <div class="page-sub"><i class="fas fa-arrow-right"></i> ${total} quizzes</div>
-        <div class="stats-grid">${statsHTML}</div>
-        <div class="item-list">${listHTML}</div>
-    `;
-
-    contentArea.innerHTML = html;
-    setActiveMenu('quizzes');
-}
 </script>
 </body>
 </html>
