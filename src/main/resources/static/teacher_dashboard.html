@@ -50,6 +50,7 @@
             --graded: #27ae60;
             --pending: #f39c12;
             --late: #e74c3c;
+            --live-red: #e74c3c;
         }
 
         [data-theme="dark"] {
@@ -94,6 +95,7 @@
             --graded: #2ecc71;
             --pending: #f1c40f;
             --late: #e74c3c;
+            --live-red: #e74c3c;
         }
 
         [data-theme="gray"] {
@@ -138,6 +140,7 @@
             --graded: #27ae60;
             --pending: #f39c12;
             --late: #e74c3c;
+            --live-red: #e74c3c;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
@@ -582,6 +585,84 @@
         .item-status.late { background: #f8d7da; color: #721c24; }
         .item-status.free { background: #d4edda; color: #155724; }
         .item-status.paid { background: #cce5ff; color: #004085; }
+        .item-status.live { background: #f8d7da; color: #721c24; animation: pulse-bg 2s infinite; }
+        .item-status.scheduled { background: #fff3cd; color: #856404; }
+        .item-status.ended { background: #d4edda; color: #155724; }
+        .item-status.cancelled { background: #e2e3e5; color: #383d41; }
+
+        @keyframes pulse-bg {
+            0%, 100% { background: #f8d7da; }
+            50% { background: #f5c6cb; }
+        }
+
+        /* ===== LIVE CLASSES SPECIFIC ===== */
+        .live-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--live-red);
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(231, 76, 60, 0); }
+        }
+
+        .live-class-card {
+            border-left: 4px solid var(--live-red);
+            background: linear-gradient(90deg, rgba(231, 76, 60, 0.05), transparent 30%);
+        }
+
+        .live-banner {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px -8px rgba(231, 76, 60, 0.5);
+            animation: slideIn 0.5s ease;
+        }
+
+        .live-banner .live-dot-white {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse-white 1.5s infinite;
+        }
+
+        @keyframes pulse-white {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .platform-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            color: white;
+            margin-right: 6px;
+        }
+        .platform-icon.google-meet { background: #00832d; }
+        .platform-icon.zoom { background: #2d8cff; }
+        .platform-icon.teams { background: #6264a7; }
+        .platform-icon.other { background: #888; }
 
         /* ===== BUTTONS ===== */
         .btn-primary {
@@ -596,6 +677,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            text-decoration: none;
         }
         .btn-primary:hover {
             transform: scale(1.02);
@@ -626,6 +708,10 @@
             font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .btn-danger:hover { opacity: 0.9; transform: scale(1.02); }
 
@@ -683,6 +769,21 @@
             white-space: nowrap;
         }
         .btn-grade:hover { opacity: 0.9; transform: scale(1.02); }
+
+        .btn-icon {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-card);
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.75rem;
+        }
+        .btn-icon:hover {
+            background: var(--menu-hover);
+            color: var(--text-primary);
+        }
 
         /* ===== EMPTY STATE ===== */
         .empty-state {
@@ -752,6 +853,7 @@
         .toast.show { display: flex; }
         .toast.success { border-left: 4px solid var(--success); }
         .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
         .toast .toast-icon { font-size: 1.5rem; }
         .toast .toast-msg { color: var(--text-primary); font-weight: 500; }
 
@@ -1357,6 +1459,89 @@
 </div>
 
 <!-- ============================================================ -->
+<!-- 🔥🔥🔥 LIVE CLASS MODAL 🔥🔥🔥 -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="liveClassModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-video"></i> <span id="liveClassModalTitle">Schedule Live Class</span></h2>
+            <button class="modal-close" onclick="closeModal('liveClassModal')">&times;</button>
+        </div>
+        <form id="liveClassForm" onsubmit="submitLiveClass(event)">
+            <input type="hidden" id="liveClassId" />
+
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="liveClassTitle" placeholder="e.g., Algebra Doubt Session" required />
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="liveClassDescription" placeholder="What will you cover in this class?"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Class *</label>
+                    <select id="liveClassClass" required>
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <select id="liveClassSubject" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Scheduled Date & Time *</label>
+                    <input type="datetime-local" id="liveClassScheduledAt" required />
+                </div>
+                <div class="form-group">
+                    <label>Duration (minutes) *</label>
+                    <input type="number" id="liveClassDuration" value="60" min="15" max="300" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Meeting Platform *</label>
+                <select id="liveClassPlatform" onchange="onLivePlatformChange()" required>
+                    <option value="GOOGLE_MEET">Google Meet</option>
+                    <option value="ZOOM">Zoom</option>
+                    <option value="TEAMS">Microsoft Teams</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Meeting URL *</label>
+                <input type="url" id="liveClassMeetingUrl" placeholder="https://meet.google.com/abc-defg-hij" required />
+                <small style="color:var(--text-muted);">
+                    Paste your meeting link here. Students will use this to join.
+                </small>
+            </div>
+
+            <div class="form-group" id="meetingPasswordGroup" style="display:none;">
+                <label>Meeting Password (Optional)</label>
+                <input type="text" id="liveClassPassword" placeholder="If password protected" />
+            </div>
+
+            <div class="form-error" id="liveClassError">Please fill all required fields.</div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary-modal" onclick="closeModal('liveClassModal')">Cancel</button>
+                <button type="submit" class="btn-primary-modal" id="liveClassSubmitBtn">
+                    <i class="fas fa-plus"></i> Schedule Class
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- MAIN DASHBOARD -->
 <!-- ============================================================ -->
 <div class="dashboard">
@@ -1406,9 +1591,12 @@
             <button class="menu-item" data-module="attendance">
                 <i class="fas fa-calendar-check"></i> Attendance <span class="badge" id="attendanceBadge">0</span>
             </button>
-            <!-- ===== NOTES BUTTON ===== -->
             <button class="menu-item" data-module="notes">
                 <i class="fas fa-sticky-note"></i> Notes <span class="badge" id="notesBadge">0</span>
+            </button>
+            <!-- 🔥🔥🔥 LIVE CLASSES BUTTON 🔥🔥🔥 -->
+            <button class="menu-item" data-module="live-classes">
+                <i class="fas fa-video"></i> Live Classes <span class="badge" id="liveClassesBadge">0</span>
             </button>
 
             <div class="divider"></div>
@@ -1455,7 +1643,6 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        //const API_BASE_URL = 'http://localhost:8083/api';
         const API_BASE_URL = 'http://15.207.174.107:8083/api';
 
         // ============================================================
@@ -1472,9 +1659,11 @@
         let allClasses = [];
         let allSubjects = [];
         let allNotes = [];
+        let allLiveClasses = [];  // 🔥 NEW
         let attendanceStudents = [];
         let currentNoteId = null;
         let currentNoteFileUrl = null;
+        let liveClassRefreshInterval = null;  // 🔥 NEW
 
         // ============================================================
         // DOM REFS
@@ -1496,8 +1685,9 @@
         // TOAST NOTIFICATION
         // ============================================================
         function showToast(message, type = 'success') {
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             toast.className = 'toast show ' + type;
-            toastIcon.textContent = type === 'success' ? '✅' : '❌';
+            toastIcon.textContent = icons[type] || 'ℹ️';
             toastMsg.textContent = message;
             clearTimeout(toast._hideTimeout);
             toast._hideTimeout = setTimeout(() => {
@@ -1536,58 +1726,50 @@
         // ============================================================
         // API CALLS
         // ============================================================
-       async function fetchData(endpoint) {
-    try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`);
-
-        // Log the response status for debugging
-        console.log(`📡 ${endpoint} -> Status: ${response.status}`);
-
-        // Check if response is OK
-        if (!response.ok) {
-            // Try to get error message from response
-            let errorText = `HTTP ${response.status}`;
+        async function fetchData(endpoint) {
             try {
-                const errorData = await response.text();
-                if (errorData) {
-                    // Try to parse as JSON, if not, use as text
-                    try {
-                        const jsonError = JSON.parse(errorData);
-                        errorText = jsonError.error || jsonError.message || errorText;
-                    } catch (e) {
-                        errorText = errorData.substring(0, 100) + (errorData.length > 100 ? '...' : '');
-                    }
-                }
-            } catch (e) {
-                // Ignore
-            }
-            throw new Error(errorText);
-        }
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                console.log(`📡 ${endpoint} -> Status: ${response.status}`);
 
-        // Check content type
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            const data = await response.json();
-            console.log(`✅ ${endpoint} -> Success, received:`, Array.isArray(data) ? data.length + ' items' : 'object');
-            return data;
-        } else {
-            // If not JSON, return empty array to prevent crashes
-            const text = await response.text();
-            console.warn(`⚠️ ${endpoint} -> Non-JSON response:`, text.substring(0, 100));
-            return [];
+                if (!response.ok) {
+                    let errorText = `HTTP ${response.status}`;
+                    try {
+                        const errorData = await response.text();
+                        if (errorData) {
+                            try {
+                                const jsonError = JSON.parse(errorData);
+                                errorText = jsonError.error || jsonError.message || errorText;
+                            } catch (e) {
+                                errorText = errorData.substring(0, 100);
+                            }
+                        }
+                    } catch (e) {}
+                    throw new Error(errorText);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    console.log(`✅ ${endpoint} -> Success:`, Array.isArray(data) ? data.length + ' items' : 'object');
+                    return data;
+                } else {
+                    const text = await response.text();
+                    console.warn(`⚠️ ${endpoint} -> Non-JSON:`, text.substring(0, 100));
+                    return [];
+                }
+            } catch (error) {
+                console.error(`❌ API failed: ${endpoint}`, error.message);
+                if (endpoint.includes('/notes') || endpoint.includes('/assignments') ||
+                    endpoint.includes('/quizzes') || endpoint.includes('/submissions') ||
+                    endpoint.includes('/students') || endpoint.includes('/classes') ||
+                    endpoint.includes('/live-classes')) {
+                    return [];
+                }
+                return null;
+            }
         }
-    } catch (error) {
-        console.error(`❌ API call failed: ${endpoint}`, error.message);
-        // Return empty array for list endpoints, null for single object endpoints
-        if (endpoint.includes('/notes') || endpoint.includes('/assignments') ||
-            endpoint.includes('/quizzes') || endpoint.includes('/submissions') ||
-            endpoint.includes('/students') || endpoint.includes('/classes')) {
-            return [];
-        }
-        return null;
-    }
-}
-window.fetchData = fetchData;
+        window.fetchData = fetchData;
+
         async function postData(endpoint, data) {
             try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -1596,7 +1778,7 @@ window.fetchData = fetchData;
                     body: JSON.stringify(data),
                 });
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
                 return await response.json();
@@ -1607,6 +1789,42 @@ window.fetchData = fetchData;
         }
         window.postData = postData;
 
+        async function putData(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('❌ PUT error:', error);
+                throw error;
+            }
+        }
+        window.putData = putData;
+
+        async function deleteData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+                return await response.json().catch(() => ({ success: true }));
+            } catch (error) {
+                console.error('❌ DELETE error:', error);
+                throw error;
+            }
+        }
+        window.deleteData = deleteData;
+
         async function uploadFile(endpoint, formData) {
             try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -1614,7 +1832,7 @@ window.fetchData = fetchData;
                     body: formData,
                 });
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
                 return await response.json();
@@ -1628,82 +1846,84 @@ window.fetchData = fetchData;
         // ============================================================
         // FETCH ALL DATA
         // ============================================================
-       async function fetchAllData() {
-    try {
-        console.log('🔄 Fetching data from backend...');
+        async function fetchAllData() {
+            try {
+                console.log('🔄 Fetching data from backend...');
 
-        // Teacher profile fetch karo
-const teacherProfile = await fetchData(`/teacher/profile/${currentUser?.userId}`);
-if (teacherProfile && !teacherProfile.error) {
-    teacherData = teacherProfile;
-    currentTeacherId = teacherProfile.id || currentUser?.userId;  // ← Fallback add karo
-    window.currentTeacherId = currentTeacherId;
-    console.log('✅ Teacher ID set to:', currentTeacherId);
-    updateProfile(teacherProfile.user || currentUser);
-} else {
-    // ✅ Fallback: userId use karo
-    currentTeacherId = currentUser?.userId;
-    window.currentTeacherId = currentTeacherId;
-    console.warn('⚠️ Using userId as teacherId:', currentTeacherId);
-}
+                const teacherProfile = await fetchData(`/teacher/profile/${currentUser?.userId}`);
+                if (teacherProfile && !teacherProfile.error) {
+                    teacherData = teacherProfile;
+                    currentTeacherId = teacherProfile.id || currentUser?.userId;
+                    window.currentTeacherId = currentTeacherId;
+                    console.log('✅ Teacher ID set to:', currentTeacherId);
+                    updateProfile(teacherProfile.user || currentUser);
+                } else {
+                    currentTeacherId = currentUser?.userId;
+                    window.currentTeacherId = currentTeacherId;
+                    console.warn('⚠️ Using userId as teacherId:', currentTeacherId);
+                }
 
-        // Fetch all data - ensure we always get arrays
-        const [assignments, quizzes, submissions, students, teachers, subjects, classes, notes] = await Promise.all([
-            fetchData('/teacher/assignments').then(data => Array.isArray(data) ? data : []),
-            fetchData('/teacher/quizzes').then(data => Array.isArray(data) ? data : []),
-            fetchData('/teacher/submissions').then(data => Array.isArray(data) ? data : []),
-            fetchData('/admin/students').then(data => Array.isArray(data) ? data : []),
-            fetchData('/admin/teachers').then(data => Array.isArray(data) ? data : []),
-            fetchData('/admin/subjects').then(data => Array.isArray(data) ? data : []),
-            fetchData('/admin/classes').then(data => Array.isArray(data) ? data : []),
-            fetchData(`/teacher/notes?teacherId=${currentTeacherId || 1}`).then(data => Array.isArray(data) ? data : [])
-        ]);
+                const [assignments, quizzes, submissions, students, teachers, subjects, classes, notes, liveClasses] = await Promise.all([
+                    fetchData('/teacher/assignments').then(data => Array.isArray(data) ? data : []),
+                    fetchData('/teacher/quizzes').then(data => Array.isArray(data) ? data : []),
+                    fetchData('/teacher/submissions').then(data => Array.isArray(data) ? data : []),
+                    fetchData('/admin/students').then(data => Array.isArray(data) ? data : []),
+                    fetchData('/admin/teachers').then(data => Array.isArray(data) ? data : []),
+                    fetchData('/admin/subjects').then(data => Array.isArray(data) ? data : []),
+                    fetchData('/admin/classes').then(data => Array.isArray(data) ? data : []),
+                    fetchData(`/teacher/notes?teacherId=${currentTeacherId || 1}`).then(data => Array.isArray(data) ? data : []),
+                    fetchData(`/teacher/live-classes/teacher/${currentTeacherId || 1}`).then(data => Array.isArray(data) ? data : [])  // 🔥 NEW
+                ]);
 
-        // Assign data
-        allAssignments = assignments;
-        allQuizzes = quizzes;
-        allSubmissions = submissions;
-        allStudents = students;
-        allTeachers = teachers;
-        allSubjects = subjects;
-        allClasses = classes;
-        allNotes = notes;
+                allAssignments = assignments;
+                allQuizzes = quizzes;
+                allSubmissions = submissions;
+                allStudents = students;
+                allTeachers = teachers;
+                allSubjects = subjects;
+                allClasses = classes;
+                allNotes = notes;
+                allLiveClasses = liveClasses;  // 🔥 NEW
 
-        console.log('✅ Data loaded:');
-        console.log('  📝 Assignments:', allAssignments.length);
-        console.log('  📝 Quizzes:', allQuizzes.length);
-        console.log('  📝 Submissions:', allSubmissions.length);
-        console.log('  📝 Students:', allStudents.length);
-        console.log('  📝 Subjects:', allSubjects.length);
-        console.log('  📝 Classes:', allClasses.length);
-        console.log('  📝 Notes:', allNotes.length);
+                console.log('✅ Data loaded:');
+                console.log('  📝 Assignments:', allAssignments.length);
+                console.log('  📝 Quizzes:', allQuizzes.length);
+                console.log('  📝 Submissions:', allSubmissions.length);
+                console.log('  📝 Students:', allStudents.length);
+                console.log('  📝 Subjects:', allSubjects.length);
+                console.log('  📝 Classes:', allClasses.length);
+                console.log('  📝 Notes:', allNotes.length);
+                console.log('  🎥 Live Classes:', allLiveClasses.length);  // 🔥 NEW
 
-        // Update badges
-        document.getElementById('assignmentsBadge').textContent = allAssignments.length;
-        document.getElementById('quizzesBadge').textContent = allQuizzes.length;
-        document.getElementById('submissionsBadge').textContent = allSubmissions.length;
-        document.getElementById('studentsBadge').textContent = allStudents.length;
-        document.getElementById('attendanceBadge').textContent = allClasses.length || 0;
-        document.getElementById('notesBadge').textContent = allNotes.length;
+                // Update badges
+                document.getElementById('assignmentsBadge').textContent = allAssignments.length;
+                document.getElementById('quizzesBadge').textContent = allQuizzes.length;
+                document.getElementById('submissionsBadge').textContent = allSubmissions.length;
+                document.getElementById('studentsBadge').textContent = allStudents.length;
+                document.getElementById('attendanceBadge').textContent = allClasses.length || 0;
+                document.getElementById('notesBadge').textContent = allNotes.length;
+                document.getElementById('liveClassesBadge').textContent =
+                    allLiveClasses.filter(c => c.status === 'LIVE' || c.status === 'SCHEDULED').length;  // 🔥 NEW
 
-        populateDropdowns();
-        return true;
+                populateDropdowns();
+                return true;
 
-    } catch (error) {
-        console.error('❌ Error fetching data:', error);
-        // Return true anyway to show dashboard with empty data
-        return true;
-    }
-}
-window.fetchAllData = fetchAllData;
+            } catch (error) {
+                console.error('❌ Error fetching data:', error);
+                return true;
+            }
+        }
+        window.fetchAllData = fetchAllData;
+
         // ============================================================
         // POPULATE DROPDOWNS
         // ============================================================
         function populateDropdowns() {
-            const classSelects = ['assignmentClass', 'quizClass', 'attendanceClass', 'noteClass'];
+            const classSelects = ['assignmentClass', 'quizClass', 'attendanceClass', 'noteClass', 'liveClassClass'];
             classSelects.forEach(id => {
                 const select = document.getElementById(id);
                 if (!select) return;
+                const currentVal = select.value;
                 select.innerHTML = '<option value="">Select Class</option>';
                 allClasses.forEach(c => {
                     const option = document.createElement('option');
@@ -1711,12 +1931,14 @@ window.fetchAllData = fetchAllData;
                     option.textContent = c.className + (c.section ? ` - ${c.section}` : '');
                     select.appendChild(option);
                 });
+                if (currentVal) select.value = currentVal;
             });
 
-            const subjectSelects = ['assignmentSubject', 'quizSubject', 'attendanceSubject', 'noteSubject'];
+            const subjectSelects = ['assignmentSubject', 'quizSubject', 'attendanceSubject', 'noteSubject', 'liveClassSubject'];
             subjectSelects.forEach(id => {
                 const select = document.getElementById(id);
                 if (!select) return;
+                const currentVal = select.value;
                 select.innerHTML = '<option value="">Select Subject</option>';
                 allSubjects.forEach(s => {
                     const option = document.createElement('option');
@@ -1724,17 +1946,18 @@ window.fetchAllData = fetchAllData;
                     option.textContent = s.subjectName || s.name || 'Subject';
                     select.appendChild(option);
                 });
+                if (currentVal) select.value = currentVal;
             });
 
             const now = new Date();
             now.setDate(now.getDate() + 7);
             const dateStr = now.toISOString().slice(0, 16);
             const dueDateInput = document.getElementById('assignmentDueDate');
-            if (dueDateInput) dueDateInput.value = dateStr;
+            if (dueDateInput && !dueDateInput.value) dueDateInput.value = dateStr;
             const quizDateInput = document.getElementById('quizDate');
-            if (quizDateInput) quizDateInput.value = dateStr;
+            if (quizDateInput && !quizDateInput.value) quizDateInput.value = dateStr;
 
-            console.log('✅ Dropdowns populated successfully!');
+            console.log('✅ Dropdowns populated');
         }
 
         // ============================================================
@@ -1771,15 +1994,24 @@ window.fetchAllData = fetchAllData;
         };
 
         window.closeModal = function(id) {
-            document.getElementById(id).classList.remove('show');
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('show');
         };
 
+        // Close on overlay click
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
             overlay.addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.classList.remove('show');
                 }
             });
+        });
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+            }
         });
 
         // ============================================================
@@ -1866,13 +2098,11 @@ window.fetchAllData = fetchAllData;
 
             try {
                 const data = {
-                    title: title,
-                    description: description,
+                    title, description,
                     classId: parseInt(classId),
                     subjectId: parseInt(subjectId),
                     dueDate: formattedDate,
-                    maxMarks: maxMarks,
-                    teacherId: teacherId
+                    maxMarks, teacherId
                 };
 
                 const result = await postData('/teacher/assignments', data);
@@ -1923,9 +2153,7 @@ window.fetchAllData = fetchAllData;
                     correctAnswer: item.querySelector('.correct-answer').value,
                     marks: parseInt(item.querySelector('.question-marks').value) || 1
                 };
-                if (question.question) {
-                    questions.push(question);
-                }
+                if (question.question) questions.push(question);
             });
 
             const errorEl = document.getElementById('quizError');
@@ -1942,21 +2170,16 @@ window.fetchAllData = fetchAllData;
 
             try {
                 const data = {
-                    title: title,
-                    description: description,
+                    title, description,
                     classId: parseInt(classId),
                     subjectId: parseInt(subjectId),
-                    quizDate: quizDate,
-                    duration: duration,
-                    maxMarks: maxMarks,
-                    teacherId: teacherId,
-                    questions: questions
+                    quizDate, duration, maxMarks, teacherId, questions
                 };
 
                 const result = await postData('/teacher/quizzes', data);
 
                 if (result && !result.error) {
-                    showToast('Quiz with questions created successfully! 🎉', 'success');
+                    showToast('Quiz with questions created! 🎉', 'success');
                     closeModal('createQuizModal');
                     document.getElementById('quizForm').reset();
                     document.getElementById('questionsContainer').innerHTML = '';
@@ -2009,15 +2232,11 @@ window.fetchAllData = fetchAllData;
             btn.innerHTML = '<span class="loading-spinner-small"></span> Grading...';
 
             try {
-                const data = {
-                    marksObtained: marksObtained,
-                    feedback: feedback
-                };
-
+                const data = { marksObtained, feedback };
                 const result = await postData(`/teacher/submissions/${submissionId}/grade`, data);
 
                 if (result && result.success !== false) {
-                    showToast('Submission graded successfully! 🎉', 'success');
+                    showToast('Submission graded! 🎉', 'success');
                     closeModal('gradeModal');
                     await fetchAllData();
                     renderSubmissions();
@@ -2035,10 +2254,8 @@ window.fetchAllData = fetchAllData;
         };
 
         // ============================================================
-        // 🔥🔥🔥 NOTES FUNCTIONS 🔥🔥🔥
+        // NOTES FUNCTIONS
         // ============================================================
-
-        // Upload Note with PDF
         window.uploadNote = async function(event) {
             event.preventDefault();
 
@@ -2077,7 +2294,6 @@ window.fetchAllData = fetchAllData;
             btn.innerHTML = '<span class="loading-spinner-small"></span> Uploading...';
 
             try {
-                // First upload the file
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('teacherId', teacherId);
@@ -2091,7 +2307,7 @@ window.fetchAllData = fetchAllData;
                 const result = await uploadFile('/teacher/notes/upload', formData);
 
                 if (result && !result.error) {
-                    showToast('Notes uploaded successfully! 📄', 'success');
+                    showToast('Notes uploaded! 📄', 'success');
                     closeModal('uploadNoteModal');
                     document.getElementById('noteForm').reset();
                     await fetchAllData();
@@ -2109,7 +2325,6 @@ window.fetchAllData = fetchAllData;
             }
         };
 
-        // View Note Preview
         window.viewNote = function(noteId) {
             const note = allNotes.find(n => n.id === noteId);
             if (!note) {
@@ -2143,12 +2358,11 @@ window.fetchAllData = fetchAllData;
                         </span>
                     </div>
                     <div style="border:1px solid var(--border-card); border-radius:12px; padding:1rem; background:var(--stat-bg);">
-                        <iframe src="${note.fileUrl}" style="width:100%; height:400px; border:none; border-radius:8px;" />
+                        <iframe src="${note.fileUrl}" style="width:100%; height:400px; border:none; border-radius:8px;"></iframe>
                     </div>
                 </div>
             `;
 
-            // Show download button if user has purchased or note is free
             const downloadBtn = document.getElementById('notePreviewDownloadBtn');
             if (note.isFree || note.isPurchased) {
                 downloadBtn.style.display = 'inline-flex';
@@ -2159,7 +2373,6 @@ window.fetchAllData = fetchAllData;
             document.getElementById('notePreviewModal').classList.add('show');
         };
 
-        // Download Note
         window.downloadNote = function() {
             if (currentNoteFileUrl) {
                 window.open(currentNoteFileUrl, '_blank');
@@ -2169,7 +2382,6 @@ window.fetchAllData = fetchAllData;
             }
         };
 
-        // Purchase Note
         window.purchaseNote = async function(noteId) {
             try {
                 const result = await postData(`/teacher/notes/${noteId}/purchase`, {
@@ -2177,7 +2389,7 @@ window.fetchAllData = fetchAllData;
                 });
 
                 if (result && result.success !== false) {
-                    showToast('Note purchased successfully! 🎉', 'success');
+                    showToast('Note purchased! 🎉', 'success');
                     await fetchAllData();
                     renderNotes();
                 } else {
@@ -2186,6 +2398,470 @@ window.fetchAllData = fetchAllData;
             } catch (error) {
                 showToast('Failed: ' + error.message, 'error');
             }
+        };
+
+        // ============================================================
+        // 🔥🔥🔥 LIVE CLASSES FUNCTIONS 🔥🔥🔥
+        // ============================================================
+
+        // Open create/edit modal
+        window.openLiveClassModal = function(classId = null) {
+            const modal = document.getElementById('liveClassModal');
+            const form = document.getElementById('liveClassForm');
+            const titleEl = document.getElementById('liveClassModalTitle');
+            const submitBtn = document.getElementById('liveClassSubmitBtn');
+            const errorEl = document.getElementById('liveClassError');
+
+            form.reset();
+            errorEl.classList.remove('show');
+            document.getElementById('liveClassId').value = '';
+            document.getElementById('meetingPasswordGroup').style.display = 'none';
+
+            populateDropdowns();
+
+            if (classId) {
+                // Edit mode
+                const liveClass = allLiveClasses.find(c => c.id === classId);
+                if (!liveClass) {
+                    showToast('Live class not found', 'error');
+                    return;
+                }
+
+                titleEl.textContent = 'Edit Live Class';
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Class';
+                document.getElementById('liveClassId').value = liveClass.id;
+                document.getElementById('liveClassTitle').value = liveClass.title || '';
+                document.getElementById('liveClassDescription').value = liveClass.description || '';
+                document.getElementById('liveClassClass').value = liveClass.classId || '';
+                document.getElementById('liveClassSubject').value = liveClass.subjectId || '';
+                document.getElementById('liveClassDuration').value = liveClass.durationMinutes || 60;
+                document.getElementById('liveClassPlatform').value = liveClass.meetingPlatform || 'GOOGLE_MEET';
+                document.getElementById('liveClassMeetingUrl').value = liveClass.meetingUrl || '';
+                document.getElementById('liveClassPassword').value = liveClass.meetingPassword || '';
+
+                if (liveClass.scheduledAt) {
+                    // Convert to local datetime-local format
+                    const d = new Date(liveClass.scheduledAt);
+                    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+                    document.getElementById('liveClassScheduledAt').value = local.toISOString().slice(0, 16);
+                }
+
+                onLivePlatformChange();
+            } else {
+                // Create mode
+                titleEl.textContent = 'Schedule Live Class';
+                submitBtn.innerHTML = '<i class="fas fa-plus"></i> Schedule Class';
+
+                const next = new Date(Date.now() + 60 * 60 * 1000);
+                next.setMinutes(0, 0, 0);
+                document.getElementById('liveClassScheduledAt').value =
+                    new Date(next.getTime() - next.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+                onLivePlatformChange();
+            }
+
+            modal.classList.add('show');
+        };
+
+        // Platform change handler
+        window.onLivePlatformChange = function() {
+            const platform = document.getElementById('liveClassPlatform').value;
+            const passwordGroup = document.getElementById('meetingPasswordGroup');
+            const urlInput = document.getElementById('liveClassMeetingUrl');
+
+            if (platform === 'ZOOM' || platform === 'TEAMS') {
+                passwordGroup.style.display = 'block';
+            } else {
+                passwordGroup.style.display = 'none';
+            }
+
+            const placeholders = {
+                GOOGLE_MEET: 'https://meet.google.com/abc-defg-hij',
+                ZOOM: 'https://zoom.us/j/1234567890',
+                TEAMS: 'https://teams.microsoft.com/l/meetup-join/...',
+                OTHER: 'https://...'
+            };
+            urlInput.placeholder = placeholders[platform] || 'https://...';
+        };
+
+        // Submit live class
+        window.submitLiveClass = async function(event) {
+            event.preventDefault();
+
+            const classId = document.getElementById('liveClassId').value;
+            const title = document.getElementById('liveClassTitle').value.trim();
+            const description = document.getElementById('liveClassDescription').value.trim();
+            const classIdVal = document.getElementById('liveClassClass').value;
+            const subjectId = document.getElementById('liveClassSubject').value;
+            const scheduledAt = document.getElementById('liveClassScheduledAt').value;
+            const duration = parseInt(document.getElementById('liveClassDuration').value);
+            const platform = document.getElementById('liveClassPlatform').value;
+            const meetingUrl = document.getElementById('liveClassMeetingUrl').value.trim();
+            const password = document.getElementById('liveClassPassword').value.trim();
+
+            const errorEl = document.getElementById('liveClassError');
+
+            if (!title || !classIdVal || !subjectId || !scheduledAt || !meetingUrl) {
+                errorEl.textContent = 'Please fill all required fields.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const btn = document.getElementById('liveClassSubmitBtn');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Saving...';
+
+            try {
+                const data = {
+                    title,
+                    description,
+                    classId: parseInt(classIdVal),
+                    subjectId: parseInt(subjectId),
+                    teacherId: currentTeacherId,
+                    scheduledAt: new Date(scheduledAt).toISOString(),
+                    durationMinutes: duration,
+                    meetingPlatform: platform,
+                    meetingUrl,
+                    meetingPassword: password || null
+                };
+
+                let result;
+                if (classId) {
+                    // Update
+                    result = await putData(`/teacher/live-classes/${classId}`, data);
+                } else {
+                    // Create
+                    result = await postData('/teacher/live-classes', data);
+                }
+
+                if (result && !result.error) {
+                    showToast(classId ? 'Live class updated! 🎥' : 'Live class scheduled! 🎥', 'success');
+                    closeModal('liveClassModal');
+                    await fetchAllData();
+                    renderLiveClasses();
+                } else {
+                    throw new Error(result?.error || 'Failed to save');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        };
+
+        // Start live class
+        window.startLiveClass = async function(classId) {
+            if (!confirm('Start this live class now? Students will be notified.')) return;
+
+            try {
+                const result = await postData(`/teacher/live-classes/${classId}/start`, {});
+                if (result && !result.error) {
+                    showToast('Class is now LIVE! 🔴', 'success');
+                    await fetchAllData();
+                    renderLiveClasses();
+                    startLiveClassAutoRefresh();
+                } else {
+                    throw new Error(result?.error || 'Failed to start');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
+
+        // End live class
+        window.endLiveClass = async function(classId) {
+            if (!confirm('End this live class? Students will no longer be able to join.')) return;
+
+            try {
+                const result = await postData(`/teacher/live-classes/${classId}/end`, {});
+                if (result && !result.error) {
+                    showToast('Class ended', 'success');
+                    await fetchAllData();
+                    renderLiveClasses();
+                    stopLiveClassAutoRefresh();
+                } else {
+                    throw new Error(result?.error || 'Failed to end');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
+
+        // Cancel live class
+        window.cancelLiveClass = async function(classId) {
+            if (!confirm('Cancel this live class? Students will be notified.')) return;
+
+            try {
+                const result = await postData(`/teacher/live-classes/${classId}/cancel`, {});
+                if (result && !result.error) {
+                    showToast('Class cancelled', 'success');
+                    await fetchAllData();
+                    renderLiveClasses();
+                } else {
+                    throw new Error(result?.error || 'Failed to cancel');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
+
+        // Delete live class
+        window.deleteLiveClass = async function(classId) {
+            if (!confirm('Delete this live class permanently? This cannot be undone.')) return;
+
+            try {
+                const result = await deleteData(`/teacher/live-classes/${classId}`);
+                if (result && !result.error) {
+                    showToast('Class deleted', 'success');
+                    await fetchAllData();
+                    renderLiveClasses();
+                } else {
+                    throw new Error(result?.error || 'Failed to delete');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
+
+        // Copy meeting link
+        window.copyMeetingLink = function(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Link copied to clipboard! 📋', 'success');
+            }).catch(() => {
+                showToast('Failed to copy link', 'error');
+            });
+        };
+
+        // Auto-refresh live classes every 30 seconds if any is LIVE
+        function startLiveClassAutoRefresh() {
+            if (liveClassRefreshInterval) return;
+            liveClassRefreshInterval = setInterval(async () => {
+                const hasLive = allLiveClasses.some(c => c.status === 'LIVE');
+                if (hasLive) {
+                    await fetchAllData();
+                    // Only re-render if we're on live-classes page
+                    const liveMenuActive = document.querySelector('[data-module="live-classes"].active');
+                    if (liveMenuActive) renderLiveClasses();
+                } else {
+                    stopLiveClassAutoRefresh();
+                }
+            }, 30000);
+        }
+
+        function stopLiveClassAutoRefresh() {
+            if (liveClassRefreshInterval) {
+                clearInterval(liveClassRefreshInterval);
+                liveClassRefreshInterval = null;
+            }
+        }
+
+        // Helper: get platform icon
+        function getPlatformIcon(platform) {
+            const map = {
+                'GOOGLE_MEET': { class: 'google-meet', icon: 'fa-video' },
+                'ZOOM': { class: 'zoom', icon: 'fa-video' },
+                'TEAMS': { class: 'teams', icon: 'fa-video' },
+                'OTHER': { class: 'other', icon: 'fa-link' }
+            };
+            return map[platform] || map['OTHER'];
+        }
+
+        // Helper: get status class
+        function getLiveStatusClass(status) {
+            return {
+                'LIVE': 'live',
+                'SCHEDULED': 'scheduled',
+                'ENDED': 'ended',
+                'CANCELLED': 'cancelled'
+            }[status] || 'scheduled';
+        }
+
+        // Helper: get status label
+        function getLiveStatusLabel(status) {
+            return {
+                'LIVE': '🔴 LIVE',
+                'SCHEDULED': '📅 Scheduled',
+                'ENDED': '✅ Ended',
+                'CANCELLED': '❌ Cancelled'
+            }[status] || status;
+        }
+
+        // Helper: format date time
+        function formatDateTime(iso) {
+            if (!iso) return 'N/A';
+            const d = new Date(iso);
+            return d.toLocaleString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        // Helper: countdown
+        function getCountdown(iso) {
+            if (!iso) return '';
+            const diff = new Date(iso) - new Date();
+            if (diff < 0) return 'Started';
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(mins / 60);
+            const days = Math.floor(hours / 24);
+            if (days > 0) return `In ${days}d ${hours % 24}h`;
+            if (hours > 0) return `In ${hours}h ${mins % 60}m`;
+            return `In ${mins}m`;
+        }
+
+        // ============================================================
+        // RENDER LIVE CLASSES
+        // ============================================================
+        window.renderLiveClasses = function() {
+            const live = allLiveClasses.filter(c => c.status === 'LIVE');
+            const scheduled = allLiveClasses.filter(c => c.status === 'SCHEDULED');
+            const ended = allLiveClasses.filter(c => c.status === 'ENDED');
+            const cancelled = allLiveClasses.filter(c => c.status === 'CANCELLED');
+
+            const stats = [
+                { label: 'Live Now', value: live.length, icon: 'fa-circle', color: 'var(--live-red)' },
+                { label: 'Scheduled', value: scheduled.length, icon: 'fa-calendar' },
+                { label: 'Completed', value: ended.length, icon: 'fa-check-circle' },
+                { label: 'Cancelled', value: cancelled.length, icon: 'fa-times-circle' }
+            ];
+
+            const statsHTML = stats.map(s => `
+                <div class="stat-card">
+                    <div class="stat-number" style="color:${s.color || 'var(--text-primary)'}">
+                        ${s.value}
+                    </div>
+                    <div class="stat-label">
+                        <i class="fas ${s.icon}"></i> ${s.label}
+                    </div>
+                </div>
+            `).join('');
+
+            // Sort: LIVE first, then scheduled (by date), then ended/cancelled
+            const sortedClasses = [...allLiveClasses].sort((a, b) => {
+                const order = { 'LIVE': 1, 'SCHEDULED': 2, 'ENDED': 3, 'CANCELLED': 4 };
+                const diff = (order[a.status] || 5) - (order[b.status] || 5);
+                if (diff !== 0) return diff;
+                return new Date(b.scheduledAt) - new Date(a.scheduledAt);
+            });
+
+            let listHTML = '';
+            if (sortedClasses.length > 0) {
+                listHTML = sortedClasses.map(c => {
+                    const platform = getPlatformIcon(c.meetingPlatform);
+                    const statusClass = getLiveStatusClass(c.status);
+                    const statusLabel = getLiveStatusLabel(c.status);
+                    const isLive = c.status === 'LIVE';
+                    const isScheduled = c.status === 'SCHEDULED';
+
+                    return `
+                        <div class="item-card ${isLive ? 'live-class-card' : ''}">
+                            <div class="item-info">
+                                <div class="item-title">
+                                    ${isLive ? '<span class="live-dot"></span>' : ''}
+                                    <span class="platform-icon ${platform.class}" style="width:24px;height:24px;font-size:0.7rem;">
+                                        <i class="fas ${platform.icon}"></i>
+                                    </span>
+                                    ${c.title || 'Untitled Class'}
+                                </div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-book"></i> ${c.subjectName || 'N/A'}</span>
+                                    <span><i class="fas fa-users"></i> ${c.className || 'N/A'}</span>
+                                    <span><i class="fas fa-clock"></i> ${formatDateTime(c.scheduledAt)}</span>
+                                    <span><i class="fas fa-hourglass"></i> ${c.durationMinutes || 60} min</span>
+                                    ${isScheduled ? `<span><i class="fas fa-hourglass-half"></i> ${getCountdown(c.scheduledAt)}</span>` : ''}
+                                </div>
+                                ${c.description ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${c.description}</div>` : ''}
+                            </div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                                <span class="item-status ${statusClass}">${statusLabel}</span>
+
+                                ${isLive ? `
+                                    <a href="${c.meetingUrl}" target="_blank" class="btn-danger" style="padding:0.4rem 1rem;">
+                                        <i class="fas fa-video"></i> Join as Host
+                                    </a>
+                                    <button class="btn-warning" onclick="endLiveClass(${c.id})">
+                                        <i class="fas fa-stop"></i> End
+                                    </button>
+                                ` : ''}
+
+                                ${isScheduled ? `
+                                    <button class="btn-success" onclick="startLiveClass(${c.id})">
+                                        <i class="fas fa-play"></i> Start
+                                    </button>
+                                    <button class="btn-icon" onclick="openLiveClassModal(${c.id})" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-warning" onclick="cancelLiveClass(${c.id})">
+                                        <i class="fas fa-ban"></i> Cancel
+                                    </button>
+                                ` : ''}
+
+                                ${c.status === 'ENDED' && c.recordingUrl ? `
+                                    <a href="${c.recordingUrl}" target="_blank" class="btn-primary" style="padding:0.4rem 1rem;">
+                                        <i class="fas fa-play-circle"></i> Recording
+                                    </a>
+                                ` : ''}
+
+                                ${!isLive ? `
+                                    <button class="btn-icon" onclick="copyMeetingLink('${c.meetingUrl}')" title="Copy Link">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                ` : ''}
+
+                                ${(c.status === 'CANCELLED' || c.status === 'ENDED') ? `
+                                    <button class="btn-icon" onclick="deleteLiveClass(${c.id})" title="Delete" style="color:#e74c3c;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-video"></i>
+                        <p>No live classes yet. Schedule your first live session!</p>
+                    </div>
+                `;
+            }
+
+            const liveBanner = live.length > 0 ? `
+                <div class="live-banner">
+                    <span class="live-dot-white"></span>
+                    <span>${live.length} class${live.length > 1 ? 'es are' : ' is'} LIVE now!</span>
+                </div>
+            ` : '';
+
+            const html = `
+                <div class="page-title">
+                    <i class="fas fa-video"></i> Live Classes
+                </div>
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i>
+                    Schedule and manage your live sessions (${allLiveClasses.length} total)
+                    <button class="btn-primary" onclick="openLiveClassModal()" style="margin-left:auto;">
+                        <i class="fas fa-plus"></i> Schedule Class
+                    </button>
+                </div>
+                ${liveBanner}
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('live-classes');
+
+            // Start auto-refresh if any class is live
+            if (live.length > 0) startLiveClassAutoRefresh();
         };
 
         // ============================================================
@@ -2467,96 +3143,92 @@ window.fetchAllData = fetchAllData;
         // ============================================================
         // RENDER ATTENDANCE
         // ============================================================
-       window.renderAttendance = async function() {
-    const teacherId = currentTeacherId;
+        window.renderAttendance = async function() {
+            const teacherId = currentTeacherId;
 
-    try {
-        // ✅ FIX: allClasses aur allSubjects use karo jo fetchAllData() me load hue hain
-        const myClasses = allClasses || [];
-        const mySubjects = allSubjects || [];
+            try {
+                const myClasses = allClasses || [];
+                const mySubjects = allSubjects || [];
 
-        if (myClasses.length === 0 || mySubjects.length === 0) {
-            contentArea.innerHTML = `
-                <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
-                <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
-                <div class="empty-state">
-                    <i class="fas fa-calendar-check" style="font-size:3rem; color:#f39c12;"></i>
-                    <p style="margin-top:1rem;">No classes or subjects available. Please add classes and subjects first.</p>
-                </div>
-            `;
-            setActiveMenu('attendance');
-            return;
-        }
-
-        const totalClasses = myClasses.length;
-        const totalSubjects = mySubjects.length;
-
-        const stats = [
-            { label: 'My Classes', value: totalClasses, icon: 'fa-users' },
-            { label: 'My Subjects', value: totalSubjects, icon: 'fa-book' }
-        ];
-
-        const statsHTML = stats.map(stat => `
-            <div class="stat-card">
-                <div class="stat-number">${stat.value}</div>
-                <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
-            </div>
-        `).join('');
-
-        let classesHTML = '';
-        if (myClasses.length > 0) {
-            classesHTML = myClasses.map(c => `
-                <div class="item-card">
-                    <div class="item-info">
-                        <div class="item-title">${c.className || 'Class'} ${c.section ? `- ${c.section}` : ''}</div>
-                        <div class="item-meta">
-                            <span><i class="fas fa-users"></i> ${c.capacity || 30} students</span>
-                            <span><i class="fas fa-chalkboard-teacher"></i> Room: ${c.roomNumber || 'N/A'}</span>
+                if (myClasses.length === 0 || mySubjects.length === 0) {
+                    contentArea.innerHTML = `
+                        <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+                        <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-check" style="font-size:3rem; color:#f39c12;"></i>
+                            <p style="margin-top:1rem;">No classes or subjects available. Please add classes and subjects first.</p>
                         </div>
+                    `;
+                    setActiveMenu('attendance');
+                    return;
+                }
+
+                const totalClasses = myClasses.length;
+                const totalSubjects = mySubjects.length;
+
+                const stats = [
+                    { label: 'My Classes', value: totalClasses, icon: 'fa-users' },
+                    { label: 'My Subjects', value: totalSubjects, icon: 'fa-book' }
+                ];
+
+                const statsHTML = stats.map(stat => `
+                    <div class="stat-card">
+                        <div class="stat-number">${stat.value}</div>
+                        <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                     </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn-attendance-mark" onclick="openAttendanceModal()">
-                            <i class="fas fa-calendar-check"></i> Mark
+                `).join('');
+
+                let classesHTML = '';
+                if (myClasses.length > 0) {
+                    classesHTML = myClasses.map(c => `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <div class="item-title">${c.className || 'Class'} ${c.section ? `- ${c.section}` : ''}</div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-users"></i> ${c.capacity || 30} students</span>
+                                    <span><i class="fas fa-chalkboard-teacher"></i> Room: ${c.roomNumber || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-attendance-mark" onclick="openAttendanceModal()">
+                                    <i class="fas fa-calendar-check"></i> Mark
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                const html = `
+                    <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance for your classes</div>
+                    <div class="stats-grid">${statsHTML}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; flex-wrap:wrap; gap:0.5rem;">
+                        <h3 style="color: var(--text-primary); font-size:1.1rem;">
+                            <i class="fas fa-chalkboard"></i> My Classes
+                        </h3>
+                        <button class="btn-primary" onclick="openAttendanceModal()">
+                            <i class="fas fa-plus"></i> Mark Attendance
                         </button>
                     </div>
-                </div>
-            `).join('');
-        }
+                    <div class="item-list">${classesHTML}</div>
+                `;
 
-        const html = `
-            <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
-            <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance for your classes</div>
-            <div class="stats-grid">${statsHTML}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; flex-wrap:wrap; gap:0.5rem;">
-                <h3 style="color: var(--text-primary); font-size:1.1rem;">
-                    <i class="fas fa-chalkboard"></i> My Classes
-                </h3>
-                <button class="btn-primary" onclick="openAttendanceModal()">
-                    <i class="fas fa-plus"></i> Mark Attendance
-                </button>
-            </div>
-            <div class="item-list">${classesHTML}</div>
-        `;
+                contentArea.innerHTML = html;
+                setActiveMenu('attendance');
 
-        contentArea.innerHTML = html;
-        setActiveMenu('attendance');
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+                contentArea.innerHTML = `
+                    <div class="page-title">Attendance</div>
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
+                        <p style="margin-top:1rem;">Could not load attendance data.</p>
+                    </div>
+                `;
+                setActiveMenu('attendance');
+            }
+        };
 
-    } catch (error) {
-        console.error('Error loading attendance:', error);
-        contentArea.innerHTML = `
-            <div class="page-title">Attendance</div>
-            <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
-            <div class="empty-state">
-                <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
-                <p style="margin-top:1rem;">Could not load attendance data.</p>
-                <button class="btn-primary" onclick="renderAttendance()" style="margin-top:1rem;">
-                    <i class="fas fa-sync"></i> Retry
-                </button>
-            </div>
-        `;
-        setActiveMenu('attendance');
-    }
-};
         // ============================================================
         // RENDER FUNCTIONS - DASHBOARD, ASSIGNMENTS, QUIZZES, SUBMISSIONS, STUDENTS
         // ============================================================
@@ -2567,6 +3239,8 @@ window.fetchAllData = fetchAllData;
             const totalQuizzes = allQuizzes.length || 0;
             const totalSubmissions = allSubmissions.length || 0;
             const totalNotes = allNotes.length || 0;
+            const totalLiveClasses = allLiveClasses.length || 0;
+            const liveNow = allLiveClasses.filter(c => c.status === 'LIVE').length;
 
             const pendingSubmissions = allSubmissions.filter(s =>
                 s.status === 'PENDING' || s.status === 'SUBMITTED'
@@ -2574,21 +3248,49 @@ window.fetchAllData = fetchAllData;
 
             const stats = [
                 { label: 'Total Students', value: totalStudents, icon: 'fa-user-graduate' },
-                { label: 'Total Teachers', value: totalTeachers, icon: 'fa-chalkboard-teacher' },
                 { label: 'Assignments', value: totalAssignments, icon: 'fa-tasks' },
                 { label: 'Quizzes', value: totalQuizzes, icon: 'fa-pencil-alt' },
                 { label: 'Notes', value: totalNotes, icon: 'fa-sticky-note' },
+                { label: 'Live Classes', value: totalLiveClasses, icon: 'fa-video' },
+                { label: 'Live Now', value: liveNow, icon: 'fa-circle', color: liveNow > 0 ? 'var(--live-red)' : '' },
                 { label: 'Pending Grading', value: pendingSubmissions, icon: 'fa-clock' }
             ];
 
             const statsHTML = stats.map(stat => `
                 <div class="stat-card">
-                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-number" style="color:${stat.color || 'var(--text-primary)'}">${stat.value}</div>
                     <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                 </div>
             `).join('');
 
+            // Recent items
             const recentNotes = allNotes.slice(0, 3);
+            const recentLive = allLiveClasses
+                .filter(c => c.status === 'LIVE' || c.status === 'SCHEDULED')
+                .slice(0, 3);
+
+            let liveHTML = '';
+            if (recentLive.length > 0) {
+                liveHTML = recentLive.map(c => `
+                    <div class="module-card">
+                        <div class="icon">
+                            ${c.status === 'LIVE' ? '<span class="live-dot"></span>' : '<i class="fas fa-video"></i>'}
+                        </div>
+                        <div class="title">${c.title || 'Untitled'}</div>
+                        <div class="desc">${c.subjectName || ''} · ${c.className || ''}</div>
+                        <div class="count">${c.status === 'LIVE' ? '🔴 LIVE' : formatDateTime(c.scheduledAt)}</div>
+                    </div>
+                `).join('');
+            } else {
+                liveHTML = `
+                    <div class="module-card">
+                        <div class="icon"><i class="fas fa-video"></i></div>
+                        <div class="title">No Live Classes</div>
+                        <div class="desc">Schedule your first live session</div>
+                    </div>
+                `;
+            }
+
             let notesHTML = '';
             if (recentNotes.length > 0) {
                 notesHTML = recentNotes.map(n => `
@@ -2613,6 +3315,12 @@ window.fetchAllData = fetchAllData;
                 <div class="page-title">Dashboard</div>
                 <div class="page-sub"><i class="fas fa-arrow-right"></i> Welcome back, ${currentUser?.fullName || 'Teacher'}! Here's your teaching overview.</div>
                 <div class="stats-grid">${statsHTML}</div>
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
+                        <i class="fas fa-video"></i> Recent Live Classes
+                    </h3>
+                    <div class="module-grid">${liveHTML}</div>
+                </div>
                 <div style="margin-top: 1.5rem;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
                         <i class="fas fa-sticky-note"></i> Recent Notes
@@ -2771,6 +3479,8 @@ window.fetchAllData = fetchAllData;
                     const maxMarks = s.assignment?.maxMarks || 100;
                     const statusClass = status.toLowerCase();
                     const fileUrl = s.fileUrl || '';
+                    const safeName = studentName.replace(/'/g, "\\'");
+                    const safeTitle = assignmentTitle.replace(/'/g, "\\'");
 
                     return `
                         <div class="item-card">
@@ -2789,11 +3499,11 @@ window.fetchAllData = fetchAllData;
                                     ${isGraded ? '✅ Graded' : '📝 Pending'}
                                 </span>
                                 ${!isGraded ? `
-                                    <button class="btn-grade" onclick="openGradeModal(${s.id}, '${studentName.replace(/'/g, "\\'")}', '${assignmentTitle.replace(/'/g, "\\'")}', ${maxMarks})">
+                                    <button class="btn-grade" onclick="openGradeModal(${s.id}, '${safeName}', '${safeTitle}', ${maxMarks})">
                                         <i class="fas fa-star"></i> Grade
                                     </button>
                                 ` : `
-                                    <button class="btn-edit-grade" onclick="openGradeModal(${s.id}, '${studentName.replace(/'/g, "\\'")}', '${assignmentTitle.replace(/'/g, "\\'")}', ${maxMarks})">
+                                    <button class="btn-edit-grade" onclick="openGradeModal(${s.id}, '${safeName}', '${safeTitle}', ${maxMarks})">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
                                 `}
@@ -2895,6 +3605,7 @@ window.fetchAllData = fetchAllData;
                     case 'students': renderStudents(); break;
                     case 'attendance': renderAttendance(); break;
                     case 'notes': renderNotes(); break;
+                    case 'live-classes': renderLiveClasses(); break;  // 🔥 NEW
                     default: renderDashboard();
                 }
             });
@@ -2906,11 +3617,12 @@ window.fetchAllData = fetchAllData;
         logoutBtn.addEventListener('click', () => logoutOverlay.classList.add('show'));
         cancelLogout.addEventListener('click', () => logoutOverlay.classList.remove('show'));
         confirmLogout.addEventListener('click', () => {
-            localStorage.clear();
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
             window.location.href = 'login.html';
         });
         logoutOverlay.addEventListener('click', (e) => {
-            if (e.target === this) this.classList.remove('show');
+            if (e.target === logoutOverlay) logoutOverlay.classList.remove('show');
         });
 
         // ============================================================
@@ -2968,6 +3680,7 @@ window.fetchAllData = fetchAllData;
         console.log('🔹 Teacher Dashboard - Dynamic Backend Connected');
         console.log(`📍 API: ${API_BASE_URL}`);
         console.log('✅ Connected to Smart School Backend');
+        console.log('🎥 Live Classes feature enabled');
 
     })();
 </script>

@@ -754,6 +754,7 @@
         .toast.show { display: flex; }
         .toast.success { border-left: 4px solid var(--success); }
         .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
         .toast .toast-icon { font-size: 1.5rem; }
         .toast .toast-msg { color: var(--text-primary); font-weight: 500; }
 
@@ -917,6 +918,126 @@
         .grade-d .grade-letter { color: var(--grade-d); }
         .grade-e .grade-letter { color: var(--grade-e); }
         .grade-f .grade-letter { color: var(--grade-f); }
+
+        /* ============================================================
+           🔥 LIVE CLASS ANIMATIONS
+           ============================================================ */
+        @keyframes pulse-live {
+            0%, 100% {
+                box-shadow: 0 8px 24px -8px rgba(231, 76, 60, 0.5);
+            }
+            50% {
+                box-shadow: 0 8px 32px -4px rgba(231, 76, 60, 0.8);
+            }
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+            50% {
+                opacity: 0.6;
+                box-shadow: 0 0 0 8px rgba(231, 76, 60, 0);
+            }
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 14px rgba(231, 76, 60, 0.4);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 6px 20px rgba(231, 76, 60, 0.7);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .live-banner {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px -8px rgba(231, 76, 60, 0.5);
+            animation: pulse-live 2s infinite;
+        }
+
+        .live-banner .live-dot-white {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        .live-class-card {
+            border-left: 4px solid #e74c3c !important;
+            background: linear-gradient(90deg, rgba(231, 76, 60, 0.08), transparent 40%) !important;
+            animation: slideIn 0.4s ease;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        .btn-join-live {
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            white-space: nowrap;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulse-btn 2s infinite;
+            transition: all 0.3s ease;
+        }
+        .btn-join-live:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .platform-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            color: white;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .platform-icon.google-meet { background: #00832d; }
+        .platform-icon.zoom { background: #2d8cff; }
+        .platform-icon.teams { background: #6264a7; }
+        .platform-icon.other { background: #888; }
     </style>
 </head>
 <body>
@@ -971,14 +1092,15 @@
             <button class="menu-item" data-module="attendance">
                 <i class="fas fa-calendar-check"></i> Attendance <span class="badge" id="attendanceBadge">0%</span>
             </button>
-            <!-- 🔥🔥🔥 RESULTS TAB 🔥🔥🔥 -->
             <button class="menu-item" data-module="results">
                 <i class="fas fa-star"></i> Results <span class="badge" id="resultsBadge">0</span>
             </button>
-
-            <!-- 🔥🔥🔥 NOTES TAB 🔥🔥🔥 -->
             <button class="menu-item" data-module="notes">
                 <i class="fas fa-file-alt"></i> Notes <span class="badge" id="notesBadge">0</span>
+            </button>
+            <!-- 🔥🔥🔥 LIVE CLASSES BUTTON 🔥🔥🔥 -->
+            <button class="menu-item" data-module="live">
+                <i class="fas fa-video"></i> Live Classes <span class="badge" id="liveBadge">0</span>
             </button>
 
             <div class="divider"></div>
@@ -1086,6 +1208,8 @@
         let allClasses = [];
         let allSubjects = [];
         let allAttendance = [];
+        let allLiveClasses = [];          // 🔥 NEW
+        let liveRefreshInterval = null;   // 🔥 NEW
 
         // ============================================================
         // DOM REFS
@@ -1107,8 +1231,9 @@
         // TOAST NOTIFICATION
         // ============================================================
         function showToast(message, type = 'success') {
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             toast.className = 'toast show ' + type;
-            toastIcon.textContent = type === 'success' ? '✅' : '❌';
+            toastIcon.textContent = icons[type] || 'ℹ️';
             toastMsg.textContent = message;
             clearTimeout(toast._hideTimeout);
             toast._hideTimeout = setTimeout(() => {
@@ -1172,7 +1297,7 @@
                     body: JSON.stringify(data),
                 });
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
                 return await response.json();
@@ -1182,7 +1307,7 @@
             }
         }
 
-      // ============================================================
+        // ============================================================
         // FETCH ALL DATA
         // ============================================================
         async function fetchAllData() {
@@ -1190,15 +1315,15 @@
                 console.log('🔄 Fetching student data...');
 
                 // ✅ Student profile fetch karo
-               const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
-               if (studentProfile && !studentProfile.error) {
-                 studentData = studentProfile;
-               updateProfile(studentProfile.user || currentUser);
-              console.log('✅ Student Profile:', studentData);
-               }
+                const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
+                if (studentProfile && !studentProfile.error) {
+                    studentData = studentProfile;
+                    updateProfile(studentProfile.user || currentUser);
+                    console.log('✅ Student Profile:', studentData);
+                }
 
-// ✅ FIX: studentData.id use karo (yeh actual students table ka ID hai)
-const STUDENT_ID = studentData?.id || currentUser?.userId;
+                // ✅ Student ID (actual students table ID)
+                const STUDENT_ID = studentData?.id || currentUser?.userId;
 
                 // ✅ URLs set karo
                 const assignmentUrl = `/student/assignments/${STUDENT_ID}`;
@@ -1206,11 +1331,13 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 const resultsUrl = `/student/results/${STUDENT_ID}`;
                 const attendanceUrl = `/student/attendance/${STUDENT_ID}`;
                 const notesUrl = `/student/notes/${STUDENT_ID}`;
+                const liveClassesUrl = `/student/live-classes/${STUDENT_ID}`;  // 🔥 NEW
 
                 console.log('📤 Fetching attendance from:', attendanceUrl);
+                console.log('🎥 Fetching live classes from:', liveClassesUrl);
 
                 // ✅ Saare data fetch karo
-                const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance, notes] = await Promise.all([
+                const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance, notes, liveClasses] = await Promise.all([
                     fetchData(assignmentUrl),
                     fetchData(quizUrl),
                     fetchData('/admin/courses'),
@@ -1220,7 +1347,8 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     fetchData('/admin/subjects'),
                     fetchData(resultsUrl),
                     fetchData(attendanceUrl),
-                    fetchData(notesUrl)
+                    fetchData(notesUrl),
+                    fetchData(liveClassesUrl)  // 🔥 NEW
                 ]);
 
                 // ✅ Data ko assign karo
@@ -1233,6 +1361,7 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 allSubjects = Array.isArray(subjects) ? subjects : [];
                 allAttendance = Array.isArray(attendance) ? attendance : [];
                 allNotes = Array.isArray(notes) ? notes : [];
+                allLiveClasses = Array.isArray(liveClasses) ? liveClasses : [];  // 🔥 NEW
 
                 // ✅ Results badge update karo
                 if (results && results.performance) {
@@ -1245,19 +1374,25 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 document.getElementById('quizzesBadge').textContent = allQuizzes.length || 0;
                 document.getElementById('notesBadge').textContent = allNotes.length || 0;
 
+                // 🔥 Live Classes badge (only LIVE + SCHEDULED)
+                const activeLiveCount = allLiveClasses.filter(c =>
+                    c.status === 'LIVE' || c.status === 'SCHEDULED'
+                ).length;
+                document.getElementById('liveBadge').textContent = activeLiveCount;
+
                 // ✅ Attendance percentage calculate karo
                 const totalAttendanceDays = allAttendance.length;
                 const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
                 const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays * 100.0) / totalAttendanceDays) : 0;
                 document.getElementById('attendanceBadge').textContent = attendancePercentage + '%';
 
-                // ✅ Debug logs (Testing ke liye)
+                // ✅ Debug logs
                 console.log('✅ Assignments loaded:', allAssignments.length);
                 console.log('✅ Quizzes loaded:', allQuizzes.length);
                 console.log('✅ Courses loaded:', allCourses.length);
                 console.log('✅ Attendance loaded:', allAttendance.length);
-                console.log('📊 Sample attendance (first item):', allAttendance.length > 0 ? allAttendance[0] : 'None');
                 console.log('✅ Notes loaded:', allNotes.length);
+                console.log('🎥 Live Classes loaded:', allLiveClasses.length);
 
                 return true;
             } catch (error) {
@@ -1270,15 +1405,34 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         // HELPERS
         // ============================================================
         function getEmbedUrl(url) {
-            if (!url) return '';
+            if (!url) return null;
+
             if (url.includes('youtu.be/')) {
                 const id = url.split('youtu.be/')[1].split('?')[0];
                 return `https://www.youtube.com/embed/${id}`;
             }
-            if (url.includes('watch?v=')) {
-                return url.replace('watch?v=', 'embed/');
+            if (url.includes('youtube.com/watch?v=')) {
+                const id = url.split('v=')[1].split('&')[0];
+                return `https://www.youtube.com/embed/${id}`;
             }
-            return url;
+            if (url.includes('vimeo.com/')) {
+                const id = url.split('vimeo.com/')[1].split('?')[0];
+                return `https://player.vimeo.com/video/${id}`;
+            }
+            if (url.includes('drive.google.com/file/d/')) {
+                const id = url.split('/d/')[1].split('/')[0];
+                return `https://drive.google.com/file/d/${id}/preview`;
+            }
+            if (url.includes('meet.google.com') ||
+                url.includes('zoom.us') ||
+                url.includes('teams.microsoft.com') ||
+                url.includes('whereby.com')) {
+                return null;
+            }
+            if (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')) {
+                return url;
+            }
+            return null;
         }
 
         function getGradeColor(grade) {
@@ -1302,12 +1456,70 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         }
 
         // ============================================================
+        // 🔥 LIVE CLASS HELPERS
+        // ============================================================
+        function getPlatformInfo(platform) {
+            const map = {
+                'GOOGLE_MEET': { icon: 'fa-video', color: '#00832d', name: 'Google Meet', cls: 'google-meet' },
+                'ZOOM': { icon: 'fa-video', color: '#2d8cff', name: 'Zoom', cls: 'zoom' },
+                'TEAMS': { icon: 'fa-video', color: '#6264a7', name: 'Microsoft Teams', cls: 'teams' },
+                'OTHER': { icon: 'fa-link', color: '#888', name: 'Meeting', cls: 'other' }
+            };
+            return map[platform] || map['OTHER'];
+        }
+
+        function formatDateTime(iso) {
+            if (!iso) return 'N/A';
+            const d = new Date(iso);
+            return d.toLocaleString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        function getCountdown(iso) {
+            if (!iso) return '';
+            const diff = new Date(iso) - new Date();
+            if (diff < 0) return 'Starting soon';
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(mins / 60);
+            const days = Math.floor(hours / 24);
+            if (days > 0) return `In ${days}d ${hours % 24}h`;
+            if (hours > 0) return `In ${hours}h ${mins % 60}m`;
+            return `In ${mins}m`;
+        }
+
+        function getLiveStatusClass(status) {
+            return {
+                'LIVE': 'late',
+                'SCHEDULED': 'pending',
+                'ENDED': 'submitted',
+                'CANCELLED': 'graded'
+            }[status] || 'pending';
+        }
+
+        function getLiveStatusLabel(status) {
+            return {
+                'LIVE': '🔴 LIVE NOW',
+                'SCHEDULED': '📅 Upcoming',
+                'ENDED': '✅ Ended',
+                'CANCELLED': '❌ Cancelled'
+            }[status] || status;
+        }
+
+        // ============================================================
         // RENDER FUNCTIONS
         // ============================================================
         function renderDashboard() {
             const totalCourses = allCourses.length || 0;
             const totalAssignments = allAssignments.length || 0;
             const totalQuizzes = allQuizzes.length || 0;
+            const totalLive = allLiveClasses.filter(c => c.status === 'LIVE').length;
+            const upcomingLive = allLiveClasses.filter(c => c.status === 'SCHEDULED').length;
 
             const totalAttendanceDays = allAttendance.length;
             const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
@@ -1317,12 +1529,14 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 { label: 'Courses', value: totalCourses, icon: 'fa-book' },
                 { label: 'Assignments', value: totalAssignments, icon: 'fa-tasks' },
                 { label: 'Quizzes', value: totalQuizzes, icon: 'fa-pencil-alt' },
-                { label: 'Attendance', value: attendancePercentage + '%', icon: 'fa-calendar-check' }
+                { label: 'Attendance', value: attendancePercentage + '%', icon: 'fa-calendar-check' },
+                { label: 'Live Now', value: totalLive, icon: 'fa-circle', color: totalLive > 0 ? 'var(--danger)' : '' },
+                { label: 'Upcoming Live', value: upcomingLive, icon: 'fa-video' }
             ];
 
             const statsHTML = stats.map(stat => `
                 <div class="stat-card">
-                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-number" style="color:${stat.color || 'var(--text-primary)'}">${stat.value}</div>
                     <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                 </div>
             `).join('');
@@ -1348,6 +1562,35 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 `;
             }
 
+            // 🔥 Live Classes widget
+            const liveNow = allLiveClasses.filter(c => c.status === 'LIVE');
+            const upcoming = allLiveClasses.filter(c => c.status === 'SCHEDULED').slice(0, 2);
+            let liveHTML = '';
+
+            if (liveNow.length > 0 || upcoming.length > 0) {
+                const items = [...liveNow, ...upcoming];
+                liveHTML = items.map(c => `
+                    <div class="module-card">
+                        <div class="icon">
+                            ${c.status === 'LIVE' ? '<span class="live-dot"></span>' : '<i class="fas fa-video"></i>'}
+                        </div>
+                        <div class="title">${c.title || 'Live Class'}</div>
+                        <div class="desc">${c.subjectName || ''} · ${c.teacherName || ''}</div>
+                        <div class="count">
+                            ${c.status === 'LIVE' ? '🔴 LIVE' : getCountdown(c.scheduledAt)}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                liveHTML = `
+                    <div class="module-card">
+                        <div class="icon"><i class="fas fa-video"></i></div>
+                        <div class="title">No Live Classes</div>
+                        <div class="desc">Check back later</div>
+                    </div>
+                `;
+            }
+
             const chartHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
                     <div class="chart-box">
@@ -1365,6 +1608,12 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 <div class="page-title">Dashboard</div>
                 <div class="page-sub"><i class="fas fa-arrow-right"></i> Welcome back, ${currentUser?.fullName || 'Student'}!</div>
                 <div class="stats-grid">${statsHTML}</div>
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
+                        <i class="fas fa-video"></i> Live Classes
+                    </h3>
+                    <div class="module-grid">${liveHTML}</div>
+                </div>
                 <div style="margin-top: 1.5rem;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
                         <i class="fas fa-clock"></i> Recent Assignments
@@ -1423,107 +1672,95 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
             }
         }
 
-       function renderAssignments() {
-    // ✅ FIX: Date comparison sahi karo
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Time part hatao for accurate date comparison
+        function renderAssignments() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
 
-    const total = allAssignments.length || 0;
+            const total = allAssignments.length || 0;
 
-    // ✅ FIX: Pending = NOT submitted AND due date >= today
-    const pending = allAssignments.filter(a => {
-        if (a.submitted) return false;
-        const dueDate = new Date(a.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
-        return dueDate >= now;
-    }).length || 0;
+            const pending = allAssignments.filter(a => {
+                if (a.submitted) return false;
+                const dueDate = new Date(a.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                return dueDate >= now;
+            }).length || 0;
 
-    // ✅ FIX: Overdue = NOT submitted AND due date < today
-    const overdue = allAssignments.filter(a => {
-        if (a.submitted) return false;
-        const dueDate = new Date(a.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
-        return dueDate < now;
-    }).length || 0;
+            const overdue = allAssignments.filter(a => {
+                if (a.submitted) return false;
+                const dueDate = new Date(a.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                return dueDate < now;
+            }).length || 0;
 
-    const stats = [
-        { label: 'Total', value: total, icon: 'fa-tasks' },
-        { label: 'Pending', value: pending, icon: 'fa-clock' },
-        { label: 'Overdue', value: overdue, icon: 'fa-exclamation-triangle' }
-    ];
+            const stats = [
+                { label: 'Total', value: total, icon: 'fa-tasks' },
+                { label: 'Pending', value: pending, icon: 'fa-clock' },
+                { label: 'Overdue', value: overdue, icon: 'fa-exclamation-triangle' }
+            ];
 
-    const statsHTML = stats.map(stat => `
-        <div class="stat-card">
-            <div class="stat-number">${stat.value}</div>
-            <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
-        </div>
-    `).join('');
-
-    let listHTML = '';
-    if (total > 0) {
-        listHTML = allAssignments.map(a => {
-            // ✅ FIX: Submitted check pehle karo
-            const isSubmitted = a.submitted || false;
-
-            // ✅ FIX: Agar submitted hai toh overdue/pending mat dikhao
-            const dueDate = new Date(a.dueDate);
-            dueDate.setHours(0, 0, 0, 0);
-            const isOverdue = !isSubmitted && dueDate < now;
-            const isPending = !isSubmitted && !isOverdue;
-
-            // ✅ FIX: Student ID safely access karo
-            const studentId = studentData?.id || '';
-
-            // ✅ FIX: Title ko safe karo (special characters handle)
-            const safeTitle = (a.title || 'Assignment').replace(/'/g, "\\'");
-
-            return `
-                <div class="item-card">
-                    <div class="item-info">
-                        <div class="item-title">${a.title || 'Assignment'}</div>
-                        <div class="item-meta">
-                            <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
-                            <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
-                            <span><i class="fas fa-calendar"></i> Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</span>
-                            <span><i class="fas fa-star"></i> Max: ${a.maxMarks || 100}</span>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <span class="item-status ${isSubmitted ? 'submitted' : (isOverdue ? 'late' : 'pending')}">
-                            ${isSubmitted ? '✅ Submitted' : (isOverdue ? '⏰ Overdue' : '📝 Pending')}
-                        </span>
-                        ${!isSubmitted ? `
-                            <button class="btn-primary" onclick="openSubmitModal(${a.id}, '${safeTitle}', ${studentId})" style="padding:0.3rem 0.8rem; font-size:0.75rem; white-space:nowrap;">
-                                <i class="fas fa-upload"></i> Submit
-                            </button>
-                        ` : ''}
-                    </div>
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                 </div>
+            `).join('');
+
+            let listHTML = '';
+            if (total > 0) {
+                listHTML = allAssignments.map(a => {
+                    const isSubmitted = a.submitted || false;
+                    const dueDate = new Date(a.dueDate);
+                    dueDate.setHours(0, 0, 0, 0);
+                    const isOverdue = !isSubmitted && dueDate < now;
+                    const studentId = studentData?.id || '';
+                    const safeTitle = (a.title || 'Assignment').replace(/'/g, "\\'");
+
+                    return `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <div class="item-title">${a.title || 'Assignment'}</div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
+                                    <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
+                                    <span><i class="fas fa-calendar"></i> Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</span>
+                                    <span><i class="fas fa-star"></i> Max: ${a.maxMarks || 100}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <span class="item-status ${isSubmitted ? 'submitted' : (isOverdue ? 'late' : 'pending')}">
+                                    ${isSubmitted ? '✅ Submitted' : (isOverdue ? '⏰ Overdue' : '📝 Pending')}
+                                </span>
+                                ${!isSubmitted ? `
+                                    <button class="btn-primary" onclick="openSubmitModal(${a.id}, '${safeTitle}', ${studentId})" style="padding:0.3rem 0.8rem; font-size:0.75rem; white-space:nowrap;">
+                                        <i class="fas fa-upload"></i> Submit
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <p>No assignments available.</p>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="page-title">My Assignments</div>
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> ${total} assignments assigned</div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
             `;
-        }).join('');
-    } else {
-        listHTML = `
-            <div class="empty-state">
-                <i class="fas fa-tasks"></i>
-                <p>No assignments available.</p>
-            </div>
-        `;
-    }
 
-    const html = `
-        <div class="page-title">My Assignments</div>
-        <div class="page-sub"><i class="fas fa-arrow-right"></i> ${total} assignments assigned</div>
-        <div class="stats-grid">${statsHTML}</div>
-        <div class="item-list">${listHTML}</div>
-    `;
+            contentArea.innerHTML = html;
+            setActiveMenu('assignments');
+        }
 
-    contentArea.innerHTML = html;
-    setActiveMenu('assignments');
-}
         // SUBMIT ASSIGNMENT FUNCTIONS
         window.openSubmitModal = function(assignmentId, assignmentTitle, studentId) {
-            console.log('📝 Opening submit modal for assignment:', assignmentId, assignmentTitle);
-
             document.getElementById('submitAssignmentId').value = assignmentId;
             document.getElementById('submitAssignmentTitle').value = assignmentTitle;
             document.getElementById('submitFileUrl').value = '';
@@ -1532,66 +1769,62 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
             document.getElementById('submitAssignmentModal').classList.add('show');
         };
 
-      window.submitAssignment = async function(event) {
-    event.preventDefault();
+        window.submitAssignment = async function(event) {
+            event.preventDefault();
 
-    const assignmentId = document.getElementById('submitAssignmentId').value;
-    const fileUrl = document.getElementById('submitFileUrl').value.trim();
-    const comments = document.getElementById('submitComments').value.trim();
-    const studentId = studentData?.id;
-    const errorEl = document.getElementById('submitError');
+            const assignmentId = document.getElementById('submitAssignmentId').value;
+            const fileUrl = document.getElementById('submitFileUrl').value.trim();
+            const comments = document.getElementById('submitComments').value.trim();
+            const studentId = studentData?.id;
+            const errorEl = document.getElementById('submitError');
 
-    if (!fileUrl) {
-        errorEl.textContent = 'Please provide a file URL.';
-        errorEl.classList.add('show');
-        return;
-    }
+            if (!fileUrl) {
+                errorEl.textContent = 'Please provide a file URL.';
+                errorEl.classList.add('show');
+                return;
+            }
 
-    const btn = document.getElementById('submitAssignmentBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loading-spinner-small"></span> Submitting...';
+            const btn = document.getElementById('submitAssignmentBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Submitting...';
 
-    try {
-        const data = {
-            studentId: studentId,
-            fileUrl: fileUrl,
-            comments: comments
+            try {
+                const data = {
+                    studentId: studentId,
+                    fileUrl: fileUrl,
+                    comments: comments
+                };
+
+                const result = await postData(`/student/assignments/${assignmentId}/submit`, data);
+
+                if (result && result.success !== false) {
+                    showToast('Assignment submitted successfully! 🎉', 'success');
+                    closeModal('submitAssignmentModal');
+                    document.getElementById('submitAssignmentForm').reset();
+
+                    const submittedAssignment = allAssignments.find(a => a.id === parseInt(assignmentId));
+                    if (submittedAssignment) {
+                        submittedAssignment.submitted = true;
+                    }
+
+                    if (result.assignments && Array.isArray(result.assignments)) {
+                        allAssignments = result.assignments;
+                    }
+
+                    renderAssignments();
+                } else {
+                    throw new Error(result?.error || 'Failed to submit assignment');
+                }
+            } catch (error) {
+                console.error('❌ Error submitting assignment:', error);
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload"></i> Submit Assignment';
+            }
         };
-
-        const result = await postData(`/student/assignments/${assignmentId}/submit`, data);
-
-        if (result && result.success !== false) {
-            showToast('Assignment submitted successfully! 🎉', 'success');
-            closeModal('submitAssignmentModal');
-            document.getElementById('submitAssignmentForm').reset();
-
-            // ✅ FIX: Local state update karo (Optimistic Update)
-            const submittedAssignment = allAssignments.find(a => a.id === parseInt(assignmentId));
-            if (submittedAssignment) {
-                submittedAssignment.submitted = true;
-            }
-
-            // ✅ FIX: Agar backend se updated list aayi hai toh use karo
-            if (result.assignments && Array.isArray(result.assignments)) {
-                allAssignments = result.assignments;
-            }
-
-            // ✅ FIX: Re-render karo
-            renderAssignments();
-
-        } else {
-            throw new Error(result?.error || 'Failed to submit assignment');
-        }
-    } catch (error) {
-        console.error('❌ Error submitting assignment:', error);
-        errorEl.textContent = error.message;
-        errorEl.classList.add('show');
-        showToast('Failed: ' + error.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-upload"></i> Submit Assignment';
-    }
-};
 
         window.closeModal = function(id) {
             const modal = document.getElementById(id);
@@ -1601,7 +1834,7 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         };
 
         // ============================================================
-        // RENDER QUIZZES (Cleaned & Fixed)
+        // RENDER QUIZZES
         // ============================================================
         function renderQuizzes() {
             const upcoming = allQuizzes.filter(q => q.status === 'UPCOMING' || (!q.attempted && new Date(q.quizDate) > new Date())).length;
@@ -1673,14 +1906,10 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
             setActiveMenu('quizzes');
         }
 
-        // ============================================================
-        // ✅ FIXED QUIZ ATTEMPT & SUBMIT (IIFE ke andar)
-        // ============================================================
         window.openQuizModal = function(quizId) {
             const modal = document.getElementById('quizAttemptModal');
             const content = document.getElementById('quizAttemptContent');
 
-            // ✅ Quiz ko allQuizzes array se dhoondo (JSON string se problem nahi hogi)
             const quiz = allQuizzes.find(q => q.id === quizId);
             if (!quiz) {
                 showToast('Quiz not found!', 'error');
@@ -1693,7 +1922,7 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 <div class="form-group">
                     <label>Quiz: ${quiz.title || 'Quiz'}</label>
                     ${questions.map((q, index) => `
-                        <div style="border:1px solid var(--border-card); padding:1rem; border-radius:12px; margin-bottom:1rem;">
+                        <div class="quiz-question" data-question-id="${q.id}" style="border:1px solid var(--border-card); padding:1rem; border-radius:12px; margin-bottom:1rem;">
                             <p style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">
                                 Q${index+1}. ${q.question}
                             </p>
@@ -1725,16 +1954,16 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
             modal.classList.add('show');
         };
 
-                    window.submitQuizAttempt = async function(quizId) {
+        window.submitQuizAttempt = async function(quizId) {
             try {
                 const answers = [];
-                const questionElements = document.querySelectorAll('#quizAttemptContent div[style*="border"]');
+                const questionElements = document.querySelectorAll('#quizAttemptContent .quiz-question');
 
                 questionElements.forEach(qDiv => {
                     const radio = qDiv.querySelector('input[type="radio"]:checked');
                     if (radio) {
                         answers.push({
-                            questionId: parseInt(radio.name.split('_')[1]),
+                            questionId: parseInt(qDiv.dataset.questionId),
                             selectedAnswer: radio.value
                         });
                     }
@@ -1745,19 +1974,17 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     return;
                 }
 
-                // 🔥 Debug: Console me answers check karo
                 console.log('📤 Submitting answers:', answers);
 
                 const data = {
                     studentId: studentData?.id,
                     answers: answers,
-                    marksObtained: 0 // Backend isko khud calculate karega
+                    marksObtained: 0
                 };
 
                 const result = await postData(`/student/quizzes/${quizId}/submit`, data);
 
                 if (result && result.success !== false) {
-                    // ✅ Result show karo
                     console.log('✅ Result from backend:', result);
                     showToast(`Quiz submitted! Marks: ${result.marksObtained}, Percentage: ${result.percentage}%, Grade: ${result.grade}`, 'success');
 
@@ -1790,20 +2017,36 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
 
             let cardsHTML = '';
             if (allCourses.length > 0) {
-                cardsHTML = allCourses.map(c => `
-                    <div class="module-card">
-                        <div class="icon"><i class="fas fa-book"></i></div>
-                        <div class="title">${c.subjectName || 'Course'}</div>
-                        <div class="desc">${c.subjectCode || ''} · ${c.credits || 0} credits</div>
-                        <div class="count">${c.description || 'No description'}</div>
-                        ${c.videoUrl ? `
-                            <div class="video-container">
-                                <iframe width="100%" height="180" src="${getEmbedUrl(c.videoUrl)}"
-                                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('');
+                cardsHTML = allCourses.map(c => {
+                    const embedUrl = getEmbedUrl(c.videoUrl);
+
+                    return `
+                        <div class="module-card">
+                            <div class="icon"><i class="fas fa-book"></i></div>
+                            <div class="title">${c.subjectName || 'Course'}</div>
+                            <div class="desc">${c.subjectCode || ''} · ${c.credits || 0} credits</div>
+                            <div class="count">${c.description || 'No description'}</div>
+                            ${c.videoUrl ? `
+                                <div class="video-container">
+                                    ${embedUrl ? `
+                                        <iframe width="100%" height="180" src="${embedUrl}"
+                                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    ` : `
+                                        <div style="background: var(--stat-bg); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                                            <i class="fas fa-video" style="font-size: 2.5rem; color: #1b6b8a; margin-bottom: 0.5rem;"></i>
+                                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+                                                <i class="fas fa-google"></i> Google Meet / Live Session
+                                            </p>
+                                            <a href="${c.videoUrl}" target="_blank" class="btn-primary" style="text-decoration: none; color: white; padding: 0.6rem 1.5rem; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-external-link-alt"></i> Join Session
+                                            </a>
+                                        </div>
+                                    `}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
             } else {
                 cardsHTML = `
                     <div class="empty-state">
@@ -1827,67 +2070,66 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         // ============================================================
         // RENDER ATTENDANCE
         // ============================================================
-      function renderAttendance() {
-    // ✅ Debug: Check data
-    console.log('📊 Rendering attendance with data:', allAttendance);
+        function renderAttendance() {
+            console.log('📊 Rendering attendance with data:', allAttendance);
 
-    const attendanceList = allAttendance || [];
-    const totalDays = attendanceList.length;
-    const presentDays = attendanceList.filter(a => a.status === 'PRESENT').length;
-    const absentDays = attendanceList.filter(a => a.status === 'ABSENT').length;
-    const lateDays = attendanceList.filter(a => a.status === 'LATE').length;
-    const percentage = totalDays > 0 ? Math.round((presentDays * 100.0) / totalDays) : 0;
+            const attendanceList = allAttendance || [];
+            const totalDays = attendanceList.length;
+            const presentDays = attendanceList.filter(a => a.status === 'PRESENT').length;
+            const absentDays = attendanceList.filter(a => a.status === 'ABSENT').length;
+            const lateDays = attendanceList.filter(a => a.status === 'LATE').length;
+            const percentage = totalDays > 0 ? Math.round((presentDays * 100.0) / totalDays) : 0;
 
-    const stats = [
-        { label: 'Total Days', value: totalDays, icon: 'fa-calendar' },
-        { label: 'Present', value: presentDays, icon: 'fa-check-circle' },
-        { label: 'Absent', value: absentDays, icon: 'fa-times-circle' },
-        { label: 'Percentage', value: percentage + '%', icon: 'fa-percent' }
-    ];
+            const stats = [
+                { label: 'Total Days', value: totalDays, icon: 'fa-calendar' },
+                { label: 'Present', value: presentDays, icon: 'fa-check-circle' },
+                { label: 'Absent', value: absentDays, icon: 'fa-times-circle' },
+                { label: 'Percentage', value: percentage + '%', icon: 'fa-percent' }
+            ];
 
-    const statsHTML = stats.map(stat => `
-        <div class="stat-card">
-            <div class="stat-number">${stat.value}</div>
-            <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
-        </div>
-    `).join('');
-
-    let listHTML = '';
-    if (attendanceList.length > 0) {
-        listHTML = attendanceList.map(a => `
-            <div class="item-card">
-                <div class="item-info">
-                    <div class="item-title">${a.date || 'N/A'}</div>
-                    <div class="item-meta">
-                        <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
-                        <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
-                    </div>
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                 </div>
-                <span class="item-status ${a.status === 'PRESENT' ? 'submitted' : (a.status === 'ABSENT' ? 'late' : 'pending')}">
-                    ${a.status || 'N/A'}
-                </span>
-            </div>
-        `).join('');
-    } else {
-        listHTML = `
-            <div class="empty-state">
-                <i class="fas fa-calendar-check"></i>
-                <p>No attendance records found.</p>
-            </div>
-        `;
-    }
+            `).join('');
 
-    const html = `
-        <div class="page-title">Attendance Overview</div>
-        <div class="page-sub"><i class="fas fa-arrow-right"></i> Your attendance records</div>
-        <div class="stats-grid">${statsHTML}</div>
-        <div class="item-list">${listHTML}</div>
-    `;
+            let listHTML = '';
+            if (attendanceList.length > 0) {
+                listHTML = attendanceList.map(a => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-title">${a.date || 'N/A'}</div>
+                            <div class="item-meta">
+                                <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
+                                <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <span class="item-status ${a.status === 'PRESENT' ? 'submitted' : (a.status === 'ABSENT' ? 'late' : 'pending')}">
+                            ${a.status || 'N/A'}
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <p>No attendance records found.</p>
+                    </div>
+                `;
+            }
 
-    contentArea.innerHTML = html;
-    setActiveMenu('attendance');
-    document.getElementById('attendanceBadge').textContent = percentage + '%';
-}
+            const html = `
+                <div class="page-title">Attendance Overview</div>
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Your attendance records</div>
+                <div class="stats-grid">${statsHTML}</div>
+                <div class="item-list">${listHTML}</div>
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('attendance');
+            document.getElementById('attendanceBadge').textContent = percentage + '%';
+        }
 
         // ============================================================
         // RENDER RESULTS
@@ -1916,18 +2158,9 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
             }
 
             try {
-                // --------------------------------------------------------
-                // 1. Fetch assignment results
-                // --------------------------------------------------------
                 const resultsResponse = await fetchData(`/student/results/${studentId}`);
-
-                // --------------------------------------------------------
-                // 2. Fetch quiz results
-                // --------------------------------------------------------
                 const quizResultsResponse = await fetchData(`/student/quiz-results/${studentId}`);
 
-                // Some APIs return a direct array, while others return
-                // { data: [...] }. Support both without changing backend.
                 const quizResults = Array.isArray(quizResultsResponse)
                     ? quizResultsResponse
                     : (Array.isArray(quizResultsResponse?.data)
@@ -1938,23 +2171,9 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     ? resultsResponse.data
                     : resultsResponse;
 
-                // --------------------------------------------------------
-                // 3. QUIZ OVERALL PERFORMANCE
-                //    Overall percentage = total obtained / total marks * 100
-                //    This is weighted and is more accurate than averaging
-                //    individual quiz percentages.
-                // --------------------------------------------------------
-                const totalQuizCount = Array.isArray(allQuizzes)
-                    ? allQuizzes.length
-                    : 0;
-
+                const totalQuizCount = Array.isArray(allQuizzes) ? allQuizzes.length : 0;
                 const attemptedQuizCount = quizResults.length;
-
-                // One quiz result is treated as one attempted quiz.
-                const pendingQuizCount = Math.max(
-                    totalQuizCount - attemptedQuizCount,
-                    0
-                );
+                const pendingQuizCount = Math.max(totalQuizCount - attemptedQuizCount, 0);
 
                 let quizTotalObtained = 0;
                 let quizTotalMarks = 0;
@@ -1962,20 +2181,12 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                 quizResults.forEach(qr => {
                     const obtained = Number(qr?.marksObtained);
                     const total = Number(qr?.totalMarks);
-
-                    if (Number.isFinite(obtained)) {
-                        quizTotalObtained += obtained;
-                    }
-
-                    if (Number.isFinite(total) && total > 0) {
-                        quizTotalMarks += total;
-                    }
+                    if (Number.isFinite(obtained)) quizTotalObtained += obtained;
+                    if (Number.isFinite(total) && total > 0) quizTotalMarks += total;
                 });
 
                 const quizOverallPercentage = quizTotalMarks > 0
-                    ? Math.round(
-                        (quizTotalObtained / quizTotalMarks) * 10000
-                    ) / 100
+                    ? Math.round((quizTotalObtained / quizTotalMarks) * 10000) / 100
                     : 0;
 
                 const getOverallGrade = (percentage) => {
@@ -1988,17 +2199,9 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     return 'F';
                 };
 
-                const quizGrade = quizTotalMarks > 0
-                    ? getOverallGrade(quizOverallPercentage)
-                    : 'N/A';
+                const quizGrade = quizTotalMarks > 0 ? getOverallGrade(quizOverallPercentage) : 'N/A';
 
-                // --------------------------------------------------------
-                // 4. Check whether any result exists
-                // --------------------------------------------------------
-                const hasAssignmentResults = Boolean(
-                    results?.performance
-                );
-
+                const hasAssignmentResults = Boolean(results?.performance);
                 const hasQuizResults = quizResults.length > 0;
 
                 if (!hasAssignmentResults && !hasQuizResults) {
@@ -2009,28 +2212,19 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                         <div class="page-sub">
                             <i class="fas fa-arrow-right"></i> Your academic performance
                         </div>
-
                         <div class="empty-state">
-                            <i class="fas fa-star"
-                               style="font-size:3rem; color:#f39c12;"></i>
-                            <p style="margin-top:1rem;">
-                                No results available yet.
-                            </p>
+                            <i class="fas fa-star" style="font-size:3rem; color:#f39c12;"></i>
+                            <p style="margin-top:1rem;">No results available yet.</p>
                             <p class="text-muted" style="margin-top:0.4rem;">
-                                Your assignment and quiz results will appear here
-                                after they are evaluated.
+                                Your assignment and quiz results will appear here after they are evaluated.
                             </p>
                         </div>
                     `;
-
                     setActiveMenu('results');
                     document.getElementById('resultsBadge').textContent = '0';
                     return;
                 }
 
-                // --------------------------------------------------------
-                // 5. Page heading
-                // --------------------------------------------------------
                 let html = `
                     <div class="page-title">
                         <i class="fas fa-star" style="color:#f39c12;"></i>
@@ -2042,179 +2236,85 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     </div>
                 `;
 
-                // --------------------------------------------------------
-                // 6. ASSIGNMENT RESULTS
-                // --------------------------------------------------------
                 if (hasAssignmentResults) {
                     const perf = results.performance || {};
-                    const marks = Array.isArray(results.subjectWiseMarks)
-                        ? results.subjectWiseMarks
-                        : [];
+                    const marks = Array.isArray(results.subjectWiseMarks) ? results.subjectWiseMarks : [];
 
                     const totalAssignments = Number(perf.totalAssignments) || 0;
                     const gradedAssignments = Number(perf.gradedCount) || 0;
                     const pendingAssignments = Number(perf.pendingCount) || 0;
-                    const averageAssignmentMarks =
-                        Number(perf.averageMarks) || 0;
+                    const averageAssignmentMarks = Number(perf.averageMarks) || 0;
 
                     const assignmentStats = [
-                        {
-                            label: 'Total Assignments',
-                            value: totalAssignments,
-                            icon: 'fa-tasks'
-                        },
-                        {
-                            label: 'Graded',
-                            value: gradedAssignments,
-                            icon: 'fa-check-circle'
-                        },
-                        {
-                            label: 'Pending',
-                            value: pendingAssignments,
-                            icon: 'fa-clock'
-                        },
-                        {
-                            label: 'Average Marks',
-                            value: `${averageAssignmentMarks}/100`,
-                            icon: 'fa-star'
-                        }
+                        { label: 'Total Assignments', value: totalAssignments, icon: 'fa-tasks' },
+                        { label: 'Graded', value: gradedAssignments, icon: 'fa-check-circle' },
+                        { label: 'Pending', value: pendingAssignments, icon: 'fa-clock' },
+                        { label: 'Average Marks', value: `${averageAssignmentMarks}/100`, icon: 'fa-star' }
                     ];
 
                     const assignmentStatsHTML = assignmentStats.map(stat => `
                         <div class="stat-card">
                             <div class="stat-number">${stat.value}</div>
-                            <div class="stat-label">
-                                <i class="fas ${stat.icon}"></i>
-                                ${stat.label}
-                            </div>
+                            <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                         </div>
                     `).join('');
 
                     const assignmentGrade = perf.grade || 'N/A';
-                    const assignmentPercentage =
-                        Number(perf.overallPercentage) || 0;
+                    const assignmentPercentage = Number(perf.overallPercentage) || 0;
 
                     html += `
-                        <h3 style="color:var(--text-primary);
-                                   font-size:1rem;
-                                   margin-top:0.5rem;
-                                   margin-bottom:0.8rem;">
-                            <i class="fas fa-tasks"></i>
-                            Assignment Results
+                        <h3 style="color:var(--text-primary); font-size:1rem; margin-top:0.5rem; margin-bottom:0.8rem;">
+                            <i class="fas fa-tasks"></i> Assignment Results
                         </h3>
-
-                        <div class="stats-grid">
-                            ${assignmentStatsHTML}
-                        </div>
-
-                        <div class="stats-grid"
-                             style="grid-template-columns:
-                                    repeat(auto-fit, minmax(150px, 1fr));">
-
-                            <div class="grade-card ${getGradeClass(assignmentGrade)}"
-                                 style="border-color:
-                                        ${getGradeColor(assignmentGrade)};">
-
-                                <div class="grade-letter">
-                                    ${assignmentGrade}
-                                </div>
-
+                        <div class="stats-grid">${assignmentStatsHTML}</div>
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                            <div class="grade-card ${getGradeClass(assignmentGrade)}" style="border-color: ${getGradeColor(assignmentGrade)};">
+                                <div class="grade-letter">${assignmentGrade}</div>
                                 <div class="grade-label">
-                                    <i class="fas fa-star"
-                                       style="color:
-                                              ${getGradeColor(assignmentGrade)};">
-                                    </i>
+                                    <i class="fas fa-star" style="color: ${getGradeColor(assignmentGrade)};"></i>
                                     Overall Assignment Grade
                                 </div>
-
-                                <div class="grade-percentage">
-                                    ${assignmentPercentage}%
-                                </div>
+                                <div class="grade-percentage">${assignmentPercentage}%</div>
                             </div>
                         </div>
                     `;
 
-                    // ----------------------------------------------------
-                    // Individual assignment marks
-                    // ----------------------------------------------------
                     if (marks.length > 0) {
                         html += `
-                            <h3 style="color:var(--text-primary);
-                                       font-size:1rem;
-                                       margin-top:1.5rem;
-                                       margin-bottom:0.8rem;">
-                                <i class="fas fa-list"></i>
-                                Assignment Marks
+                            <h3 style="color:var(--text-primary); font-size:1rem; margin-top:1.5rem; margin-bottom:0.8rem;">
+                                <i class="fas fa-list"></i> Assignment Marks
                             </h3>
-
                             <div class="item-list">
                         `;
 
                         html += marks.map(m => {
                             const obtained = Number(m?.marksObtained) || 0;
                             const maxMarks = Number(m?.maxMarks) || 0;
-
                             let percentageVal = Number(m?.percentage);
-
-                            if (!Number.isFinite(percentageVal) &&
-                                maxMarks > 0) {
-                                percentageVal =
-                                    (obtained / maxMarks) * 100;
+                            if (!Number.isFinite(percentageVal) && maxMarks > 0) {
+                                percentageVal = (obtained / maxMarks) * 100;
                             }
+                            if (!Number.isFinite(percentageVal)) percentageVal = 0;
+                            percentageVal = Math.round(percentageVal * 10) / 10;
 
-                            if (!Number.isFinite(percentageVal)) {
-                                percentageVal = 0;
-                            }
-
-                            percentageVal =
-                                Math.round(percentageVal * 10) / 10;
-
-                            const grade =
-                                m?.grade || getOverallGrade(percentageVal);
-
-                            const color =
-                                getGradeColor(grade);
+                            const grade = m?.grade || getOverallGrade(percentageVal);
+                            const color = getGradeColor(grade);
 
                             return `
                                 <div class="item-card">
                                     <div class="item-info">
-                                        <div class="item-title">
-                                            ${m?.assignmentTitle || 'Assignment'}
-                                        </div>
-
+                                        <div class="item-title">${m?.assignmentTitle || 'Assignment'}</div>
                                         <div class="item-meta">
-                                            <span>
-                                                <i class="fas fa-book"></i>
-                                                ${m?.subjectName || 'N/A'}
-                                            </span>
-
-                                            <span>
-                                                <i class="fas fa-calendar"></i>
-                                                ${m?.submissionDate
-                                                    ? new Date(
-                                                        m.submissionDate
-                                                      ).toLocaleDateString()
-                                                    : 'N/A'}
-                                            </span>
-
-                                            <span>
-                                                <i class="fas fa-award"></i>
-                                                Grade: ${grade}
-                                            </span>
+                                            <span><i class="fas fa-book"></i> ${m?.subjectName || 'N/A'}</span>
+                                            <span><i class="fas fa-calendar"></i> ${m?.submissionDate ? new Date(m.submissionDate).toLocaleDateString() : 'N/A'}</span>
+                                            <span><i class="fas fa-award"></i> Grade: ${grade}</span>
                                         </div>
                                     </div>
-
                                     <div style="text-align:right;">
-                                        <div style="
-                                            font-size:1.2rem;
-                                            font-weight:700;
-                                            color:${color};">
+                                        <div style="font-size:1.2rem; font-weight:700; color:${color};">
                                             ${obtained}/${maxMarks}
                                         </div>
-
-                                        <div style="
-                                            font-size:0.75rem;
-                                            color:var(--text-secondary);">
+                                        <div style="font-size:0.75rem; color:var(--text-secondary);">
                                             ${percentageVal}%
                                         </div>
                                     </div>
@@ -2226,173 +2326,76 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     }
                 }
 
-                // --------------------------------------------------------
-                // 7. QUIZ OVERALL RESULTS
-                // --------------------------------------------------------
                 html += `
-                    <h3 style="color:var(--text-primary);
-                               font-size:1rem;
-                               margin-top:2rem;
-                               margin-bottom:0.8rem;">
-                        <i class="fas fa-pencil-alt"></i>
-                        Quiz Overall Results
+                    <h3 style="color:var(--text-primary); font-size:1rem; margin-top:2rem; margin-bottom:0.8rem;">
+                        <i class="fas fa-pencil-alt"></i> Quiz Overall Results
                     </h3>
-
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-number">
-                                ${totalQuizCount}
-                            </div>
-                            <div class="stat-label">
-                                <i class="fas fa-pencil-alt"></i>
-                                Total Quizzes
-                            </div>
+                            <div class="stat-number">${totalQuizCount}</div>
+                            <div class="stat-label"><i class="fas fa-pencil-alt"></i> Total Quizzes</div>
                         </div>
-
                         <div class="stat-card">
-                            <div class="stat-number">
-                                ${attemptedQuizCount}
-                            </div>
-                            <div class="stat-label">
-                                <i class="fas fa-check-circle"></i>
-                                Attempted
-                            </div>
+                            <div class="stat-number">${attemptedQuizCount}</div>
+                            <div class="stat-label"><i class="fas fa-check-circle"></i> Attempted</div>
                         </div>
-
                         <div class="stat-card">
-                            <div class="stat-number">
-                                ${pendingQuizCount}
-                            </div>
-                            <div class="stat-label">
-                                <i class="fas fa-clock"></i>
-                                Pending
-                            </div>
+                            <div class="stat-number">${pendingQuizCount}</div>
+                            <div class="stat-label"><i class="fas fa-clock"></i> Pending</div>
                         </div>
-
                         <div class="stat-card">
-                            <div class="stat-number">
-                                ${quizOverallPercentage}/100
-                            </div>
-                            <div class="stat-label">
-                                <i class="fas fa-chart-line"></i>
-                                Average Marks
-                            </div>
+                            <div class="stat-number">${quizOverallPercentage}/100</div>
+                            <div class="stat-label"><i class="fas fa-chart-line"></i> Average Marks</div>
                         </div>
                     </div>
-
-                    <div class="stats-grid"
-                         style="grid-template-columns:
-                                repeat(auto-fit, minmax(150px, 1fr));">
-
-                        <div class="grade-card ${getGradeClass(quizGrade)}"
-                             style="border-color:
-                                    ${getGradeColor(quizGrade)};">
-
-                            <div class="grade-letter">
-                                ${quizGrade}
-                            </div>
-
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                        <div class="grade-card ${getGradeClass(quizGrade)}" style="border-color: ${getGradeColor(quizGrade)};">
+                            <div class="grade-letter">${quizGrade}</div>
                             <div class="grade-label">
-                                <i class="fas fa-star"
-                                   style="color:
-                                          ${getGradeColor(quizGrade)};">
-                                </i>
+                                <i class="fas fa-star" style="color: ${getGradeColor(quizGrade)};"></i>
                                 Overall Quiz Grade
                             </div>
-
-                            <div class="grade-percentage">
-                                ${quizOverallPercentage}%
-                            </div>
+                            <div class="grade-percentage">${quizOverallPercentage}%</div>
                         </div>
                     </div>
                 `;
 
-                // --------------------------------------------------------
-                // 8. INDIVIDUAL QUIZ RESULTS
-                // --------------------------------------------------------
                 if (hasQuizResults) {
                     html += `
-                        <h3 style="color:var(--text-primary);
-                                   font-size:1rem;
-                                   margin-top:1.5rem;
-                                   margin-bottom:0.8rem;">
-                            <i class="fas fa-list"></i>
-                            Quiz Marks
+                        <h3 style="color:var(--text-primary); font-size:1rem; margin-top:1.5rem; margin-bottom:0.8rem;">
+                            <i class="fas fa-list"></i> Quiz Marks
                         </h3>
-
                         <div class="item-list">
                     `;
 
                     html += quizResults.map(qr => {
-                        const obtained =
-                            Number(qr?.marksObtained) || 0;
-
-                        const total =
-                            Number(qr?.totalMarks) || 0;
-
-                        let percentageVal =
-                            Number(qr?.percentage);
-
-                        if (!Number.isFinite(percentageVal) &&
-                            total > 0) {
-                            percentageVal =
-                                (obtained / total) * 100;
+                        const obtained = Number(qr?.marksObtained) || 0;
+                        const total = Number(qr?.totalMarks) || 0;
+                        let percentageVal = Number(qr?.percentage);
+                        if (!Number.isFinite(percentageVal) && total > 0) {
+                            percentageVal = (obtained / total) * 100;
                         }
+                        if (!Number.isFinite(percentageVal)) percentageVal = 0;
+                        percentageVal = Math.round(percentageVal * 10) / 10;
 
-                        if (!Number.isFinite(percentageVal)) {
-                            percentageVal = 0;
-                        }
-
-                        percentageVal =
-                            Math.round(percentageVal * 10) / 10;
-
-                        const grade =
-                            qr?.grade ||
-                            getOverallGrade(percentageVal);
-
-                        const color =
-                            getGradeColor(grade);
+                        const grade = qr?.grade || getOverallGrade(percentageVal);
+                        const color = getGradeColor(grade);
 
                         return `
                             <div class="item-card">
                                 <div class="item-info">
-                                    <div class="item-title">
-                                        ${qr?.quizTitle || 'Quiz'}
-                                    </div>
-
+                                    <div class="item-title">${qr?.quizTitle || 'Quiz'}</div>
                                     <div class="item-meta">
-                                        <span>
-                                            <i class="fas fa-book"></i>
-                                            ${qr?.subjectName || 'N/A'}
-                                        </span>
-
-                                        <span>
-                                            <i class="fas fa-calendar"></i>
-                                            ${qr?.attemptDate
-                                                ? new Date(
-                                                    qr.attemptDate
-                                                  ).toLocaleDateString()
-                                                : 'N/A'}
-                                        </span>
-
-                                        <span>
-                                            <i class="fas fa-award"></i>
-                                            Grade: ${grade}
-                                        </span>
+                                        <span><i class="fas fa-book"></i> ${qr?.subjectName || 'N/A'}</span>
+                                        <span><i class="fas fa-calendar"></i> ${qr?.attemptDate ? new Date(qr.attemptDate).toLocaleDateString() : 'N/A'}</span>
+                                        <span><i class="fas fa-award"></i> Grade: ${grade}</span>
                                     </div>
                                 </div>
-
                                 <div style="text-align:right;">
-                                    <div style="
-                                        font-size:1.2rem;
-                                        font-weight:700;
-                                        color:${color};">
+                                    <div style="font-size:1.2rem; font-weight:700; color:${color};">
                                         ${obtained}/${total}
                                     </div>
-
-                                    <div style="
-                                        font-size:0.75rem;
-                                        color:var(--text-secondary);">
+                                    <div style="font-size:0.75rem; color:var(--text-secondary);">
                                         ${percentageVal}%
                                     </div>
                                 </div>
@@ -2403,70 +2406,37 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     html += `</div>`;
                 } else {
                     html += `
-                        <div class="empty-state"
-                             style="padding:2rem 1rem;">
-                            <i class="fas fa-pencil-alt"
-                               style="font-size:2.5rem;
-                                      color:var(--text-muted);">
-                            </i>
-                            <p style="margin-top:0.8rem;">
-                                No quiz has been attempted yet.
-                            </p>
+                        <div class="empty-state" style="padding:2rem 1rem;">
+                            <i class="fas fa-pencil-alt" style="font-size:2.5rem; color:var(--text-muted);"></i>
+                            <p style="margin-top:0.8rem;">No quiz has been attempted yet.</p>
                         </div>
                     `;
                 }
 
-                // --------------------------------------------------------
-                // 9. Render page
-                // --------------------------------------------------------
                 contentArea.innerHTML = html;
                 setActiveMenu('results');
 
-                // Badge = graded assignments + attempted quizzes
-                const gradedAssignmentCount =
-                    Number(results?.performance?.gradedCount) || 0;
-
-                document.getElementById('resultsBadge').textContent =
-                    gradedAssignmentCount + attemptedQuizCount;
+                const gradedAssignmentCount = Number(results?.performance?.gradedCount) || 0;
+                document.getElementById('resultsBadge').textContent = gradedAssignmentCount + attemptedQuizCount;
 
             } catch (error) {
                 console.error('Error loading results:', error);
-
                 contentArea.innerHTML = `
                     <div class="page-title">
-                        <i class="fas fa-star"
-                           style="color:#f39c12;"></i>
-                        My Results
+                        <i class="fas fa-star" style="color:#f39c12;"></i> My Results
                     </div>
-
                     <div class="page-sub">
-                        <i class="fas fa-arrow-right"></i>
-                        Your academic performance
+                        <i class="fas fa-arrow-right"></i> Your academic performance
                     </div>
-
                     <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"
-                           style="font-size:3rem; color:#e74c3c;">
-                        </i>
-
-                        <p style="margin-top:1rem;">
-                            Could not load results.
-                        </p>
-
-                        <p class="text-muted"
-                           style="margin-top:0.4rem;">
-                            Please check the backend API and try again.
-                        </p>
-
-                        <button class="btn-primary"
-                                onclick="renderResults()"
-                                style="margin-top:1rem;">
-                            <i class="fas fa-sync-alt"></i>
-                            Try Again
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
+                        <p style="margin-top:1rem;">Could not load results.</p>
+                        <p class="text-muted" style="margin-top:0.4rem;">Please check the backend API and try again.</p>
+                        <button class="btn-primary" onclick="renderResults()" style="margin-top:1rem;">
+                            <i class="fas fa-sync-alt"></i> Try Again
                         </button>
                     </div>
                 `;
-
                 setActiveMenu('results');
             }
         }
@@ -2538,6 +2508,251 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         }
 
         // ============================================================
+        // 🔥🔥🔥 RENDER LIVE CLASSES 🔥🔥🔥
+        // ============================================================
+        function renderLiveClasses() {
+            console.log('🎥 Rendering live classes:', allLiveClasses);
+
+            const live = allLiveClasses.filter(c => c.status === 'LIVE');
+            const scheduled = allLiveClasses.filter(c => c.status === 'SCHEDULED');
+            const ended = allLiveClasses.filter(c => c.status === 'ENDED');
+            const cancelled = allLiveClasses.filter(c => c.status === 'CANCELLED');
+
+            const stats = [
+                { label: 'Live Now', value: live.length, icon: 'fa-circle', color: 'var(--danger)' },
+                { label: 'Upcoming', value: scheduled.length, icon: 'fa-calendar', color: 'var(--warning)' },
+                { label: 'Completed', value: ended.length, icon: 'fa-check-circle', color: 'var(--success)' },
+                { label: 'Total', value: allLiveClasses.length, icon: 'fa-video', color: 'var(--primary)' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number" style="color:${stat.color};">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            // ========================================================
+            // LIVE NOW SECTION
+            // ========================================================
+            let liveBanner = '';
+            let liveHTML = '';
+
+            if (live.length > 0) {
+                liveBanner = `
+                    <div class="live-banner">
+                        <span class="live-dot-white"></span>
+                        <span>${live.length} class${live.length > 1 ? 'es are' : ' is'} LIVE now! Join quickly 🔥</span>
+                    </div>
+                `;
+
+                liveHTML = live.map(c => {
+                    const platform = getPlatformInfo(c.meetingPlatform);
+                    return `
+                        <div class="item-card live-class-card">
+                            <div class="item-info">
+                                <div class="item-title">
+                                    <span class="live-dot"></span>
+                                    ${c.title || 'Live Class'}
+                                </div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-user"></i> ${c.teacherName || 'Teacher'}</span>
+                                    <span><i class="fas fa-book"></i> ${c.subjectName || 'N/A'}</span>
+                                    <span><i class="fas fa-users"></i> ${c.className || 'N/A'}</span>
+                                    <span><i class="fas fa-hourglass"></i> ${c.durationMinutes || 60} min</span>
+                                </div>
+                                ${c.description ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${c.description}</div>` : ''}
+                            </div>
+                            <a href="${c.meetingUrl}" target="_blank"
+                               class="btn-join-live"
+                               onclick="markLiveJoin(${c.id})">
+                                <i class="fas fa-video"></i> Join Now
+                            </a>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ========================================================
+            // UPCOMING SECTION
+            // ========================================================
+            let upcomingHTML = '';
+            if (scheduled.length > 0) {
+                const sortedScheduled = [...scheduled].sort(
+                    (a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt)
+                );
+
+                upcomingHTML = sortedScheduled.map(c => {
+                    const platform = getPlatformInfo(c.meetingPlatform);
+                    return `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <div class="item-title">
+                                    <span class="platform-icon ${platform.cls}" style="background:${platform.color};">
+                                        <i class="fas ${platform.icon}"></i>
+                                    </span>
+                                    ${c.title || 'Live Class'}
+                                </div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-user"></i> ${c.teacherName || 'Teacher'}</span>
+                                    <span><i class="fas fa-book"></i> ${c.subjectName || 'N/A'}</span>
+                                    <span><i class="fas fa-clock"></i> ${formatDateTime(c.scheduledAt)}</span>
+                                    <span><i class="fas fa-hourglass"></i> ${c.durationMinutes || 60} min</span>
+                                </div>
+                                ${c.description ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${c.description}</div>` : ''}
+                            </div>
+                            <div style="text-align:right; display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                                <span class="item-status pending">${getCountdown(c.scheduledAt)}</span>
+                                ${c.meetingPassword ? `
+                                    <span style="font-size:0.7rem; color:var(--text-muted);">
+                                        <i class="fas fa-key"></i> Pass: ${c.meetingPassword}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ========================================================
+            // PAST CLASSES
+            // ========================================================
+            let pastHTML = '';
+            const past = [...ended, ...cancelled].sort(
+                (a, b) => new Date(b.scheduledAt) - new Date(a.scheduledAt)
+            );
+
+            if (past.length > 0) {
+                pastHTML = past.map(c => {
+                    const isEnded = c.status === 'ENDED';
+                    return `
+                        <div class="item-card" style="opacity:0.75;">
+                            <div class="item-info">
+                                <div class="item-title">${c.title || 'Live Class'}</div>
+                                <div class="item-meta">
+                                    <span><i class="fas fa-user"></i> ${c.teacherName || 'Teacher'}</span>
+                                    <span><i class="fas fa-book"></i> ${c.subjectName || 'N/A'}</span>
+                                    <span><i class="fas fa-calendar"></i> ${formatDateTime(c.scheduledAt)}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span class="item-status ${getLiveStatusClass(c.status)}">
+                                    ${getLiveStatusLabel(c.status)}
+                                </span>
+                                ${isEnded && c.recordingUrl ? `
+                                    <a href="${c.recordingUrl}" target="_blank" class="btn-primary"
+                                       style="padding:0.3rem 0.8rem; font-size:0.75rem; text-decoration:none; color:white;">
+                                        <i class="fas fa-play-circle"></i> Recording
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ========================================================
+            // COMBINE ALL
+            // ========================================================
+            let contentHTML = '';
+
+            if (live.length === 0 && scheduled.length === 0 && past.length === 0) {
+                contentHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-video" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <p style="margin-top:1rem;">No live classes yet.</p>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">
+                            Your teacher will schedule live classes soon. Check back later!
+                        </p>
+                    </div>
+                `;
+            } else {
+                if (live.length > 0) {
+                    contentHTML += `
+                        <h3 style="color:var(--danger); font-size:1.1rem; margin-bottom:0.8rem; margin-top:1rem;">
+                            <i class="fas fa-circle" style="font-size:0.6rem;"></i> Live Now
+                        </h3>
+                        <div class="item-list" style="margin-bottom:1.5rem;">${liveHTML}</div>
+                    `;
+                }
+
+                if (scheduled.length > 0) {
+                    contentHTML += `
+                        <h3 style="color:var(--text-primary); font-size:1.1rem; margin-bottom:0.8rem; margin-top:1rem;">
+                            <i class="fas fa-calendar"></i> Upcoming Classes
+                        </h3>
+                        <div class="item-list" style="margin-bottom:1.5rem;">${upcomingHTML}</div>
+                    `;
+                }
+
+                if (past.length > 0) {
+                    contentHTML += `
+                        <h3 style="color:var(--text-muted); font-size:1.1rem; margin-bottom:0.8rem; margin-top:1rem;">
+                            <i class="fas fa-history"></i> Past Classes
+                        </h3>
+                        <div class="item-list">${pastHTML}</div>
+                    `;
+                }
+            }
+
+            const html = `
+                <div class="page-title"><i class="fas fa-video"></i> Live Classes</div>
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i>
+                    Join live sessions with your teachers (${allLiveClasses.length} total)
+                </div>
+                ${liveBanner}
+                <div class="stats-grid">${statsHTML}</div>
+                ${contentHTML}
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('live');
+
+            // Auto-refresh if any class is live
+            if (live.length > 0) {
+                startLiveRefresh();
+            } else {
+                stopLiveRefresh();
+            }
+        }
+
+        // ============================================================
+        // LIVE AUTO REFRESH
+        // ============================================================
+        function startLiveRefresh() {
+            if (liveRefreshInterval) return;
+            liveRefreshInterval = setInterval(async () => {
+                console.log('🔄 Auto-refreshing live classes...');
+                await fetchAllData();
+                const liveMenuActive = document.querySelector('[data-module="live"].active');
+                if (liveMenuActive) {
+                    renderLiveClasses();
+                }
+            }, 30000);
+        }
+
+        function stopLiveRefresh() {
+            if (liveRefreshInterval) {
+                clearInterval(liveRefreshInterval);
+                liveRefreshInterval = null;
+            }
+        }
+
+        // ============================================================
+        // MARK LIVE JOIN
+        // ============================================================
+        window.markLiveJoin = async function(classId) {
+            try {
+                const data = { studentId: studentData?.id };
+                await postData(`/student/live-classes/${classId}/join`, data);
+                console.log('✅ Join tracked for class:', classId);
+            } catch (error) {
+                console.warn('Join tracking failed:', error);
+            }
+        };
+
+        // ============================================================
         // SET ACTIVE MENU
         // ============================================================
         function setActiveMenu(module) {
@@ -2555,6 +2770,10 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         menuItems.forEach(item => {
             item.addEventListener('click', function() {
                 const mod = this.dataset.module;
+
+                // Auto-refresh band karo jab page change ho
+                stopLiveRefresh();
+
                 switch(mod) {
                     case 'dashboard': renderDashboard(); break;
                     case 'courses': renderCourses(); break;
@@ -2563,6 +2782,7 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
                     case 'attendance': renderAttendance(); break;
                     case 'results': renderResults(); break;
                     case 'notes': renderNotes(); break;
+                    case 'live': renderLiveClasses(); break;  // 🔥 NEW
                     default: renderDashboard();
                 }
             });
@@ -2574,7 +2794,8 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         logoutBtn.addEventListener('click', () => logoutOverlay.classList.add('show'));
         cancelLogout.addEventListener('click', () => logoutOverlay.classList.remove('show'));
         confirmLogout.addEventListener('click', () => {
-            localStorage.clear();
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
             window.location.href = 'login.html';
         });
         logoutOverlay.addEventListener('click', (e) => {
@@ -2638,6 +2859,7 @@ const STUDENT_ID = studentData?.id || currentUser?.userId;
         console.log('🔹 Student Dashboard - Dynamic Backend Connected');
         console.log(`📍 API: ${API_BASE_URL}`);
         console.log('✅ Connected to Smart School Backend');
+        console.log('🎥 Live Classes feature enabled');
 
     })();
 </script>
