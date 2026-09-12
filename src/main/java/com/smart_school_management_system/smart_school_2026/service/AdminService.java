@@ -102,15 +102,12 @@ public class AdminService {
         return teacherRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + id));
     }
-
+    // ✅ FIX: createTeacher ko simple save banao
     @Transactional
     public Teacher createTeacher(Teacher teacher) {
-        // Check if teacher ID already exists
-        if (teacherRepository.findByTeacherId(teacher.getTeacherId()).isPresent()) {
-            throw new RuntimeException("Teacher ID already exists: " + teacher.getTeacherId());
-        }
-        return teacherRepository.save(teacher);
+        return teacherRepository.save(teacher); // ✅ Bas save karo
     }
+
 
     @Transactional
     public Teacher updateTeacher(Long id, Teacher teacherDetails) {
@@ -144,13 +141,10 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
     }
 
+    // ✅ FIX: createStudent ko simple save banao
     @Transactional
     public Student createStudent(Student student) {
-        // Check if student ID already exists
-        if (studentRepository.findByStudentId(student.getStudentId()).isPresent()) {
-            throw new RuntimeException("Student ID already exists: " + student.getStudentId());
-        }
-        return studentRepository.save(student);
+        return studentRepository.save(student); // ✅ Bas save karo
     }
 
     @Transactional

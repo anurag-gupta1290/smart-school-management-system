@@ -80,102 +80,54 @@ public class EmailService {
     }
 
     /**
-     * Welcome Email Body
+     * Welcome Email Body - Simple & Clean
      */
     private String getWelcomeEmailBody(String userName, String provider) {
         String providerDisplay = provider.equals("google") ? "Google" : "GitHub";
 
-        return String.format("""
-            ╔══════════════════════════════════════════════════════════════╗
-            ║                                                              ║
-            ║   🎉 Welcome to %s! 🎉                                     ║
-            ║                                                              ║
-            ║   Hello %s,                                                 ║
-            ║                                                              ║
-            ║   Your account has been successfully created using          ║
-            ║   %s login.                                                ║
-            ║                                                              ║
-            ║   📧 Email: %s                                              ║
-            ║   🔐 Login Method: %s                                      ║
-            ║   🕐 Time: %s                                              ║
-            ║                                                              ║
-            ║   You can now access your dashboard at:                     ║
-            ║   🔗 http://localhost:8083/login.html                      ║
-            ║                                                              ║
-            ║   If you did not create this account, please ignore this    ║
-            ║   email or contact support.                                 ║
-            ║                                                              ║
-            ║   Thanks,                                                    ║
-            ║   %s Team                                                  ║
-            ║                                                              ║
-            ╚══════════════════════════════════════════════════════════════╝
-            """, APP_NAME, userName, providerDisplay, userName, providerDisplay,
-                getCurrentTime(), APP_NAME);
+        return "🎉 Welcome to " + APP_NAME + "!\n\n" +
+                "Hello " + userName + ",\n\n" +
+                "Your account has been successfully created using " + providerDisplay + " login.\n\n" +
+                "📧 Email: " + userName + "\n" +
+                "🔐 Login Method: " + providerDisplay + "\n" +
+                "🕐 Time: " + getCurrentTime() + "\n\n" +
+                "You can now access your dashboard at:\n" +
+                "🔗 http://localhost:8083/login.html\n\n" +
+                "If you did not create this account, please ignore this email or contact support.\n\n" +
+                "Thanks,\n" +
+                APP_NAME + " Team";
     }
 
     /**
-     * Login Notification Email Body
+     * Login Notification Email Body - Simple & Clean
      */
     private String getLoginNotificationBody(String userName, String provider) {
         String providerDisplay = provider.equals("google") ? "Google" : "GitHub";
 
-        return String.format("""
-            ╔══════════════════════════════════════════════════════════════╗
-            ║                                                              ║
-            ║   🔐 Login Notification - %s                    ║
-            ║                                                              ║
-            ║   Hello %s,                                                 ║
-            ║                                                              ║
-            ║   You have successfully logged in to your account using     ║
-            ║   %s login.                                                ║
-            ║                                                              ║
-            ║   📧 Email: %s                                              ║
-            ║   🔐 Login Method: %s                                      ║
-            ║   🕐 Time: %s                                              ║
-            ║   🌐 IP Address: Secure Connection                         ║
-            ║                                                              ║
-            ║   If this was not you, please reset your password           ║
-            ║   immediately and contact support.                          ║
-            ║                                                              ║
-            ║   🔗 http://localhost:8083/login.html                      ║
-            ║                                                              ║
-            ║   Thanks,                                                    ║
-            ║   %s Team                                                  ║
-            ║                                                              ║
-            ╚══════════════════════════════════════════════════════════════╝
-            """, APP_NAME, userName, providerDisplay, userName, providerDisplay,
-                getCurrentTime(), APP_NAME);
+        return "🔐 Login Notification - " + APP_NAME + "\n\n" +
+                "Hello " + userName + ",\n\n" +
+                "You have successfully logged in to your account using " + providerDisplay + " login.\n\n" +
+                "📧 Email: " + userName + "\n" +
+                "🔐 Login Method: " + providerDisplay + "\n" +
+                "🕐 Time: " + getCurrentTime() + "\n\n" +
+                "If this was not you, please reset your password immediately and contact support.\n\n" +
+                "🔗 http://localhost:8083/login.html\n\n" +
+                "Thanks,\n" +
+                APP_NAME + " Team";
     }
 
     /**
-     * OTP Email Body
+     * OTP Email Body - Simple & Clean
      */
     private String getOTPEmailBody(String userName, String otp) {
-        return String.format("""
-            ╔══════════════════════════════════════════════════════════════╗
-            ║                                                              ║
-            ║   🔑 Password Reset OTP - %s                   ║
-            ║                                                              ║
-            ║   Hello %s,                                                 ║
-            ║                                                              ║
-            ║   You have requested to reset your password.                ║
-            ║                                                              ║
-            ║   Your OTP is:                                              ║
-            ║   ╔═══════════════════════════════════════════════════════╗  ║
-            ║   ║                                                       ║  ║
-            ║   ║             🔐  %s  🔐                           ║  ║
-            ║   ║                                                       ║  ║
-            ║   ╚═══════════════════════════════════════════════════════╝  ║
-            ║                                                              ║
-            ║   This OTP is valid for 1 minute only.                      ║
-            ║                                                              ║
-            ║   If you did not request this, please ignore this email.    ║
-            ║                                                              ║
-            ║   Thanks,                                                    ║
-            ║   %s Team                                                  ║
-            ║                                                              ║
-            ╚══════════════════════════════════════════════════════════════╝
-            """, APP_NAME, userName, otp, APP_NAME);
+        return "🔑 Password Reset OTP - " + APP_NAME + "\n\n" +
+                "Hello " + userName + ",\n\n" +
+                "You have requested to reset your password.\n\n" +
+                "Your OTP is: " + otp + "\n\n" +
+                "This OTP is valid for 5 minutes only.\n\n" +
+                "If you did not request this, please ignore this email.\n\n" +
+                "Thanks,\n" +
+                APP_NAME + " Team";
     }
 
     /**

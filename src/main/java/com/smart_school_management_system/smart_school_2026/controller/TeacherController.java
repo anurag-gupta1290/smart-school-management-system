@@ -3,6 +3,7 @@ package com.smart_school_management_system.smart_school_2026.controller;
 import com.smart_school_management_system.smart_school_2026.entity.*;
 import com.smart_school_management_system.smart_school_2026.repository.*;
 import com.smart_school_management_system.smart_school_2026.service.NoteService;
+import com.smart_school_management_system.smart_school_2026.service.NotificationService;
 import com.smart_school_management_system.smart_school_2026.service.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/teacher")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Transactional
 public class TeacherController {
 
@@ -41,7 +41,9 @@ public class TeacherController {
     private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
     private final NoteService noteService;
+    private final NotificationService notificationService;
     private final NoteRepository noteRepository;
+
 
     // ============================================================
     // ✅ PROFILE & DASHBOARD
@@ -225,6 +227,9 @@ public class TeacherController {
             assignment.setTeacher(teacher);
 
             Assignment saved = assignmentRepository.save(assignment);
+
+            // ✅ Real-Time Notification (Class ke students ko bhejo)
+            notificationService.sendNotification(classId, "New Assignment!", "Assignment '" + title + "' uploaded.");
 
             Map<String, Object> response = new HashMap<>();
             response.put("id", saved.getId());
@@ -600,16 +605,19 @@ public class TeacherController {
 
                 AttendanceStatus status = AttendanceStatus.valueOf(statusStr.toUpperCase());
 
+                // ✅ FIX: Pehle check karo ki record exist karta hai ya nahi
                 Optional<Attendance> existing = attendanceRepository
                         .findByStudentIdAndSubjectIdAndAttendanceDate(studentId, subjectId, date);
 
                 Attendance attendance;
                 if (existing.isPresent()) {
+                    // ✅ Update existing record (Duplicate nahi hoga)
                     attendance = existing.get();
                     attendance.setStatus(status);
                     attendance.setRemarks(remarks);
                     attendance.setMarkedBy(teacher);
                 } else {
+                    // ✅ Create new record
                     attendance = new Attendance();
                     attendance.setStudent(student);
                     attendance.setClassEntity(classEntity);
@@ -629,7 +637,8 @@ public class TeacherController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -668,8 +677,9 @@ public class TeacherController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Teacher not found"));
             }
 
-            List<Subject> subjects = subjectRepository.findSubjectsByTeacherId(teacherId);
-            List<ClassEntity> classes = classEntityRepository.findByClassTeacherId(teacherId);
+            // ✅ FIX: Saare classes aur subjects dikhao (Filter mat karo)
+            List<Subject> subjects = subjectRepository.findAll();
+            List<ClassEntity> classes = classEntityRepository.findAll();
 
             Map<String, Object> response = new HashMap<>();
             response.put("teacherId", teacherId);
@@ -799,6 +809,28 @@ public class TeacherController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    @PostMapping("/subjects")
+    public ResponseEntity<?> createSubject(@RequestBody Map<String, Object> request) {
+        try {
+            String subjectName = (String) request.get("subjectName");
+            String subjectCode = (String) request.get("subjectCode");
+            Integer credits = request.get("credits") != null ? Integer.parseInt(request.get("credits").toString()) : 4;
+
+            if (subjectName == null || subjectName.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Subject name is required"));
+            }
+
+            Subject subject = new Subject();
+            subject.setSubjectName(subjectName);
+            subject.setSubjectCode(subjectCode != null ? subjectCode : "SUB-" + System.currentTimeMillis());
+            subject.setCredits(credits);
+
+            Subject saved = subjectRepository.save(subject);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

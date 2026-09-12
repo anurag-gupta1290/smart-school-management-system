@@ -684,8 +684,8 @@
     // ============================================================
 
     (function() {
-        //const API_BASE_URL = 'http://15.207.174.107:8083/api';
-         const API_BASE_URL = 'http://localhost:8083/api';
+        const API_BASE_URL = 'http://15.207.174.107:8083/api';
+         //const API_BASE_URL = 'http://localhost:8083/api';
        // const API_BASE_URL = 'http://15.207.174.107:8083/api';
         let currentUser = null;
         let adminData = {};
@@ -1348,64 +1348,69 @@
         // ============================================================
         // CRUD OPERATIONS - TEACHERS
         // ============================================================
-        window.openAddTeacher = function() {
-            modalTitle.textContent = 'Add Teacher';
-            modalBody.innerHTML = `
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" id="teacherName" placeholder="Full name" />
-                </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" id="teacherEmail" placeholder="teacher@school.com" />
-                </div>
-                <div class="form-group">
-                    <label>Department</label>
-                    <input type="text" id="teacherDept" placeholder="e.g. Mathematics" />
-                </div>
-                <div class="form-group">
-                    <label>Qualification</label>
-                    <input type="text" id="teacherQual" placeholder="e.g. M.Sc. Mathematics" />
-                </div>
-                <div class="form-group">
-                    <label>Experience (Years)</label>
-                    <input type="number" id="teacherExp" placeholder="5" />
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
-                    <button class="btn btn-success" onclick="saveTeacher()"><i class="fas fa-save"></i> Save</button>
-                </div>
-            `;
-            modalOverlay.classList.add('show');
-        };
+       window.openAddTeacher = function() {
+    modalTitle.textContent = 'Add Teacher';
+    modalBody.innerHTML = `
+        <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="teacherName" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="teacherEmail" placeholder="teacher@school.com" />
+        </div>
+        <div class="form-group">
+            <label>Password (Default: teacher123)</label>
+            <input type="password" id="teacherPassword" value="teacher123" />
+        </div>
+        <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="teacherDept" placeholder="e.g. Mathematics" />
+        </div>
+        <div class="form-group">
+            <label>Qualification</label>
+            <input type="text" id="teacherQual" placeholder="e.g. M.Sc. Mathematics" />
+        </div>
+        <div class="form-group">
+            <label>Experience (Years)</label>
+            <input type="number" id="teacherExp" placeholder="5" />
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-success" onclick="saveTeacher()"><i class="fas fa-save"></i> Save</button>
+        </div>
+    `;
+    modalOverlay.classList.add('show');
+};
+       window.saveTeacher = async function() {
+    const name = document.getElementById('teacherName').value.trim();
+    const email = document.getElementById('teacherEmail').value.trim();
+    const password = document.getElementById('teacherPassword').value.trim(); // ✅ Naya
+    const dept = document.getElementById('teacherDept').value.trim();
+    const qual = document.getElementById('teacherQual').value.trim();
+    const exp = parseInt(document.getElementById('teacherExp').value) || 0;
 
-        window.saveTeacher = async function() {
-            const name = document.getElementById('teacherName').value.trim();
-            const email = document.getElementById('teacherEmail').value.trim();
-            const dept = document.getElementById('teacherDept').value.trim();
-            const qual = document.getElementById('teacherQual').value.trim();
-            const exp = parseInt(document.getElementById('teacherExp').value) || 0;
+    if (!name || !email) {
+        showToast('Name and email are required.', 'warning');
+        return;
+    }
 
-            if (!name || !email) {
-                showToast('Name and email are required.', 'warning');
-                return;
-            }
+    const result = await apiCall('/admin/teachers', 'POST', {
+        fullName: name,
+        email: email,
+        password: password, // ✅ Naya
+        department: dept,
+        qualification: qual,
+        experienceYears: exp
+    });
 
-            const result = await apiCall('/admin/teachers', 'POST', {
-                fullName: name,
-                email: email,
-                department: dept,
-                qualification: qual,
-                experienceYears: exp
-            });
-
-            if (result) {
-                showToast('✅ Teacher added successfully!', 'success');
-                closeModal();
-                await fetchTeachers();
-                renderTeachers();
-            }
-        };
+    if (result) {
+        showToast('✅ Teacher added successfully! Password: ' + password, 'success');
+        closeModal();
+        await fetchTeachers();
+        renderTeachers();
+    }
+};
 
         window.editTeacher = function(id) {
             const teacher = teachers.find(t => t.id === id);
@@ -1481,64 +1486,70 @@
         // ============================================================
         // CRUD OPERATIONS - STUDENTS
         // ============================================================
-        window.openAddStudent = function() {
-            modalTitle.textContent = 'Add Student';
-            modalBody.innerHTML = `
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" id="studentName" placeholder="Full name" />
-                </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" id="studentEmail" placeholder="student@school.com" />
-                </div>
-                <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="studentId" placeholder="STU-001" />
-                </div>
-                <div class="form-group">
-                    <label>Class</label>
-                    <input type="text" id="studentClass" placeholder="e.g. 10-A" />
-                </div>
-                <div class="form-group">
-                    <label>Guardian Name</label>
-                    <input type="text" id="guardianName" placeholder="Guardian name" />
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
-                    <button class="btn btn-success" onclick="saveStudent()"><i class="fas fa-save"></i> Save</button>
-                </div>
-            `;
-            modalOverlay.classList.add('show');
-        };
+       window.openAddStudent = function() {
+    modalTitle.textContent = 'Add Student';
+    modalBody.innerHTML = `
+        <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="studentName" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="studentEmail" placeholder="student@school.com" />
+        </div>
+        <div class="form-group">
+            <label>Password (Default: student123)</label>
+            <input type="password" id="studentPassword" value="student123" />
+        </div>
+        <div class="form-group">
+            <label>Student ID</label>
+            <input type="text" id="studentId" placeholder="STU-001" />
+        </div>
+        <div class="form-group">
+            <label>Class</label>
+            <input type="text" id="studentClass" placeholder="e.g. 10-A" />
+        </div>
+        <div class="form-group">
+            <label>Guardian Name</label>
+            <input type="text" id="guardianName" placeholder="Guardian name" />
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-success" onclick="saveStudent()"><i class="fas fa-save"></i> Save</button>
+        </div>
+    `;
+    modalOverlay.classList.add('show');
+};
 
         window.saveStudent = async function() {
-            const name = document.getElementById('studentName').value.trim();
-            const email = document.getElementById('studentEmail').value.trim();
-            const studentId = document.getElementById('studentId').value.trim();
-            const cls = document.getElementById('studentClass').value.trim();
-            const guardian = document.getElementById('guardianName').value.trim();
+    const name = document.getElementById('studentName').value.trim();
+    const email = document.getElementById('studentEmail').value.trim();
+    const password = document.getElementById('studentPassword').value.trim(); // ✅ Naya
+    const studentId = document.getElementById('studentId').value.trim();
+    const cls = document.getElementById('studentClass').value.trim();
+    const guardian = document.getElementById('guardianName').value.trim();
 
-            if (!name || !email) {
-                showToast('Name and email are required.', 'warning');
-                return;
-            }
+    if (!name || !email) {
+        showToast('Name and email are required.', 'warning');
+        return;
+    }
 
-            const result = await apiCall('/admin/students', 'POST', {
-                fullName: name,
-                email: email,
-                studentId: studentId || `STU-${Date.now()}`,
-                class: cls,
-                guardianName: guardian
-            });
+    const result = await apiCall('/admin/students', 'POST', {
+        fullName: name,
+        email: email,
+        password: password, // ✅ Naya
+        studentId: studentId || `STU-${Date.now()}`,
+        class: cls,
+        guardianName: guardian
+    });
 
-            if (result) {
-                showToast('✅ Student added successfully!', 'success');
-                closeModal();
-                await fetchStudents();
-                renderStudents();
-            }
-        };
+    if (result) {
+        showToast('✅ Student added successfully! Password: ' + password, 'success');
+        closeModal();
+        await fetchStudents();
+        renderStudents();
+    }
+};
 
         window.editStudent = function(id) {
             const student = students.find(s => s.id === id);

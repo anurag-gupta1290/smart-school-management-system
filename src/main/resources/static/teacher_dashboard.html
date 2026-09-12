@@ -1455,7 +1455,8 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_BASE_URL = 'http://localhost:8083/api';
+        //const API_BASE_URL = 'http://localhost:8083/api';
+        const API_BASE_URL = 'http://15.207.174.107:8083/api';
 
         // ============================================================
         // STATE
@@ -1631,17 +1632,20 @@ window.fetchData = fetchData;
     try {
         console.log('🔄 Fetching data from backend...');
 
-        // Get teacher profile
-        const teacherProfile = await fetchData(`/teacher/profile/${currentUser?.userId}`);
-        if (teacherProfile && !teacherProfile.error) {
-            teacherData = teacherProfile;
-            currentTeacherId = teacherProfile.id;
-            window.currentTeacherId = teacherProfile.id;
-            console.log('✅ Teacher ID set to:', currentTeacherId);
-            updateProfile(teacherProfile.user || currentUser);
-        } else {
-            console.warn('⚠️ Could not fetch teacher profile');
-        }
+        // Teacher profile fetch karo
+const teacherProfile = await fetchData(`/teacher/profile/${currentUser?.userId}`);
+if (teacherProfile && !teacherProfile.error) {
+    teacherData = teacherProfile;
+    currentTeacherId = teacherProfile.id || currentUser?.userId;  // ← Fallback add karo
+    window.currentTeacherId = currentTeacherId;
+    console.log('✅ Teacher ID set to:', currentTeacherId);
+    updateProfile(teacherProfile.user || currentUser);
+} else {
+    // ✅ Fallback: userId use karo
+    currentTeacherId = currentUser?.userId;
+    window.currentTeacherId = currentTeacherId;
+    console.warn('⚠️ Using userId as teacherId:', currentTeacherId);
+}
 
         // Fetch all data - ensure we always get arrays
         const [assignments, quizzes, submissions, students, teachers, subjects, classes, notes] = await Promise.all([
@@ -2463,98 +2467,96 @@ window.fetchAllData = fetchAllData;
         // ============================================================
         // RENDER ATTENDANCE
         // ============================================================
-        window.renderAttendance = async function() {
-            const teacherId = currentTeacherId;
+       window.renderAttendance = async function() {
+    const teacherId = currentTeacherId;
 
-            try {
-                const info = await fetchData(`/teacher/attendance/teacher/${teacherId}`);
+    try {
+        // ✅ FIX: allClasses aur allSubjects use karo jo fetchAllData() me load hue hain
+        const myClasses = allClasses || [];
+        const mySubjects = allSubjects || [];
 
-                if (!info || !info.classes || info.classes.length === 0) {
-                    contentArea.innerHTML = `
-                        <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
-                        <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
-                        <div class="empty-state">
-                            <i class="fas fa-calendar-check" style="font-size:3rem; color:#f39c12;"></i>
-                            <p style="margin-top:1rem;">No classes assigned to you.</p>
-                            <button class="btn-primary" onclick="openAttendanceModal()" style="margin-top:1rem;">
-                                <i class="fas fa-plus"></i> Mark Attendance
-                            </button>
+        if (myClasses.length === 0 || mySubjects.length === 0) {
+            contentArea.innerHTML = `
+                <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+                <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
+                <div class="empty-state">
+                    <i class="fas fa-calendar-check" style="font-size:3rem; color:#f39c12;"></i>
+                    <p style="margin-top:1rem;">No classes or subjects available. Please add classes and subjects first.</p>
+                </div>
+            `;
+            setActiveMenu('attendance');
+            return;
+        }
+
+        const totalClasses = myClasses.length;
+        const totalSubjects = mySubjects.length;
+
+        const stats = [
+            { label: 'My Classes', value: totalClasses, icon: 'fa-users' },
+            { label: 'My Subjects', value: totalSubjects, icon: 'fa-book' }
+        ];
+
+        const statsHTML = stats.map(stat => `
+            <div class="stat-card">
+                <div class="stat-number">${stat.value}</div>
+                <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+            </div>
+        `).join('');
+
+        let classesHTML = '';
+        if (myClasses.length > 0) {
+            classesHTML = myClasses.map(c => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <div class="item-title">${c.className || 'Class'} ${c.section ? `- ${c.section}` : ''}</div>
+                        <div class="item-meta">
+                            <span><i class="fas fa-users"></i> ${c.capacity || 30} students</span>
+                            <span><i class="fas fa-chalkboard-teacher"></i> Room: ${c.roomNumber || 'N/A'}</span>
                         </div>
-                    `;
-                    setActiveMenu('attendance');
-                    return;
-                }
-
-                const totalClasses = info.classes ? info.classes.length : 0;
-                const totalSubjects = info.subjects ? info.subjects.length : 0;
-
-                const stats = [
-                    { label: 'My Classes', value: totalClasses, icon: 'fa-users' },
-                    { label: 'My Subjects', value: totalSubjects, icon: 'fa-book' }
-                ];
-
-                const statsHTML = stats.map(stat => `
-                    <div class="stat-card">
-                        <div class="stat-number">${stat.value}</div>
-                        <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
                     </div>
-                `).join('');
-
-                let classesHTML = '';
-                if (info.classes && info.classes.length > 0) {
-                    classesHTML = info.classes.map(c => `
-                        <div class="item-card">
-                            <div class="item-info">
-                                <div class="item-title">${c.className || 'Class'} ${c.section ? `- ${c.section}` : ''}</div>
-                                <div class="item-meta">
-                                    <span><i class="fas fa-users"></i> ${c.students ? c.students.length : 0} students</span>
-                                    <span><i class="fas fa-chalkboard-teacher"></i> Room: ${c.roomNumber || 'N/A'}</span>
-                                </div>
-                            </div>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <button class="btn-attendance-mark" onclick="openAttendanceModal()">
-                                    <i class="fas fa-calendar-check"></i> Mark
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-
-                const html = `
-                    <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
-                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance for your classes</div>
-                    <div class="stats-grid">${statsHTML}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; flex-wrap:wrap; gap:0.5rem;">
-                        <h3 style="color: var(--text-primary); font-size:1.1rem;">
-                            <i class="fas fa-chalkboard"></i> My Classes
-                        </h3>
-                        <button class="btn-primary" onclick="openAttendanceModal()">
-                            <i class="fas fa-plus"></i> Mark Attendance
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-attendance-mark" onclick="openAttendanceModal()">
+                            <i class="fas fa-calendar-check"></i> Mark
                         </button>
                     </div>
-                    <div class="item-list">${classesHTML}</div>
-                `;
+                </div>
+            `).join('');
+        }
 
-                contentArea.innerHTML = html;
-                setActiveMenu('attendance');
+        const html = `
+            <div class="page-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+            <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance for your classes</div>
+            <div class="stats-grid">${statsHTML}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; flex-wrap:wrap; gap:0.5rem;">
+                <h3 style="color: var(--text-primary); font-size:1.1rem;">
+                    <i class="fas fa-chalkboard"></i> My Classes
+                </h3>
+                <button class="btn-primary" onclick="openAttendanceModal()">
+                    <i class="fas fa-plus"></i> Mark Attendance
+                </button>
+            </div>
+            <div class="item-list">${classesHTML}</div>
+        `;
 
-            } catch (error) {
-                console.error('Error loading attendance:', error);
-                contentArea.innerHTML = `
-                    <div class="page-title">Attendance</div>
-                    <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
-                        <p style="margin-top:1rem;">Could not load attendance data.</p>
-                        <button class="btn-primary" onclick="renderAttendance()" style="margin-top:1rem;">
-                            <i class="fas fa-sync"></i> Retry
-                        </button>
-                    </div>
-                `;
-                setActiveMenu('attendance');
-            }
-        };
+        contentArea.innerHTML = html;
+        setActiveMenu('attendance');
 
+    } catch (error) {
+        console.error('Error loading attendance:', error);
+        contentArea.innerHTML = `
+            <div class="page-title">Attendance</div>
+            <div class="page-sub"><i class="fas fa-arrow-right"></i> Mark and manage attendance</div>
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c;"></i>
+                <p style="margin-top:1rem;">Could not load attendance data.</p>
+                <button class="btn-primary" onclick="renderAttendance()" style="margin-top:1rem;">
+                    <i class="fas fa-sync"></i> Retry
+                </button>
+            </div>
+        `;
+        setActiveMenu('attendance');
+    }
+};
         // ============================================================
         // RENDER FUNCTIONS - DASHBOARD, ASSIGNMENTS, QUIZZES, SUBMISSIONS, STUDENTS
         // ============================================================

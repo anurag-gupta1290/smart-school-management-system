@@ -1069,7 +1069,8 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_BASE_URL = 'http://localhost:8083/api';
+        //const API_BASE_URL = 'http://localhost:8083/api';
+        const API_BASE_URL = 'http://15.207.174.107:8083/api';
 
         // ============================================================
         // STATE
@@ -1181,24 +1182,34 @@
             }
         }
 
-        // ============================================================
+      // ============================================================
         // FETCH ALL DATA
         // ============================================================
         async function fetchAllData() {
             try {
                 console.log('🔄 Fetching student data...');
-                const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
-                if (studentProfile && !studentProfile.error) {
-                    studentData = studentProfile;
-                    updateProfile(studentProfile.user || currentUser);
-                }
-                const STUDENT_ID = studentData?.id;
+
+                // ✅ Student profile fetch karo
+               const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
+               if (studentProfile && !studentProfile.error) {
+                 studentData = studentProfile;
+               updateProfile(studentProfile.user || currentUser);
+              console.log('✅ Student Profile:', studentData);
+               }
+
+// ✅ FIX: studentData.id use karo (yeh actual students table ka ID hai)
+const STUDENT_ID = studentData?.id || currentUser?.userId;
+
+                // ✅ URLs set karo
                 const assignmentUrl = `/student/assignments/${STUDENT_ID}`;
                 const quizUrl = `/student/quizzes/${STUDENT_ID}`;
                 const resultsUrl = `/student/results/${STUDENT_ID}`;
                 const attendanceUrl = `/student/attendance/${STUDENT_ID}`;
                 const notesUrl = `/student/notes/${STUDENT_ID}`;
 
+                console.log('📤 Fetching attendance from:', attendanceUrl);
+
+                // ✅ Saare data fetch karo
                 const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance, notes] = await Promise.all([
                     fetchData(assignmentUrl),
                     fetchData(quizUrl),
@@ -1212,6 +1223,7 @@
                     fetchData(notesUrl)
                 ]);
 
+                // ✅ Data ko assign karo
                 allAssignments = Array.isArray(assignments) ? assignments : [];
                 allQuizzes = Array.isArray(quizzes) ? quizzes : [];
                 allCourses = Array.isArray(courses) ? courses : [];
@@ -1222,23 +1234,34 @@
                 allAttendance = Array.isArray(attendance) ? attendance : [];
                 allNotes = Array.isArray(notes) ? notes : [];
 
+                // ✅ Results badge update karo
                 if (results && results.performance) {
                     document.getElementById('resultsBadge').textContent = results.performance.gradedCount || 0;
                 }
 
+                // ✅ Badges update karo
                 document.getElementById('coursesBadge').textContent = allCourses.length || 0;
                 document.getElementById('assignmentsBadge').textContent = allAssignments.length || 0;
                 document.getElementById('quizzesBadge').textContent = allQuizzes.length || 0;
                 document.getElementById('notesBadge').textContent = allNotes.length || 0;
 
+                // ✅ Attendance percentage calculate karo
                 const totalAttendanceDays = allAttendance.length;
                 const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
                 const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays * 100.0) / totalAttendanceDays) : 0;
                 document.getElementById('attendanceBadge').textContent = attendancePercentage + '%';
 
+                // ✅ Debug logs (Testing ke liye)
+                console.log('✅ Assignments loaded:', allAssignments.length);
+                console.log('✅ Quizzes loaded:', allQuizzes.length);
+                console.log('✅ Courses loaded:', allCourses.length);
+                console.log('✅ Attendance loaded:', allAttendance.length);
+                console.log('📊 Sample attendance (first item):', allAttendance.length > 0 ? allAttendance[0] : 'None');
+                console.log('✅ Notes loaded:', allNotes.length);
+
                 return true;
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('❌ Error fetching data:', error);
                 return false;
             }
         }
@@ -1400,75 +1423,103 @@
             }
         }
 
-        function renderAssignments() {
-            const total = allAssignments.length || 0;
-            const pending = allAssignments.filter(a => new Date(a.dueDate) > new Date()).length || 0;
-            const overdue = allAssignments.filter(a => new Date(a.dueDate) < new Date()).length || 0;
+       function renderAssignments() {
+    // ✅ FIX: Date comparison sahi karo
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Time part hatao for accurate date comparison
 
-            const stats = [
-                { label: 'Total', value: total, icon: 'fa-tasks' },
-                { label: 'Pending', value: pending, icon: 'fa-clock' },
-                { label: 'Overdue', value: overdue, icon: 'fa-exclamation-triangle' }
-            ];
+    const total = allAssignments.length || 0;
 
-            const statsHTML = stats.map(stat => `
-                <div class="stat-card">
-                    <div class="stat-number">${stat.value}</div>
-                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
-                </div>
-            `).join('');
+    // ✅ FIX: Pending = NOT submitted AND due date >= today
+    const pending = allAssignments.filter(a => {
+        if (a.submitted) return false;
+        const dueDate = new Date(a.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate >= now;
+    }).length || 0;
 
-            let listHTML = '';
-            if (total > 0) {
-                listHTML = allAssignments.map(a => {
-                    const isOverdue = new Date(a.dueDate) < new Date();
-                    const isSubmitted = a.submitted || false;
-                    const studentId = studentData?.id;
+    // ✅ FIX: Overdue = NOT submitted AND due date < today
+    const overdue = allAssignments.filter(a => {
+        if (a.submitted) return false;
+        const dueDate = new Date(a.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate < now;
+    }).length || 0;
 
-                    return `
-                        <div class="item-card">
-                            <div class="item-info">
-                                <div class="item-title">${a.title || 'Assignment'}</div>
-                                <div class="item-meta">
-                                    <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
-                                    <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
-                                    <span><i class="fas fa-calendar"></i> Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</span>
-                                    <span><i class="fas fa-star"></i> Max: ${a.maxMarks || 100}</span>
-                                </div>
-                            </div>
-                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                <span class="item-status ${isSubmitted ? 'submitted' : (isOverdue ? 'late' : 'pending')}">
-                                    ${isSubmitted ? '✅ Submitted' : (isOverdue ? '⏰ Overdue' : '📝 Pending')}
-                                </span>
-                                ${!isSubmitted ? `
-                                    <button class="btn-primary" onclick="openSubmitModal(${a.id}, '${a.title.replace(/'/g, "\\'")}', ${studentId})" style="padding:0.3rem 0.8rem; font-size:0.75rem; white-space:nowrap;">
-                                        <i class="fas fa-upload"></i> Submit
-                                    </button>
-                                ` : ''}
-                            </div>
+    const stats = [
+        { label: 'Total', value: total, icon: 'fa-tasks' },
+        { label: 'Pending', value: pending, icon: 'fa-clock' },
+        { label: 'Overdue', value: overdue, icon: 'fa-exclamation-triangle' }
+    ];
+
+    const statsHTML = stats.map(stat => `
+        <div class="stat-card">
+            <div class="stat-number">${stat.value}</div>
+            <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+        </div>
+    `).join('');
+
+    let listHTML = '';
+    if (total > 0) {
+        listHTML = allAssignments.map(a => {
+            // ✅ FIX: Submitted check pehle karo
+            const isSubmitted = a.submitted || false;
+
+            // ✅ FIX: Agar submitted hai toh overdue/pending mat dikhao
+            const dueDate = new Date(a.dueDate);
+            dueDate.setHours(0, 0, 0, 0);
+            const isOverdue = !isSubmitted && dueDate < now;
+            const isPending = !isSubmitted && !isOverdue;
+
+            // ✅ FIX: Student ID safely access karo
+            const studentId = studentData?.id || '';
+
+            // ✅ FIX: Title ko safe karo (special characters handle)
+            const safeTitle = (a.title || 'Assignment').replace(/'/g, "\\'");
+
+            return `
+                <div class="item-card">
+                    <div class="item-info">
+                        <div class="item-title">${a.title || 'Assignment'}</div>
+                        <div class="item-meta">
+                            <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
+                            <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
+                            <span><i class="fas fa-calendar"></i> Due: ${a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'N/A'}</span>
+                            <span><i class="fas fa-star"></i> Max: ${a.maxMarks || 100}</span>
                         </div>
-                    `;
-                }).join('');
-            } else {
-                listHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-tasks"></i>
-                        <p>No assignments available.</p>
                     </div>
-                `;
-            }
-
-            const html = `
-                <div class="page-title">My Assignments</div>
-                <div class="page-sub"><i class="fas fa-arrow-right"></i> ${total} assignments assigned</div>
-                <div class="stats-grid">${statsHTML}</div>
-                <div class="item-list">${listHTML}</div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <span class="item-status ${isSubmitted ? 'submitted' : (isOverdue ? 'late' : 'pending')}">
+                            ${isSubmitted ? '✅ Submitted' : (isOverdue ? '⏰ Overdue' : '📝 Pending')}
+                        </span>
+                        ${!isSubmitted ? `
+                            <button class="btn-primary" onclick="openSubmitModal(${a.id}, '${safeTitle}', ${studentId})" style="padding:0.3rem 0.8rem; font-size:0.75rem; white-space:nowrap;">
+                                <i class="fas fa-upload"></i> Submit
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
             `;
+        }).join('');
+    } else {
+        listHTML = `
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <p>No assignments available.</p>
+            </div>
+        `;
+    }
 
-            contentArea.innerHTML = html;
-            setActiveMenu('assignments');
-        }
+    const html = `
+        <div class="page-title">My Assignments</div>
+        <div class="page-sub"><i class="fas fa-arrow-right"></i> ${total} assignments assigned</div>
+        <div class="stats-grid">${statsHTML}</div>
+        <div class="item-list">${listHTML}</div>
+    `;
 
+    contentArea.innerHTML = html;
+    setActiveMenu('assignments');
+}
         // SUBMIT ASSIGNMENT FUNCTIONS
         window.openSubmitModal = function(assignmentId, assignmentTitle, studentId) {
             console.log('📝 Opening submit modal for assignment:', assignmentId, assignmentTitle);
@@ -1481,53 +1532,66 @@
             document.getElementById('submitAssignmentModal').classList.add('show');
         };
 
-        window.submitAssignment = async function(event) {
-            event.preventDefault();
+      window.submitAssignment = async function(event) {
+    event.preventDefault();
 
-            const assignmentId = document.getElementById('submitAssignmentId').value;
-            const fileUrl = document.getElementById('submitFileUrl').value.trim();
-            const comments = document.getElementById('submitComments').value.trim();
-            const studentId = studentData?.id;
-            const errorEl = document.getElementById('submitError');
+    const assignmentId = document.getElementById('submitAssignmentId').value;
+    const fileUrl = document.getElementById('submitFileUrl').value.trim();
+    const comments = document.getElementById('submitComments').value.trim();
+    const studentId = studentData?.id;
+    const errorEl = document.getElementById('submitError');
 
-            if (!fileUrl) {
-                errorEl.textContent = 'Please provide a file URL.';
-                errorEl.classList.add('show');
-                return;
-            }
+    if (!fileUrl) {
+        errorEl.textContent = 'Please provide a file URL.';
+        errorEl.classList.add('show');
+        return;
+    }
 
-            const btn = document.getElementById('submitAssignmentBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner-small"></span> Submitting...';
+    const btn = document.getElementById('submitAssignmentBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner-small"></span> Submitting...';
 
-            try {
-                const data = {
-                    studentId: studentId,
-                    fileUrl: fileUrl,
-                    comments: comments
-                };
-
-                const result = await postData(`/student/assignments/${assignmentId}/submit`, data);
-
-                if (result && result.success !== false) {
-                    showToast('Assignment submitted successfully! 🎉', 'success');
-                    closeModal('submitAssignmentModal');
-                    document.getElementById('submitAssignmentForm').reset();
-                    await fetchAllData();
-                    renderAssignments();
-                } else {
-                    throw new Error(result?.error || 'Failed to submit assignment');
-                }
-            } catch (error) {
-                console.error('❌ Error submitting assignment:', error);
-                errorEl.textContent = error.message;
-                errorEl.classList.add('show');
-                showToast('Failed: ' + error.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-upload"></i> Submit Assignment';
-            }
+    try {
+        const data = {
+            studentId: studentId,
+            fileUrl: fileUrl,
+            comments: comments
         };
+
+        const result = await postData(`/student/assignments/${assignmentId}/submit`, data);
+
+        if (result && result.success !== false) {
+            showToast('Assignment submitted successfully! 🎉', 'success');
+            closeModal('submitAssignmentModal');
+            document.getElementById('submitAssignmentForm').reset();
+
+            // ✅ FIX: Local state update karo (Optimistic Update)
+            const submittedAssignment = allAssignments.find(a => a.id === parseInt(assignmentId));
+            if (submittedAssignment) {
+                submittedAssignment.submitted = true;
+            }
+
+            // ✅ FIX: Agar backend se updated list aayi hai toh use karo
+            if (result.assignments && Array.isArray(result.assignments)) {
+                allAssignments = result.assignments;
+            }
+
+            // ✅ FIX: Re-render karo
+            renderAssignments();
+
+        } else {
+            throw new Error(result?.error || 'Failed to submit assignment');
+        }
+    } catch (error) {
+        console.error('❌ Error submitting assignment:', error);
+        errorEl.textContent = error.message;
+        errorEl.classList.add('show');
+        showToast('Failed: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-upload"></i> Submit Assignment';
+    }
+};
 
         window.closeModal = function(id) {
             const modal = document.getElementById(id);
@@ -1763,64 +1827,67 @@
         // ============================================================
         // RENDER ATTENDANCE
         // ============================================================
-        function renderAttendance() {
-            const attendanceList = allAttendance || [];
-            const totalDays = attendanceList.length;
-            const presentDays = attendanceList.filter(a => a.status === 'PRESENT').length;
-            const absentDays = attendanceList.filter(a => a.status === 'ABSENT').length;
-            const lateDays = attendanceList.filter(a => a.status === 'LATE').length;
-            const percentage = totalDays > 0 ? Math.round((presentDays * 100.0) / totalDays) : 0;
+      function renderAttendance() {
+    // ✅ Debug: Check data
+    console.log('📊 Rendering attendance with data:', allAttendance);
 
-            const stats = [
-                { label: 'Total Days', value: totalDays, icon: 'fa-calendar' },
-                { label: 'Present', value: presentDays, icon: 'fa-check-circle' },
-                { label: 'Absent', value: absentDays, icon: 'fa-times-circle' },
-                { label: 'Percentage', value: percentage + '%', icon: 'fa-percent' }
-            ];
+    const attendanceList = allAttendance || [];
+    const totalDays = attendanceList.length;
+    const presentDays = attendanceList.filter(a => a.status === 'PRESENT').length;
+    const absentDays = attendanceList.filter(a => a.status === 'ABSENT').length;
+    const lateDays = attendanceList.filter(a => a.status === 'LATE').length;
+    const percentage = totalDays > 0 ? Math.round((presentDays * 100.0) / totalDays) : 0;
 
-            const statsHTML = stats.map(stat => `
-                <div class="stat-card">
-                    <div class="stat-number">${stat.value}</div>
-                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+    const stats = [
+        { label: 'Total Days', value: totalDays, icon: 'fa-calendar' },
+        { label: 'Present', value: presentDays, icon: 'fa-check-circle' },
+        { label: 'Absent', value: absentDays, icon: 'fa-times-circle' },
+        { label: 'Percentage', value: percentage + '%', icon: 'fa-percent' }
+    ];
+
+    const statsHTML = stats.map(stat => `
+        <div class="stat-card">
+            <div class="stat-number">${stat.value}</div>
+            <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+        </div>
+    `).join('');
+
+    let listHTML = '';
+    if (attendanceList.length > 0) {
+        listHTML = attendanceList.map(a => `
+            <div class="item-card">
+                <div class="item-info">
+                    <div class="item-title">${a.date || 'N/A'}</div>
+                    <div class="item-meta">
+                        <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
+                        <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
+                    </div>
                 </div>
-            `).join('');
+                <span class="item-status ${a.status === 'PRESENT' ? 'submitted' : (a.status === 'ABSENT' ? 'late' : 'pending')}">
+                    ${a.status || 'N/A'}
+                </span>
+            </div>
+        `).join('');
+    } else {
+        listHTML = `
+            <div class="empty-state">
+                <i class="fas fa-calendar-check"></i>
+                <p>No attendance records found.</p>
+            </div>
+        `;
+    }
 
-            let listHTML = '';
-            if (attendanceList.length > 0) {
-                listHTML = attendanceList.map(a => `
-                    <div class="item-card">
-                        <div class="item-info">
-                            <div class="item-title">${a.date || 'N/A'}</div>
-                            <div class="item-meta">
-                                <span><i class="fas fa-book"></i> ${a.subjectName || 'N/A'}</span>
-                                <span><i class="fas fa-users"></i> ${a.className || 'N/A'}</span>
-                            </div>
-                        </div>
-                        <span class="item-status ${a.status === 'PRESENT' ? 'submitted' : (a.status === 'ABSENT' ? 'late' : 'pending')}">
-                            ${a.status || 'N/A'}
-                        </span>
-                    </div>
-                `).join('');
-            } else {
-                listHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-check"></i>
-                        <p>No attendance records found.</p>
-                    </div>
-                `;
-            }
+    const html = `
+        <div class="page-title">Attendance Overview</div>
+        <div class="page-sub"><i class="fas fa-arrow-right"></i> Your attendance records</div>
+        <div class="stats-grid">${statsHTML}</div>
+        <div class="item-list">${listHTML}</div>
+    `;
 
-            const html = `
-                <div class="page-title">Attendance Overview</div>
-                <div class="page-sub"><i class="fas fa-arrow-right"></i> Your attendance records</div>
-                <div class="stats-grid">${statsHTML}</div>
-                <div class="item-list">${listHTML}</div>
-            `;
-
-            contentArea.innerHTML = html;
-            setActiveMenu('attendance');
-            document.getElementById('attendanceBadge').textContent = percentage + '%';
-        }
+    contentArea.innerHTML = html;
+    setActiveMenu('attendance');
+    document.getElementById('attendanceBadge').textContent = percentage + '%';
+}
 
         // ============================================================
         // RENDER RESULTS
@@ -2441,7 +2508,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <a href="http://localhost:8083/api/student/notes/download/${n.id}" target="_blank" class="btn-primary" style="text-decoration:none; color:white;">
+                                    <a href="http://15.207.174.107:8083/api/student/notes/download/${n.id}" target="_blank" class="btn-primary" style="text-decoration:none; color:white;">
                                         <i class="fas fa-download"></i> Download
                                     </a>
                                 </div>

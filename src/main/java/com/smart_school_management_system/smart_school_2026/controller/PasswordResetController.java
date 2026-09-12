@@ -12,7 +12,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;
@@ -65,7 +64,6 @@ public class PasswordResetController {
 
             log.info("🔑 Reset password request for: {}", email);
 
-            // Validate password
             if (newPassword == null || newPassword.length() < 6) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 6 characters"));
             }

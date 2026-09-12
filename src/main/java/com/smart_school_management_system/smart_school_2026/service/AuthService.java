@@ -42,10 +42,8 @@ public class AuthService {
         // Encode password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        // Set default role if not provided
-        if (user.getRole() == null) {
-            user.setRole(Role.STUDENT);
-        }
+        // ✅ FIX: Role ko FORCE karo (Sirf STUDENT hi register ho sakta hai)
+        user.setRole(Role.STUDENT);
 
         user.setIsActive(true);
 
@@ -72,21 +70,10 @@ public class AuthService {
             studentRepository.save(student);
         }
 
-        // ✅ Agar role TEACHER hai, toh Teacher table mein entry banao
-        if (savedUser.getRole() == Role.TEACHER) {
-            Teacher teacher = new Teacher();
-            teacher.setUser(savedUser);
-            teacher.setTeacherId("TCH-" + String.format("%04d", savedUser.getId()));
-            teacher.setDepartment("");
-            teacher.setQualification("");
-            teacher.setExperienceYears(0);
-
-            teacherRepository.save(teacher);
-        }
-
         return savedUser;
     }
-    public Map<String, Object> loginUser(String username, String password) {
+
+    public Map<String, Object> loginUser(String username, String password, String requestedRole) {
         // Authenticate user
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
@@ -99,6 +86,12 @@ public class AuthService {
         User user = userRepository.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // ✅ FIX: ROLE CHECK (Sabse Important!)
+        String actualRole = user.getRole().name();
+        if (requestedRole != null && !requestedRole.equalsIgnoreCase(actualRole)) {
+            throw new RuntimeException("Role mismatch! " + actualRole + " can only login as " + actualRole);
+        }
+
         // Build response
         Map<String, Object> response = new HashMap<>();
         response.put("token", jwt);
@@ -107,7 +100,7 @@ public class AuthService {
         response.put("username", user.getUsername());
         response.put("email", user.getEmail());
         response.put("fullName", user.getFullName());
-        response.put("role", user.getRole().name());
+        response.put("role", actualRole);
         response.put("isActive", user.getIsActive());
 
         // ✅ Add role-specific info (Student/Teacher/Admin)

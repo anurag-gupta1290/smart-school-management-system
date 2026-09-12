@@ -540,8 +540,10 @@
 </head>
 <body>
 <div class="login-card">
-    <div style="text-align: center; margin-bottom: 100px;">
-        <img src="/images/school-logo.png" alt="School Logo" style="width: 320px; height: auto; border-radius: 120px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+    <div style="text-align: center; margin-bottom: 30px; padding-top: 20px;">
+        <div style="display: inline-block; background: white; padding: 10px 40px; border-radius: 20px; box-shadow: 0 12px 32px -12px rgba(8, 50, 70, 0.20); border: 1px solid rgba(255,255,255,0.8);">
+            <img src="/images/school-logo2.png" alt="School Logo" style="width: auto; height: 85px; object-fit: contain; border-radius: 0; box-shadow: none; display: block;">
+        </div>
     </div>
     <div class="header-mini">
         <div class="brand">
@@ -609,7 +611,7 @@
 
         <div class="submit-area">
             <div class="signup-hint">
-                <i class="fas fa-arrow-right"></i> New here? <a href="signup.html">Create account</a>
+                <i class="fas fa-shield-alt"></i> Accounts are managed by School Admin only.
             </div>
             <button type="submit" class="login-btn" id="loginBtn">
                 <i class="fas fa-sign-in-alt"></i> Log in
@@ -627,205 +629,206 @@
 </div>
 
 <script>
-    //const API_BASE_URL = 'http://15.207.174.107:8083/api';
-   // const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
-   const API_BASE_URL = 'http://localhost:8083/api';
-   const OAUTH2_BASE_URL = 'http://localhost:8083';
-   //const API_BASE_URL = 'http://15.207.174.107:8083/api';
-   //const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
+    const API_BASE_URL = 'http://15.207.174.107:8083/api';
+     const OAUTH2_BASE_URL = 'http://15.207.174.107:8083';
+     //const API_BASE_URL = 'http://localhost:8083/api';
+     //const OAUTH2_BASE_URL = 'http://localhost:8083';
 
-   // DOM refs
-   const moduleBtns = document.querySelectorAll('.module-btn');
-   const moduleHidden = document.getElementById('moduleType');
-   const currentModuleLabel = document.getElementById('currentModuleLabel');
-   const form = document.getElementById('loginForm');
-   const togglePassword = document.getElementById('togglePassword');
-   const passwordInput = document.getElementById('password');
-   const emailInput = document.getElementById('email');
-   const loginBtn = document.getElementById('loginBtn');
-   const alertMessage = document.getElementById('alertMessage');
-   const alertText = document.getElementById('alertText');
-   const googleLoginBtn = document.getElementById('googleLoginBtn');
+     // DOM refs
+     const moduleBtns = document.querySelectorAll('.module-btn');
+     const moduleHidden = document.getElementById('moduleType');
+     const currentModuleLabel = document.getElementById('currentModuleLabel');
+     const form = document.getElementById('loginForm');
+     const togglePassword = document.getElementById('togglePassword');
+     const passwordInput = document.getElementById('password');
+     const emailInput = document.getElementById('email');
+     const loginBtn = document.getElementById('loginBtn');
+     const alertMessage = document.getElementById('alertMessage');
+     const alertText = document.getElementById('alertText');
+     const googleLoginBtn = document.getElementById('googleLoginBtn');
 
-   // Toggle password
-   if (togglePassword && passwordInput) {
-       togglePassword.addEventListener('click', function() {
-           const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-           passwordInput.setAttribute('type', type);
-           this.classList.toggle('fa-eye');
-           this.classList.toggle('fa-eye-slash');
-       });
-   }
+     // Toggle password
+     if (togglePassword && passwordInput) {
+         togglePassword.addEventListener('click', function() {
+             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+             passwordInput.setAttribute('type', type);
+             this.classList.toggle('fa-eye');
+             this.classList.toggle('fa-eye-slash');
+         });
+     }
 
-   function setActiveModule(module) {
-       moduleBtns.forEach(btn => {
-           btn.classList.remove('active');
-           if (btn.dataset.module === module) {
-               btn.classList.add('active');
-           }
-       });
-       moduleHidden.value = module;
-       const names = { admin: 'Admin', student: 'Student', teacher: 'Teacher' };
-       currentModuleLabel.textContent = names[module] || 'Admin';
-   }
+     function setActiveModule(module) {
+         moduleBtns.forEach(btn => {
+             btn.classList.remove('active');
+             if (btn.dataset.module === module) {
+                 btn.classList.add('active');
+             }
+         });
+         moduleHidden.value = module;
+         const names = { admin: 'Admin', student: 'Student', teacher: 'Teacher' };
+         currentModuleLabel.textContent = names[module] || 'Admin';
+     }
 
-   moduleBtns.forEach(btn => {
-       btn.addEventListener('click', function() {
-           const mod = this.dataset.module;
-           setActiveModule(mod);
-           this.style.transform = 'scale(0.95)';
-           setTimeout(() => this.style.transform = '', 120);
-           clearAlert();
-       });
-   });
+     moduleBtns.forEach(btn => {
+         btn.addEventListener('click', function() {
+             const mod = this.dataset.module;
+             setActiveModule(mod);
+             this.style.transform = 'scale(0.95)';
+             setTimeout(() => this.style.transform = '', 120);
+             clearAlert();
+         });
+     });
 
-   function showAlert(message, type = 'error') {
-       alertMessage.className = `alert show alert-${type}`;
-       alertText.textContent = message;
-       clearTimeout(window.alertTimeout);
-       window.alertTimeout = setTimeout(clearAlert, 5000);
-   }
+     function showAlert(message, type = 'error') {
+         alertMessage.className = `alert show alert-${type}`;
+         alertText.textContent = message;
+         clearTimeout(window.alertTimeout);
+         window.alertTimeout = setTimeout(clearAlert, 5000);
+     }
 
-   function clearAlert() {
-       alertMessage.className = 'alert';
-       alertText.textContent = '';
-   }
+     function clearAlert() {
+         alertMessage.className = 'alert';
+         alertText.textContent = '';
+     }
 
-   // Google Login
-   googleLoginBtn.addEventListener('click', function() {
-       window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/google`;
-   });
+     // Google Login
+     googleLoginBtn.addEventListener('click', function() {
+         window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/google`;
+     });
 
-   function socialLogin(provider) {
-       window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/${provider}`;
-   }
+     function socialLogin(provider) {
+         window.location.href = `${OAUTH2_BASE_URL}/oauth2/authorization/${provider}`;
+     }
 
-   // OAuth2 Redirect handler
-   function handleOAuth2Redirect() {
-       const urlParams = new URLSearchParams(window.location.search);
-       const token = urlParams.get('token');
-       const isOAuth2 = urlParams.get('oauth2');
-       const error = urlParams.get('error');
+     // OAuth2 Redirect handler
+     function handleOAuth2Redirect() {
+         const urlParams = new URLSearchParams(window.location.search);
+         const token = urlParams.get('token');
+         const isOAuth2 = urlParams.get('oauth2');
+         const error = urlParams.get('error');
 
-       if (error) {
-           showAlert(`❌ Login failed: ${error}`, 'error');
-           window.history.replaceState({}, document.title, window.location.pathname);
-           return;
-       }
+         if (error) {
+             showAlert(`❌ Login failed: ${error}`, 'error');
+             window.history.replaceState({}, document.title, window.location.pathname);
+             return;
+         }
 
-       if (token && isOAuth2) {
-           localStorage.setItem('token', token);
+         if (token && isOAuth2) {
+             localStorage.setItem('token', token);
 
-           fetch(`${API_BASE_URL}/auth/me`, {
-               headers: { 'Authorization': `Bearer ${token}` }
-           })
-           .then(response => {
-               if (!response.ok) throw new Error('Failed to fetch user info');
-               return response.json();
-           })
-           .then(userData => {
-               const role = userData.role || 'STUDENT';
-               userData.role = role.toUpperCase();
-               localStorage.setItem('user', JSON.stringify(userData));
-               localStorage.setItem('module', role.toLowerCase());
-               showAlert(`✅ Welcome ${userData.fullName || userData.username}!`, 'success');
-               setTimeout(() => {
-                   const dashboardMap = {
-                       'admin': 'admin_dashboard.html',
-                       'teacher': 'teacher_dashboard.html',
-                       'student': 'student_dashboard.html'
-                   };
-                   const target = dashboardMap[role.toLowerCase()] || 'student_dashboard.html';
-                   window.location.href = target;
-               }, 1500);
-           })
-           .catch(error => {
-               showAlert('❌ Error fetching user data. Please try again.', 'error');
-               window.history.replaceState({}, document.title, window.location.pathname);
-           });
-       }
-   }
+             fetch(`${API_BASE_URL}/auth/me`, {
+                 headers: { 'Authorization': `Bearer ${token}` }
+             })
+             .then(response => {
+                 if (!response.ok) throw new Error('Failed to fetch user info');
+                 return response.json();
+             })
+             .then(userData => {
+                 const role = userData.role || 'STUDENT';
+                 userData.role = role.toUpperCase();
+                 localStorage.setItem('user', JSON.stringify(userData));
+                 localStorage.setItem('module', role.toLowerCase());
+                 showAlert(`✅ Welcome ${userData.fullName || userData.username}!`, 'success');
+                 setTimeout(() => {
+                     const dashboardMap = {
+                         'admin': 'admin_dashboard.html',
+                         'teacher': 'teacher_dashboard.html',
+                         'student': 'student_dashboard.html'
+                     };
+                     const target = dashboardMap[role.toLowerCase()] || 'student_dashboard.html';
+                     window.location.href = target;
+                 }, 1500);
+             })
+             .catch(error => {
+                 showAlert('❌ Error fetching user data. Please try again.', 'error');
+                 window.history.replaceState({}, document.title, window.location.pathname);
+             });
+         }
+     }
 
-   // ===== MAIN LOGIN SUBMIT =====
-   form.addEventListener('submit', async function(e) {
-       e.preventDefault();
-       clearAlert();
+     // ===== MAIN LOGIN SUBMIT =====
+     form.addEventListener('submit', async function(e) {
+         e.preventDefault();
+         clearAlert();
 
-       // ✅ FIX: Purana fake token aur data hatao
-       localStorage.clear();
+         // ✅ FIX: Purana fake token aur data hatao
+         localStorage.clear();
 
-       const email = emailInput.value.trim();
-       const password = passwordInput.value;
-       const moduleType = moduleHidden.value;
+         const email = emailInput.value.trim();
+         const password = passwordInput.value;
+         const moduleType = moduleHidden.value;
 
-       if (!email || !password) {
-           showAlert('⚠️ Please fill in all fields.', 'warning');
-           return;
-       }
-       if (!email.includes('@') || !email.includes('.')) {
-           showAlert('❌ Please enter a valid email address.', 'error');
-           return;
-       }
-       if (password.length < 6) {
-           showAlert('❌ Password must be at least 6 characters.', 'error');
-           return;
-       }
+         if (!email || !password) {
+             showAlert('⚠️ Please fill in all fields.', 'warning');
+             return;
+         }
+         if (!email.includes('@') || !email.includes('.')) {
+             showAlert('❌ Please enter a valid email address.', 'error');
+             return;
+         }
+         if (password.length < 6) {
+             showAlert('❌ Password must be at least 6 characters.', 'error');
+             return;
+         }
 
-       loginBtn.disabled = true;
-       loginBtn.innerHTML = '<span class="loading-spinner"></span> Authenticating...';
+         loginBtn.disabled = true;
+         loginBtn.innerHTML = '<span class="loading-spinner"></span> Authenticating...';
 
-       try {
-           const response = await fetch(`${API_BASE_URL}/auth/login`, {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ username: email, password: password })
-           });
+         try {
+             const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({
+                     username: email,
+                     password: password,
+                     role: moduleType // ✅ ROLE BHEJO
+                 })
+             });
 
-           const data = await response.json();
+             const data = await response.json();
 
-           if (response.ok && data.token) {
-               // ✅ FIX: Only save REAL token
-               const userRole = data.role || 'ADMIN';
-               const userData = {
-                   ...data,
-                   role: userRole.toUpperCase(),
-                   userId: data.userId || data.id || 1
-               };
+             if (response.ok && data.token) {
+                 // ✅ FIX: Only save REAL token
+                 const userRole = data.role || 'ADMIN';
+                 const userData = {
+                     ...data,
+                     role: userRole.toUpperCase(),
+                     userId: data.userId || data.id || 1
+                 };
 
-               localStorage.setItem('token', data.token);
-               localStorage.setItem('user', JSON.stringify(userData));
-               localStorage.setItem('module', moduleType);
+                 localStorage.setItem('token', data.token);
+                 localStorage.setItem('user', JSON.stringify(userData));
+                 localStorage.setItem('module', moduleType);
 
-               showAlert(`✅ Welcome ${userData.fullName || userData.username}! Redirecting...`, 'success');
+                 showAlert(`✅ Welcome ${userData.fullName || userData.username}! Redirecting...`, 'success');
 
-               setTimeout(() => {
-                   const role = userData.role.toLowerCase();
-                   const dashboardMap = {
-                       'admin': 'admin_dashboard.html',
-                       'teacher': 'teacher_dashboard.html',
-                       'student': 'student_dashboard.html'
-                   };
-                   const target = dashboardMap[role] || 'dashboard.html';
-                   window.location.href = target;
-               }, 1500);
-           } else {
-               const errorMsg = data.error || data.message || 'Invalid credentials';
-               showAlert(`❌ ${errorMsg}`, 'error');
-               loginBtn.disabled = false;
-               loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
-           }
-       } catch (error) {
-           console.error('Login error:', error);
-           // ✅ FIX: Fake/demo token use karna band kar diya
-           showAlert('❌ Backend server not running. Please check your connection.', 'error');
-           loginBtn.disabled = false;
-           loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
-       }
-   });
+                 setTimeout(() => {
+                     const role = userData.role.toLowerCase();
+                     const dashboardMap = {
+                         'admin': 'admin_dashboard.html',
+                         'teacher': 'teacher_dashboard.html',
+                         'student': 'student_dashboard.html'
+                     };
+                     const target = dashboardMap[role] || 'dashboard.html';
+                     window.location.href = target;
+                 }, 1500);
+             } else {
+                 const errorMsg = data.error || data.message || 'Invalid credentials';
+                 showAlert(`❌ ${errorMsg}`, 'error');
+                 loginBtn.disabled = false;
+                 loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
+             }
+         } catch (error) {
+             console.error('Login error:', error);
+             showAlert('❌ Backend server not running. Please check your connection.', 'error');
+             loginBtn.disabled = false;
+             loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
+         }
+     });
 
-   // Set default
-   setActiveModule('admin');
-   handleOAuth2Redirect();
+     // Set default
+     setActiveModule('admin');
+     handleOAuth2Redirect();
 </script>
 </body>
 </html>

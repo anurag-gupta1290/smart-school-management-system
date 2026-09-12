@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.smart_school_management_system.smart_school_2026.entity.*;
 import com.smart_school_management_system.smart_school_2026.repository.*;
@@ -12,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,14 +32,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "http://localhost:8080",
-        "http://localhost:8083",
-        "http://localhost:8084",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500"
-})
 @Transactional
 public class AdminController {
 
@@ -145,7 +138,7 @@ public class AdminController {
     }
 
     // ============================================================
-    // 🔥🔥🔥 SUBJECTS API - ADD THIS 🔥🔥🔥
+    // SUBJECTS API
     // ============================================================
     @GetMapping("/subjects")
     public ResponseEntity<?> getAllSubjects() {
@@ -153,7 +146,6 @@ public class AdminController {
             List<Subject> subjects = subjectRepository.findAll();
             System.out.println("✅ Subjects found: " + subjects.size());
 
-            // Map to simple DTO
             List<Map<String, Object>> result = new ArrayList<>();
             for (Subject s : subjects) {
                 Map<String, Object> map = new HashMap<>();
@@ -322,6 +314,7 @@ public class AdminController {
             String qualification = (String) request.get("qualification");
             Integer experienceYears = request.get("experienceYears") != null ?
                     Integer.parseInt(request.get("experienceYears").toString()) : 0;
+            String password = (String) request.get("password");
 
             if (fullName == null || fullName.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Full name is required"));
@@ -338,7 +331,7 @@ public class AdminController {
             user.setUsername(email);
             user.setEmail(email);
             user.setFullName(fullName);
-            user.setPassword(passwordEncoder.encode("teacher123"));
+            user.setPassword(passwordEncoder.encode((password != null && !password.isEmpty()) ? password : "teacher123"));
             user.setRole(Role.TEACHER);
             user.setIsActive(true);
             User savedUser = userRepository.save(user);
@@ -353,6 +346,7 @@ public class AdminController {
             Teacher saved = adminService.createTeacher(teacher);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -434,6 +428,7 @@ public class AdminController {
             String cls = (String) request.get("class");
             String guardianName = (String) request.get("guardianName");
             String guardianPhone = (String) request.get("guardianPhone");
+            String password = (String) request.get("password");
 
             if (fullName == null || fullName.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Full name is required"));
@@ -450,7 +445,7 @@ public class AdminController {
             user.setUsername(email);
             user.setEmail(email);
             user.setFullName(fullName);
-            user.setPassword(passwordEncoder.encode("student123"));
+            user.setPassword(passwordEncoder.encode((password != null && !password.isEmpty()) ? password : "student123"));
             user.setRole(Role.STUDENT);
             user.setIsActive(true);
             User savedUser = userRepository.save(user);
@@ -458,14 +453,32 @@ public class AdminController {
             Student student = new Student();
             student.setUser(savedUser);
             student.setStudentId(studentId != null ? studentId : "STU-" + String.format("%03d", savedUser.getId()));
-            student.setClass_(cls != null ? cls : "10-A");
-            student.setGuardianName(guardianName);
-            student.setGuardianPhone(guardianPhone);
+
+            // ✅ FIX #1: Class string set karo
+            String classStr = cls != null ? cls.replace(" ", "-") : "10-A";
+            student.setClass_(classStr);
+
+            // ✅ FIX #2: Class ID bhi set karo (YEH ASLI FIX HAI)
+            try {
+                String[] parts = classStr.split("-");
+                String className = parts[0];
+                String section = parts.length > 1 ? parts[1] : "";
+
+                classEntityRepository.findByClassNameAndSection(className, section)
+                        .ifPresent(student::setClassEntity);
+            } catch (Exception e) {
+                System.out.println("⚠️ Could not set class_id: " + e.getMessage());
+            }
+
+            student.setGuardianName(guardianName != null && !guardianName.isEmpty() ? guardianName : "Not Provided");
+            student.setGuardianPhone(guardianPhone != null && !guardianPhone.isEmpty() ? guardianPhone : "0000000000");
 
             Student saved = adminService.createStudent(student);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -598,36 +611,38 @@ public class AdminController {
     }
 
     // ============================================================
-    // ✅ ATTENDANCE - GET OVERALL STATS
+    // ✅ ATTENDANCE - GET OVERALL STATS (FIXED)
     // ============================================================
     @GetMapping("/attendance/stats")
     public ResponseEntity<?> getAttendanceStats() {
         try {
-            long totalStudents = studentRepository.count();
-            long presentStudents = 0;
-            long absentStudents = 0;
-
-            // Aaj ki attendance
             LocalDate today = LocalDate.now();
-            List<Attendance> todayAttendance = attendanceRepository.findAll();
 
-            for (Attendance a : todayAttendance) {
-                if (a.getAttendanceDate().equals(today)) {
-                    if (a.getStatus() == AttendanceStatus.PRESENT) {
-                        presentStudents++;
-                    } else if (a.getStatus() == AttendanceStatus.ABSENT) {
-                        absentStudents++;
-                    }
-                }
-            }
+            // ✅ FIX: Aaj ki saari attendance records
+            List<Attendance> todayAttendance = attendanceRepository.findAll()
+                    .stream()
+                    .filter(a -> a.getAttendanceDate().equals(today))
+                    .collect(Collectors.toList());
 
-            double overallPercentage = totalStudents > 0 ?
-                    Math.round((presentStudents * 100.0) / totalStudents * 100.0) / 100.0 : 0;
+            long presentCount = todayAttendance.stream()
+                    .filter(a -> a.getStatus() == AttendanceStatus.PRESENT)
+                    .count();
+
+            long absentCount = todayAttendance.stream()
+                    .filter(a -> a.getStatus() == AttendanceStatus.ABSENT)
+                    .count();
+
+            long totalRecords = todayAttendance.size();
+
+            // ✅ FIX: Percentage = present / total_records * 100
+            double overallPercentage = totalRecords > 0
+                    ? Math.round((presentCount * 100.0) / totalRecords * 100.0) / 100.0
+                    : 0;
 
             Map<String, Object> response = new HashMap<>();
-            response.put("totalStudents", totalStudents);
-            response.put("present", presentStudents);
-            response.put("absent", absentStudents);
+            response.put("totalStudents", studentRepository.count());
+            response.put("present", presentCount);
+            response.put("absent", absentCount);
             response.put("overallPercentage", overallPercentage);
 
             return ResponseEntity.ok(response);
@@ -637,8 +652,11 @@ public class AdminController {
     }
 
     // ============================================================
-    // ✅ ATTENDANCE - GET CLASS WISE STATS
+    // ✅ ATTENDANCE - GET CLASS WISE STATS (FIXED)
     // ============================================================
+    // ============================================================
+// ✅ ATTENDANCE - GET CLASS WISE STATS (FIXED - Absent bhi count hoga)
+// ============================================================
     @GetMapping("/attendance/classes")
     public ResponseEntity<?> getClassAttendanceStats() {
         try {
@@ -654,23 +672,40 @@ public class AdminController {
                 List<Student> students = studentRepository.findByClassEntityId(cls.getId());
                 int totalStudents = students.size();
                 int presentStudents = 0;
+                int absentStudents = 0;
 
-                // Class ki aaj ki attendance
+                // ✅ FIX: Har student ki aaj ki SAARI attendance check karo
                 for (Student s : students) {
                     List<Attendance> attendanceList = attendanceRepository.findByStudentId(s.getId());
-                    for (Attendance a : attendanceList) {
-                        if (a.getAttendanceDate().equals(LocalDate.now()) && a.getStatus() == AttendanceStatus.PRESENT) {
+
+                    // ✅ FIX: Aaj ki SAARI attendance records lo (saare subjects)
+                    List<Attendance> todayAttendanceList = attendanceList.stream()
+                            .filter(a -> a.getAttendanceDate().equals(LocalDate.now()))
+                            .collect(Collectors.toList());
+
+                    if (!todayAttendanceList.isEmpty()) {
+                        // ✅ FIX: Agar kisi bhi subject mein PRESENT hai toh Present count karo
+                        boolean isPresent = todayAttendanceList.stream()
+                                .anyMatch(a -> a.getStatus() == AttendanceStatus.PRESENT ||
+                                        a.getStatus() == AttendanceStatus.LATE ||
+                                        a.getStatus() == AttendanceStatus.EXCUSED);
+
+                        if (isPresent) {
                             presentStudents++;
-                            break;
+                        } else {
+                            // ✅ FIX: Agar saare subjects mein ABSENT hai toh Absent count karo
+                            absentStudents++;
                         }
                     }
                 }
 
-                double percentage = totalStudents > 0 ?
-                        Math.round((presentStudents * 100.0) / totalStudents * 100.0) / 100.0 : 0;
+                double percentage = totalStudents > 0
+                        ? Math.round((presentStudents * 100.0) / totalStudents * 100.0) / 100.0
+                        : 0;
 
                 map.put("totalStudents", totalStudents);
                 map.put("presentStudents", presentStudents);
+                map.put("absentStudents", absentStudents);
                 map.put("percentage", percentage);
 
                 result.add(map);

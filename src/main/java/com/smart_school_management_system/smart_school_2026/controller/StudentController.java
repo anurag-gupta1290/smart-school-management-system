@@ -21,7 +21,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Transactional
 public class StudentController {
 
@@ -36,6 +35,9 @@ public class StudentController {
     private final ClassEntityRepository classEntityRepository;
     private final NoteRepository noteRepository;
 
+    // ============================================================
+    // DASHBOARD & PROFILE
+    // ============================================================
     @GetMapping("/dashboard/{userId}")
     public ResponseEntity<?> getStudentDashboard(@PathVariable Long userId) {
         try {
@@ -89,6 +91,9 @@ public class StudentController {
         }
     }
 
+    // ============================================================
+    // ASSIGNMENTS
+    // ============================================================
     @GetMapping("/assignments/{studentId}")
     public ResponseEntity<?> getAssignmentsForStudent(@PathVariable Long studentId) {
         try {
@@ -106,10 +111,27 @@ public class StudentController {
                 map.put("subjectName", a.getSubject() != null ? a.getSubject().getSubjectName() : "N/A");
                 map.put("teacherName", a.getTeacher() != null && a.getTeacher().getUser() != null ? a.getTeacher().getUser().getFullName() : "N/A");
 
-                boolean submitted = submissionRepository
-                        .findByAssignmentIdAndStudentId(a.getId(), studentId)
-                        .isPresent();
+                // ✅ FIX: Sirf SUBMITTED, GRADED, LATE ko submitted count karo
+                Optional<Submission> existingSubmission = submissionRepository
+                        .findByAssignmentIdAndStudentId(a.getId(), studentId);
+
+                boolean submitted = existingSubmission.isPresent() &&
+                        (existingSubmission.get().getStatus() == SubmissionStatus.SUBMITTED ||
+                                existingSubmission.get().getStatus() == SubmissionStatus.GRADED ||
+                                existingSubmission.get().getStatus() == SubmissionStatus.LATE);
+
                 map.put("submitted", submitted);
+                map.put("submissionStatus", existingSubmission.isPresent() ?
+                        existingSubmission.get().getStatus().toString() : "NOT_SUBMITTED");
+
+                // ✅ Extra info
+                if (existingSubmission.isPresent()) {
+                    Submission s = existingSubmission.get();
+                    map.put("marksObtained", s.getMarksObtained());
+                    map.put("feedback", s.getFeedback());
+                    map.put("submissionDate", s.getSubmissionDate());
+                    map.put("fileUrl", s.getFileUrl());
+                }
 
                 result.add(map);
             }
@@ -120,6 +142,106 @@ public class StudentController {
         }
     }
 
+    @PostMapping("/assignments/{assignmentId}/submit")
+    public ResponseEntity<?> submitAssignment(@PathVariable Long assignmentId, @RequestBody Map<String, Object> request) {
+        try {
+            Long studentId = null;
+            if (request.get("studentId") != null) {
+                studentId = Long.parseLong(request.get("studentId").toString());
+            }
+
+            if (studentId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Student ID is required"));
+            }
+
+            Optional<Submission> existing = submissionRepository
+                    .findByAssignmentIdAndStudentId(assignmentId, studentId);
+
+            // ✅ FIX: Sirf SUBMITTED, GRADED, LATE ko "Already submitted" bolo
+            if (existing.isPresent() &&
+                    (existing.get().getStatus() == SubmissionStatus.SUBMITTED ||
+                            existing.get().getStatus() == SubmissionStatus.GRADED ||
+                            existing.get().getStatus() == SubmissionStatus.LATE)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Already submitted"));
+            }
+
+            Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
+            Student student = studentRepository.findById(studentId).orElse(null);
+
+            if (assignment == null || student == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Assignment or Student not found"));
+            }
+
+            String fileUrl = (String) request.get("fileUrl");
+            if (fileUrl != null && fileUrl.contains("localhost")) {
+                fileUrl = fileUrl.replace("localhost:8083", "15.207.174.107:8083");
+            }
+            String comments = (String) request.get("comments");
+
+            Submission submission;
+            // ✅ FIX: Agar PENDING submission exist karta hai toh update karo, warna naya banao
+            if (existing.isPresent()) {
+                submission = existing.get();
+                submission.setFileUrl(fileUrl);
+                submission.setComments(comments);
+                submission.setSubmissionDate(LocalDateTime.now());
+                submission.setStatus(SubmissionStatus.SUBMITTED);
+            } else {
+                submission = new Submission();
+                submission.setAssignment(assignment);
+                submission.setStudent(student);
+                submission.setSubmissionDate(LocalDateTime.now());
+                submission.setFileUrl(fileUrl);
+                submission.setComments(comments);
+                submission.setStatus(SubmissionStatus.SUBMITTED);
+            }
+
+            submissionRepository.save(submission);
+
+            List<Map<String, Object>> updatedAssignments = getUpdatedAssignments(studentId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Assignment submitted successfully!");
+            response.put("assignments", updatedAssignments);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    private List<Map<String, Object>> getUpdatedAssignments(Long studentId) {
+        List<Assignment> assignments = assignmentRepository.findAll();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Assignment a : assignments) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", a.getId());
+            map.put("title", a.getTitle());
+            map.put("dueDate", a.getDueDate() != null ? a.getDueDate().toString() : "");
+            map.put("maxMarks", a.getMaxMarks());
+            map.put("className", a.getClassEntity() != null ? a.getClassEntity().getClassName() : "N/A");
+            map.put("subjectName", a.getSubject() != null ? a.getSubject().getSubjectName() : "N/A");
+
+            // ✅ FIX: Proper status check
+            Optional<Submission> existing = submissionRepository
+                    .findByAssignmentIdAndStudentId(a.getId(), studentId);
+
+            boolean submitted = existing.isPresent() &&
+                    (existing.get().getStatus() == SubmissionStatus.SUBMITTED ||
+                            existing.get().getStatus() == SubmissionStatus.GRADED ||
+                            existing.get().getStatus() == SubmissionStatus.LATE);
+
+            map.put("submitted", submitted);
+            result.add(map);
+        }
+        return result;
+    }
+
+    // ============================================================
+    // QUIZZES
+    // ============================================================
     @GetMapping("/quizzes/{studentId}")
     public ResponseEntity<?> getQuizzesForStudent(@PathVariable Long studentId) {
         try {
@@ -154,14 +276,23 @@ public class StudentController {
                 }
                 map.put("questions", questionList);
 
-                // ✅ Check if student has attempted quiz - SIRF current student ke liye
-                boolean attempted = quizResultRepository
-                        .findByQuizIdAndStudentId(q.getId(), studentId)
-                        .isPresent();
+                // ✅ FIX: Proper status check for quiz
+                Optional<QuizResult> existingResult = quizResultRepository
+                        .findByQuizIdAndStudentId(q.getId(), studentId);
 
-                // ✅ Agar attempted false hai toh "UPCOMING", warna "COMPLETED"
+                boolean attempted = existingResult.isPresent();
                 map.put("attempted", attempted);
                 map.put("status", attempted ? "COMPLETED" : "UPCOMING");
+
+                // ✅ Extra info
+                if (attempted) {
+                    QuizResult qr = existingResult.get();
+                    map.put("marksObtained", qr.getMarksObtained());
+                    map.put("totalMarks", qr.getTotalMarks());
+                    map.put("percentage", qr.getPercentage());
+                    map.put("grade", qr.getGrade());
+                    map.put("attemptDate", qr.getAttemptDate());
+                }
 
                 result.add(map);
             }
@@ -169,67 +300,6 @@ public class StudentController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.ok(new ArrayList<>());
-        }
-    }
-
-    @PostMapping("/assignments/{assignmentId}/submit")
-    public ResponseEntity<?> submitAssignment(@PathVariable Long assignmentId, @RequestBody Map<String, Object> request) {
-        try {
-            Long studentId = null;
-
-            if (request.get("studentId") != null) {
-                studentId = Long.parseLong(request.get("studentId").toString());
-            }
-
-            if (studentId == null) {
-                try {
-                    studentId = studentService.getCurrentStudentId();
-                } catch (Exception ex) {
-                    System.out.println("⚠️ Could not get student ID: " + ex.getMessage());
-                }
-            }
-
-            String fileUrl = (String) request.get("fileUrl");
-            String comments = (String) request.get("comments");
-
-            if (studentId == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Student ID is required"));
-            }
-
-            boolean alreadySubmitted = submissionRepository
-                    .findByAssignmentIdAndStudentId(assignmentId, studentId)
-                    .isPresent();
-
-            if (alreadySubmitted) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Already submitted"));
-            }
-
-            Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
-            Student student = studentRepository.findById(studentId).orElse(null);
-
-            if (assignment == null || student == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Assignment or Student not found"));
-            }
-
-            Submission submission = new Submission();
-            submission.setAssignment(assignment);
-            submission.setStudent(student);
-            submission.setSubmissionDate(LocalDateTime.now());
-            submission.setFileUrl(fileUrl);
-            submission.setComments(comments);
-            submission.setStatus(SubmissionStatus.SUBMITTED);
-
-            Submission saved = submissionRepository.save(submission);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", saved.getId());
-            response.put("message", "Assignment submitted successfully");
-            response.put("success", true);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -242,37 +312,36 @@ public class StudentController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Student ID is required"));
             }
 
-            // ✅ Answers ko process karo aur marks calculate karo
+            // ✅ FIX: Pehle check karo ki already attempt kiya hai ya nahi
+            Optional<QuizResult> existingResult = quizResultRepository
+                    .findByQuizIdAndStudentId(quizId, studentId);
+
+            if (existingResult.isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "Already attempted this quiz",
+                        "marksObtained", existingResult.get().getMarksObtained(),
+                        "grade", existingResult.get().getGrade()
+                ));
+            }
+
             List<Map<String, Object>> answers = (List<Map<String, Object>>) request.get("answers");
             int marksObtained = 0;
 
             if (answers != null) {
                 for (Map<String, Object> ans : answers) {
                     Long questionId = Long.parseLong(ans.get("questionId").toString());
-                    String selectedAnswer = String.valueOf(ans.get("selectedAnswer")).toUpperCase(); // 'a' -> 'A'
+                    String selectedAnswer = String.valueOf(ans.get("selectedAnswer")).toUpperCase();
 
-                    // ✅ Sahi answer dhundho
                     QuizQuestion question = quizQuestionRepository.findById(questionId).orElse(null);
 
-                    // 🔥 Logs (Debugging ke liye)
                     System.out.println("QID: " + questionId + " | Selected: " + selectedAnswer + " | Correct: " + (question != null ? question.getCorrectAnswer() : "NULL"));
 
                     if (question != null && question.getCorrectAnswer() != null) {
-                        // ✅ Case-Insensitive compare (A aur a dono match)
                         if (question.getCorrectAnswer().equalsIgnoreCase(selectedAnswer)) {
                             marksObtained += question.getMarks() != null ? question.getMarks() : 1;
                         }
                     }
                 }
-            }
-
-            // ✅ Check if already attempted
-            boolean alreadyAttempted = quizResultRepository
-                    .findByQuizIdAndStudentId(quizId, studentId)
-                    .isPresent();
-
-            if (alreadyAttempted) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Already attempted this quiz"));
             }
 
             Quiz quiz = quizRepository.findById(quizId).orElse(null);
@@ -310,6 +379,7 @@ public class StudentController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
     @GetMapping("/quiz-results/{studentId}")
     public ResponseEntity<?> getQuizResults(@PathVariable Long studentId) {
         try {
@@ -337,6 +407,9 @@ public class StudentController {
         }
     }
 
+    // ============================================================
+    // SUBMISSIONS
+    // ============================================================
     @GetMapping("/submissions/{studentId}")
     public ResponseEntity<?> getStudentSubmissions(@PathVariable Long studentId) {
         try {
@@ -351,7 +424,13 @@ public class StudentController {
                 map.put("marksObtained", s.getMarksObtained());
                 map.put("submissionDate", s.getSubmissionDate());
                 map.put("feedback", s.getFeedback());
-                map.put("fileUrl", s.getFileUrl());
+
+                String fileUrl = s.getFileUrl();
+                if (fileUrl != null && fileUrl.contains("localhost")) {
+                    fileUrl = fileUrl.replace("localhost:8083", "15.207.174.107:8083");
+                }
+                map.put("fileUrl", fileUrl);
+
                 result.add(map);
             }
             return ResponseEntity.ok(result);
@@ -360,6 +439,9 @@ public class StudentController {
         }
     }
 
+    // ============================================================
+    // RESULTS
+    // ============================================================
     @GetMapping("/results/{studentId}")
     public ResponseEntity<?> getStudentResults(@PathVariable Long studentId) {
         try {
@@ -424,6 +506,9 @@ public class StudentController {
         else return "F";
     }
 
+    // ============================================================
+    // ATTENDANCE
+    // ============================================================
     @GetMapping("/attendance/{studentId}")
     public ResponseEntity<?> getStudentAttendance(@PathVariable Long studentId) {
         try {
@@ -443,8 +528,9 @@ public class StudentController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
     // ============================================================
-    // ✅ NOTES - GET ALL NOTES FOR STUDENT (Free ya Purchased)
+    // NOTES
     // ============================================================
     @GetMapping("/notes/{studentId}")
     public ResponseEntity<?> getNotesForStudent(@PathVariable Long studentId) {
@@ -458,14 +544,12 @@ public class StudentController {
                 map.put("title", n.getTitle());
                 map.put("description", n.getDescription());
 
-                // ✅ Subject Name
                 if (n.getSubject() != null) {
                     map.put("subjectName", n.getSubject().getSubjectName());
                 } else {
                     map.put("subjectName", "N/A");
                 }
 
-                // ✅ Class Name
                 if (n.getClassEntity() != null) {
                     map.put("className", n.getClassEntity().getClassName());
                 } else {
@@ -475,17 +559,14 @@ public class StudentController {
                 map.put("price", n.getPrice() != null ? n.getPrice() : 0);
                 map.put("isFree", n.getIsFree() != null ? n.getIsFree() : (n.getPrice() == null || n.getPrice() == 0));
 
-                // ✅ Upload Date (createdAt use kiya hai)
                 map.put("uploadDate", n.getCreatedAt() != null ? n.getCreatedAt().toString() : "");
 
-                // ✅ Teacher Name
                 if (n.getTeacher() != null && n.getTeacher().getUser() != null) {
                     map.put("teacherName", n.getTeacher().getUser().getFullName());
                 } else {
                     map.put("teacherName", "N/A");
                 }
 
-                // ✅ Purchase Status Check
                 boolean isPurchased = noteRepository.findPurchasedNotesByStudent(studentId)
                         .stream().anyMatch(p -> p.getId().equals(n.getId()));
                 map.put("purchased", isPurchased);
@@ -499,9 +580,6 @@ public class StudentController {
         }
     }
 
-    // ============================================================
-    // ✅ NOTES - DOWNLOAD FILE BY NOTE ID
-    // ============================================================
     @GetMapping("/notes/download/{noteId}")
     public ResponseEntity<?> downloadNote(@PathVariable Long noteId) {
         try {
@@ -510,15 +588,13 @@ public class StudentController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Note not found"));
             }
 
-            String fileUrlStr = note.getFileUrl(); // Database me saved URL
+            String fileUrlStr = note.getFileUrl();
             if (fileUrlStr == null || fileUrlStr.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "File URL not found for this note"));
             }
 
-            // ✅ Filename nikaalo (Last / ke baad wala part)
             String fileName = fileUrlStr.substring(fileUrlStr.lastIndexOf('/') + 1);
 
-            // ✅ YAHAN FIX HAI: File "uploads/notes" folder me hai
             Path filePath = Paths.get("uploads", "notes", fileName).normalize();
 
             Resource resource = new UrlResource(filePath.toUri());
