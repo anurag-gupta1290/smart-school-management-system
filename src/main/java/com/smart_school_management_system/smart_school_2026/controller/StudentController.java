@@ -34,6 +34,7 @@ public class StudentController {
     private final QuizResultRepository quizResultRepository;
     private final ClassEntityRepository classEntityRepository;
     private final NoteRepository noteRepository;
+    private final NoticeRepository noticeRepository;   // ← YE ADD KARO
 
     // ============================================================
     // DASHBOARD & PROFILE
@@ -55,6 +56,7 @@ public class StudentController {
             Map<String, Object> studentDTO = new HashMap<>();
             studentDTO.put("id", student.getId());
             studentDTO.put("studentId", student.getStudentId());
+            studentDTO.put("classId", student.getClassEntity() != null ? student.getClassEntity().getId() : null);  // ← YE ADD KARO
             studentDTO.put("class_", student.getClass_());
             studentDTO.put("section", student.getSection());
             studentDTO.put("rollNumber", student.getRollNumber());
@@ -614,6 +616,132 @@ public class StudentController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error downloading file: " + e.getMessage()));
+        }
+    }
+    // ============================================================
+// NOTICES
+// ============================================================
+
+    @GetMapping("/notices/{classId}")
+    public ResponseEntity<?> getStudentNotices(@PathVariable Long classId) {
+        try {
+            List<Notice> notices = noticeRepository.findAll();
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Notice n : notices) {
+                // Active check
+                if (n.getIsActive() == null || !n.getIsActive()) continue;
+
+                // Expiry check
+                if (n.getExpiryDate() != null && n.getExpiryDate().isBefore(LocalDateTime.now())) continue;
+
+                // Audience filter
+                String aud = n.getTargetAudience();
+                boolean visible = false;
+
+                if (aud == null || aud.equals("ALL") || aud.equals("STUDENTS")) {
+                    visible = true;
+                } else if (aud.equals("CLASS_SPECIFIC")) {
+                    if (n.getTargetClassId() != null && n.getTargetClassId().equals(classId)) {
+                        visible = true;
+                    }
+                }
+                // TEACHERS audience → student ko nahi dikhega
+
+                if (!visible) continue;
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", n.getId());
+                map.put("title", n.getTitle());
+                map.put("content", n.getContent());
+                map.put("targetAudience", n.getTargetAudience());
+                map.put("targetClassId", n.getTargetClassId());
+                map.put("priority", n.getPriority());
+                map.put("isPinned", n.getIsPinned());
+                map.put("publishDate", n.getPublishDate());
+                map.put("expiryDate", n.getExpiryDate());
+                map.put("createdBy", n.getCreatedBy());
+                map.put("createdByRole", n.getCreatedByRole());
+                map.put("viewCount", n.getViewCount());
+
+                // Creator name
+                map.put("createdByName", n.getCreatedByRole() != null && n.getCreatedByRole().equals("ADMIN")
+                        ? "Admin" : "Teacher");
+
+                result.add(map);
+            }
+
+            // Sort: pinned first, then by publishDate desc
+            result.sort((a, b) -> {
+                Boolean pinA = (Boolean) a.get("isPinned");
+                Boolean pinB = (Boolean) b.get("isPinned");
+                if (pinA != null && pinB != null && !pinA.equals(pinB)) {
+                    return pinB ? 1 : -1;
+                }
+                Object dateA = a.get("publishDate");
+                Object dateB = b.get("publishDate");
+                if (dateA != null && dateB != null) {
+                    return dateB.toString().compareTo(dateA.toString());
+                }
+                return 0;
+            });
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    @PostMapping("/notices/{noticeId}/view")
+    public ResponseEntity<?> incrementNoticeView(@PathVariable Long noticeId) {
+        try {
+            Optional<Notice> noticeOpt = noticeRepository.findById(noticeId);
+            if (noticeOpt.isPresent()) {
+                Notice notice = noticeOpt.get();
+                notice.setViewCount((notice.getViewCount() != null ? notice.getViewCount() : 0) + 1);
+                noticeRepository.save(notice);
+            }
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Fallback: Get all student-visible notices (no class filter)
+     */
+    @GetMapping("/notices/all")
+    public ResponseEntity<?> getAllStudentNotices() {
+        try {
+            List<Notice> notices = noticeRepository.findAll();
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Notice n : notices) {
+                if (n.getIsActive() == null || !n.getIsActive()) continue;
+                if (n.getExpiryDate() != null && n.getExpiryDate().isBefore(LocalDateTime.now())) continue;
+
+                String aud = n.getTargetAudience();
+                if (aud == null || aud.equals("ALL") || aud.equals("STUDENTS")) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", n.getId());
+                    map.put("title", n.getTitle());
+                    map.put("content", n.getContent());
+                    map.put("targetAudience", n.getTargetAudience());
+                    map.put("priority", n.getPriority());
+                    map.put("isPinned", n.getIsPinned());
+                    map.put("publishDate", n.getPublishDate());
+                    map.put("createdByRole", n.getCreatedByRole());
+                    map.put("createdByName", n.getCreatedByRole() != null && n.getCreatedByRole().equals("ADMIN") ? "Admin" : "Teacher");
+                    map.put("viewCount", n.getViewCount());
+                    result.add(map);
+                }
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(new ArrayList<>());
         }
     }
 }

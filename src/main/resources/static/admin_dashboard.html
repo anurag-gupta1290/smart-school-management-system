@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Smart School Admin Panel - Manage courses, teachers, students, classes and attendance" />
+    <meta name="description" content="Smart School Admin Panel - Manage courses, teachers, students, classes, attendance and notices" />
     <meta name="author" content="Smart School" />
     <title>Smart School · Admin Panel</title>
 
-    <!-- ============================================================
-         EXTERNAL RESOURCES
-         ============================================================ -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -48,9 +45,6 @@
             --skeleton-shine: #f0f4f8;
         }
 
-        /* ============================================================
-           CSS VARIABLES - DARK THEME
-           ============================================================ */
         [data-theme="dark"] {
             --bg-body: #0d1a22;
             --bg-card: #1a2a33;
@@ -78,9 +72,6 @@
             --skeleton-shine: #1e3038;
         }
 
-        /* ============================================================
-           CSS VARIABLES - GRAY THEME
-           ============================================================ */
         [data-theme="gray"] {
             --bg-body: #d5d5d5;
             --bg-card: #e8e8e8;
@@ -106,9 +97,6 @@
             --skeleton-shine: #e0e0e0;
         }
 
-        /* ============================================================
-           GLOBAL RESET
-           ============================================================ */
         * {
             margin: 0;
             padding: 0;
@@ -116,9 +104,7 @@
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             background: var(--bg-body);
@@ -128,23 +114,10 @@
             overflow-x: hidden;
         }
 
-        /* ============================================================
-           SCROLLBAR STYLING
-           ============================================================ */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-body);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--divider);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         /* ============================================================
            SIDEBAR
@@ -176,10 +149,7 @@
             gap: 10px;
         }
 
-        .sidebar .brand i {
-            color: var(--info);
-            font-size: 1.5rem;
-        }
+        .sidebar .brand i { color: var(--info); font-size: 1.5rem; }
 
         .sidebar .menu-label {
             font-size: 0.7rem;
@@ -221,9 +191,7 @@
             color: var(--text-primary);
         }
 
-        .sidebar .menu-item:hover i {
-            color: var(--text-primary);
-        }
+        .sidebar .menu-item:hover i { color: var(--text-primary); }
 
         .sidebar .menu-item.active {
             background: var(--menu-active);
@@ -231,9 +199,7 @@
             box-shadow: 0 4px 12px rgba(26, 58, 92, 0.25);
         }
 
-        .sidebar .menu-item.active i {
-            color: white;
-        }
+        .sidebar .menu-item.active i { color: white; }
 
         .sidebar .menu-item .badge {
             margin-left: auto;
@@ -281,9 +247,7 @@
             color: var(--danger);
         }
 
-        .sidebar .logout-btn:hover {
-            background: rgba(231, 76, 60, 0.08);
-        }
+        .sidebar .logout-btn:hover { background: rgba(231, 76, 60, 0.08); }
 
         /* ============================================================
            MAIN CONTENT
@@ -296,9 +260,6 @@
             transition: margin 0.3s ease;
         }
 
-        /* ============================================================
-           TOP BAR
-           ============================================================ */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -319,20 +280,8 @@
             gap: 8px;
         }
 
-        .top-bar .page-title span {
-            color: var(--text-muted);
-            font-weight: 400;
-        }
+        .top-bar-right { display: flex; align-items: center; gap: 1rem; }
 
-        .top-bar-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        /* ============================================================
-           ADMIN PROFILE
-           ============================================================ */
         .admin-profile {
             display: flex;
             align-items: center;
@@ -345,9 +294,7 @@
             transition: all 0.2s ease;
         }
 
-        .admin-profile:hover {
-            box-shadow: var(--shadow-card);
-        }
+        .admin-profile:hover { box-shadow: var(--shadow-card); }
 
         .admin-profile .avatar {
             width: 38px;
@@ -373,9 +320,6 @@
             color: var(--text-muted);
         }
 
-        /* ============================================================
-           CONTENT AREA
-           ============================================================ */
         .content-area {
             background: var(--bg-card);
             border-radius: 20px;
@@ -413,10 +357,7 @@
             cursor: default;
         }
 
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-card);
-        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
 
         .stat-card .stat-number {
             font-size: 2rem;
@@ -460,24 +401,9 @@
             border-color: var(--info);
         }
 
-        .module-card .icon {
-            font-size: 2.2rem;
-            color: var(--text-primary);
-            margin-bottom: 0.4rem;
-        }
-
-        .module-card .title {
-            font-weight: 700;
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-
-        .module-card .desc {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 0.2rem;
-        }
-
+        .module-card .icon { font-size: 2.2rem; color: var(--text-primary); margin-bottom: 0.4rem; }
+        .module-card .title { font-weight: 700; color: var(--text-primary); font-size: 1rem; }
+        .module-card .desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem; }
         .module-card .count {
             font-weight: 700;
             color: var(--text-primary);
@@ -554,14 +480,8 @@
             transition: all 0.2s;
         }
 
-        .search-box .clear-search:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .search-box .clear-search.visible {
-            display: flex;
-        }
+        .search-box .clear-search:hover { background: var(--danger); color: white; }
+        .search-box .clear-search.visible { display: flex; }
 
         .search-result-count {
             font-size: 0.8rem;
@@ -574,7 +494,7 @@
         }
 
         /* ============================================================
-           TOOLBAR (Add, Export, Print)
+           TOOLBAR
            ============================================================ */
         .toolbar {
             display: flex;
@@ -587,27 +507,10 @@
         /* ============================================================
            NO RESULTS
            ============================================================ */
-        .no-results {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-
-        .no-results i {
-            font-size: 3rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .no-results h3 {
-            color: var(--text-primary);
-            margin-bottom: 0.4rem;
-        }
-
-        .no-results p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
+        .no-results { text-align: center; padding: 3rem 1rem; }
+        .no-results i { font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5; }
+        .no-results h3 { color: var(--text-primary); margin-bottom: 0.4rem; }
+        .no-results p { color: var(--text-secondary); font-size: 0.9rem; }
 
         /* ============================================================
            TABLE
@@ -638,20 +541,10 @@
             transition: background 0.2s ease;
         }
 
-        table th:hover {
-            background: var(--menu-hover);
-        }
+        table th:hover { background: var(--menu-hover); }
 
-        table th .sort-icon {
-            margin-left: 6px;
-            font-size: 0.7rem;
-            opacity: 0.5;
-        }
-
-        table th.sorted .sort-icon {
-            opacity: 1;
-            color: var(--info);
-        }
+        table th .sort-icon { margin-left: 6px; font-size: 0.7rem; opacity: 0.5; }
+        table th.sorted .sort-icon { opacity: 1; color: var(--info); }
 
         table td {
             padding: 0.8rem 1rem;
@@ -659,13 +552,8 @@
             color: var(--text-primary);
         }
 
-        table tr:hover td {
-            background: var(--stat-bg);
-        }
-
-        table tr:last-child td {
-            border-bottom: none;
-        }
+        table tr:hover td { background: var(--stat-bg); }
+        table tr:last-child td { border-bottom: none; }
 
         /* ============================================================
            BUTTONS
@@ -684,10 +572,7 @@
             white-space: nowrap;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-primary { background: var(--menu-active); color: white; }
         .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
@@ -712,16 +597,8 @@
             color: var(--text-primary);
         }
 
-        .btn-sm {
-            padding: 0.3rem 0.8rem;
-            font-size: 0.75rem;
-        }
-
-        .btn-icon {
-            padding: 0.4rem;
-            min-width: 32px;
-            justify-content: center;
-        }
+        .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.75rem; }
+        .btn-icon { padding: 0.4rem; min-width: 32px; justify-content: center; }
 
         /* ============================================================
            STATUS BADGES
@@ -734,20 +611,15 @@
             display: inline-block;
         }
 
-        .status-badge.active {
-            background: rgba(39, 174, 96, 0.15);
-            color: var(--success);
-        }
+        .status-badge.active { background: rgba(39, 174, 96, 0.15); color: var(--success); }
+        .status-badge.inactive { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
+        .status-badge.pending { background: rgba(243, 156, 18, 0.15); color: var(--warning); }
+        .status-badge.info { background: rgba(52, 152, 219, 0.15); color: var(--info); }
 
-        .status-badge.inactive {
-            background: rgba(231, 76, 60, 0.15);
-            color: var(--danger);
-        }
-
-        .status-badge.pending {
-            background: rgba(243, 156, 18, 0.15);
-            color: var(--warning);
-        }
+        .status-badge.low { background: rgba(39, 174, 96, 0.15); color: var(--success); }
+        .status-badge.normal { background: rgba(243, 156, 18, 0.15); color: var(--warning); }
+        .status-badge.high { background: rgba(230, 126, 34, 0.15); color: #e67e22; }
+        .status-badge.urgent { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
 
         /* ============================================================
            MODAL
@@ -764,14 +636,9 @@
             animation: fadeIn 0.2s ease;
         }
 
-        .modal-overlay.show {
-            display: flex;
-        }
+        .modal-overlay.show { display: flex; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal {
             background: var(--bg-card);
@@ -790,10 +657,7 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .modal h3 {
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
+        .modal h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
 
         .modal .close-btn {
             float: right;
@@ -805,13 +669,9 @@
             transition: color 0.2s ease;
         }
 
-        .modal .close-btn:hover {
-            color: var(--text-primary);
-        }
+        .modal .close-btn:hover { color: var(--text-primary); }
 
-        .modal .form-group {
-            margin-bottom: 1rem;
-        }
+        .modal .form-group { margin-bottom: 1rem; }
 
         .modal .form-group label {
             display: block;
@@ -842,10 +702,7 @@
             background: var(--bg-card);
         }
 
-        .modal .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
+        .modal .form-group textarea { min-height: 80px; resize: vertical; }
 
         .modal .form-actions {
             display: flex;
@@ -874,34 +731,9 @@
             animation: spin 0.8s ease-in-out infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .loading-text {
-            color: var(--text-muted);
-            margin-top: 0.8rem;
-        }
-
-        /* ============================================================
-           SKELETON LOADER
-           ============================================================ */
-        .skeleton {
-            background: linear-gradient(90deg, var(--skeleton) 25%, var(--skeleton-shine) 50%, var(--skeleton) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-row {
-            height: 20px;
-            margin: 12px 0;
-        }
+        .loading-text { color: var(--text-muted); margin-top: 0.8rem; }
 
         /* ============================================================
            MOBILE TOGGLE
@@ -919,26 +751,10 @@
         /* ============================================================
            ERROR CONTAINER
            ============================================================ */
-        .error-container {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-
-        .error-container i {
-            font-size: 3rem;
-            color: var(--danger);
-            margin-bottom: 1rem;
-        }
-
-        .error-container h3 {
-            color: var(--text-primary);
-        }
-
-        .error-container p {
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-
+        .error-container { text-align: center; padding: 3rem 1rem; }
+        .error-container i { font-size: 3rem; color: var(--danger); margin-bottom: 1rem; }
+        .error-container h3 { color: var(--text-primary); }
+        .error-container p { color: var(--text-secondary); margin-top: 0.5rem; }
         .error-container .retry-btn {
             margin-top: 1rem;
             background: var(--menu-active);
@@ -949,10 +765,7 @@
             cursor: pointer;
             font-weight: 600;
         }
-
-        .error-container .retry-btn:hover {
-            opacity: 0.9;
-        }
+        .error-container .retry-btn:hover { opacity: 0.9; }
 
         /* ============================================================
            TOAST
@@ -1013,9 +826,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .theme-toggle button:hover:not(.active) {
-            background: var(--menu-hover);
-        }
+        .theme-toggle button:hover:not(.active) { background: var(--menu-hover); }
 
         /* ============================================================
            PAGINATION
@@ -1052,10 +863,7 @@
             border-color: var(--menu-active);
         }
 
-        .pagination button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .pagination .page-info {
             font-size: 0.85rem;
@@ -1078,14 +886,9 @@
             font-size: 0.85rem;
         }
 
-        .bulk-actions.show {
-            display: flex;
-        }
+        .bulk-actions.show { display: flex; }
 
-        .bulk-actions .selected-count {
-            font-weight: 700;
-            color: var(--info);
-        }
+        .bulk-actions .selected-count { font-weight: 700; color: var(--info); }
 
         input[type="checkbox"] {
             width: 16px;
@@ -1095,71 +898,32 @@
         }
 
         /* ============================================================
-           RESPONSIVE - TABLET
+           RESPONSIVE
            ============================================================ */
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-            .mobile-toggle {
-                display: flex !important;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .module-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .top-bar {
-                flex-wrap: wrap;
-            }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .mobile-toggle { display: flex !important; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .module-grid { grid-template-columns: 1fr 1fr; }
+            .top-bar { flex-wrap: wrap; }
         }
 
-        /* ============================================================
-           RESPONSIVE - MOBILE
-           ============================================================ */
         @media (max-width: 500px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .module-grid {
-                grid-template-columns: 1fr;
-            }
-            .top-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .top-bar-right {
-                justify-content: space-between;
-            }
-            .search-box {
-                max-width: 100%;
-            }
+            .stats-grid { grid-template-columns: 1fr; }
+            .module-grid { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .top-bar-right { justify-content: space-between; }
+            .search-box { max-width: 100%; }
         }
 
-        /* ============================================================
-           PRINT STYLES
-           ============================================================ */
         @media print {
             .sidebar, .top-bar, .toolbar, .search-bar-wrapper, .pagination, .bulk-actions {
                 display: none !important;
             }
-            .main-content {
-                margin-left: 0;
-                padding: 0;
-            }
-            .content-area {
-                border: none;
-                box-shadow: none;
-            }
+            .main-content { margin-left: 0; padding: 0; }
+            .content-area { border: none; box-shadow: none; }
         }
     </style>
 </head>
@@ -1197,6 +961,11 @@
     <button class="menu-item" data-module="attendance">
         <i class="fas fa-calendar-check"></i> Attendance
         <span class="badge" id="attendanceBadge">0%</span>
+    </button>
+    <!-- 📢 NOTICES BUTTON -->
+    <button class="menu-item" data-module="notices">
+        <i class="fas fa-bullhorn"></i> Notices
+        <span class="badge" id="noticesBadge">0</span>
     </button>
 
     <div class="divider"></div>
@@ -1259,22 +1028,19 @@
 <script>
     /* ============================================================
        SMART SCHOOL ADMIN PANEL - ENTERPRISE EDITION
-       Version: 2.0.0
+       Version: 2.1.0
        Features: Search, Sort, Pagination, Bulk Actions, Export,
-                 Keyboard Shortcuts, Theme Toggle, XSS Protection
+                 Keyboard Shortcuts, Theme Toggle, XSS Protection,
+                 Notice Board (NEW)
        ============================================================ */
 
     /* ============================================================
-       THEME TOGGLE - Runs immediately to prevent flash of wrong theme
+       THEME TOGGLE - Runs immediately to prevent flash
        ============================================================ */
     (function initTheme() {
         const themeButtons = document.querySelectorAll('.theme-toggle button');
         const htmlElement = document.documentElement;
 
-        /**
-         * Apply theme to document
-         * @param {string} theme - 'light', 'dark', or 'gray'
-         */
         function setTheme(theme) {
             htmlElement.setAttribute('data-theme', theme);
             themeButtons.forEach(btn => {
@@ -1300,9 +1066,6 @@
     (function() {
         'use strict';
 
-        /* ------------------------------------------------------------
-           CONFIGURATION
-           ------------------------------------------------------------ */
         const CONFIG = {
             API_BASE_URL: 'http://15.207.174.107:8083/api',
             DEBOUNCE_DELAY: 200,
@@ -1313,9 +1076,6 @@
             RETRY_DELAY: 1000
         };
 
-        /* ------------------------------------------------------------
-           APPLICATION STATE
-           ------------------------------------------------------------ */
         const state = {
             currentUser: null,
             adminData: {},
@@ -1323,36 +1083,38 @@
             teachers: [],
             students: [],
             classes: [],
+            notices: [],                     // 📢 NEW
             searchTerms: {
                 courses: '',
                 teachers: '',
                 students: '',
-                classes: ''
+                classes: '',
+                notices: ''                  // 📢 NEW
             },
             sortState: {
                 courses: { key: null, dir: 'asc' },
                 teachers: { key: null, dir: 'asc' },
                 students: { key: null, dir: 'asc' },
-                classes: { key: null, dir: 'asc' }
+                classes: { key: null, dir: 'asc' },
+                notices: { key: null, dir: 'asc' }    // 📢 NEW
             },
             pagination: {
                 courses: { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE },
                 teachers: { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE },
                 students: { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE },
-                classes: { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE }
+                classes: { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE },
+                notices: { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE }  // 📢 NEW
             },
             selection: {
                 courses: new Set(),
                 teachers: new Set(),
                 students: new Set(),
-                classes: new Set()
+                classes: new Set(),
+                notices: new Set()           // 📢 NEW
             },
             currentModule: 'dashboard'
         };
 
-        /* ------------------------------------------------------------
-           DOM ELEMENT REFERENCES
-           ------------------------------------------------------------ */
         const DOM = {
             menuItems: document.querySelectorAll('.menu-item'),
             contentArea: document.getElementById('mainContent'),
@@ -1372,12 +1134,6 @@
         /* ============================================================
            UTILITY FUNCTIONS
            ============================================================ */
-
-        /**
-         * Escape HTML to prevent XSS
-         * @param {*} str - Value to escape
-         * @returns {string} - Escaped string
-         */
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -1388,12 +1144,6 @@
                 .replace(/'/g, '&#39;');
         }
 
-        /**
-         * Debounce function
-         * @param {Function} fn - Function to debounce
-         * @param {number} delay - Delay in ms
-         * @returns {Function}
-         */
         function debounce(fn, delay) {
             let timer;
             return function(...args) {
@@ -1402,21 +1152,11 @@
             };
         }
 
-        /**
-         * Format number with commas
-         * @param {number} num
-         * @returns {string}
-         */
         function formatNumber(num) {
             if (typeof num !== 'number') return num;
             return num.toLocaleString('en-IN');
         }
 
-        /**
-         * Get initials from name
-         * @param {string} name
-         * @returns {string}
-         */
         function getInitials(name) {
             if (!name) return 'AD';
             return name.split(' ')
@@ -1426,11 +1166,6 @@
                 .substring(0, 2);
         }
 
-        /**
-         * Show toast notification
-         * @param {string} message
-         * @param {string} type - 'success'|'error'|'warning'|'info'
-         */
         function showToast(message, type = 'success') {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -1449,51 +1184,26 @@
             setTimeout(() => toast.remove(), CONFIG.TOAST_DURATION);
         }
 
-        /**
-         * Get current search term for module
-         * @param {string} module
-         * @returns {string}
-         */
         function getSearchTerm(module) {
             return state.searchTerms[module] || '';
         }
 
-        /**
-         * Set search term for module
-         * @param {string} module
-         * @param {string} term
-         */
         function setSearchTerm(module, term) {
             state.searchTerms[module] = term;
         }
 
-        /**
-         * Reset all search terms
-         */
         function resetAllSearchTerms() {
             Object.keys(state.searchTerms).forEach(k => state.searchTerms[k] = '');
         }
 
-        /**
-         * Reset sort state for module
-         * @param {string} module
-         */
         function resetSortState(module) {
             state.sortState[module] = { key: null, dir: 'asc' };
         }
 
-        /**
-         * Reset pagination for module
-         * @param {string} module
-         */
         function resetPagination(module) {
             state.pagination[module] = { page: 1, size: CONFIG.DEFAULT_PAGE_SIZE };
         }
 
-        /**
-         * Reset selection for module
-         * @param {string} module
-         */
         function resetSelection(module) {
             state.selection[module] = new Set();
         }
@@ -1501,7 +1211,6 @@
         /* ============================================================
            SIDEBAR / MOBILE
            ============================================================ */
-
         DOM.mobileToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             DOM.sidebar.classList.toggle('open');
@@ -1519,14 +1228,12 @@
            KEYBOARD SHORTCUTS
            ============================================================ */
         document.addEventListener('keydown', (e) => {
-            // Ctrl+K or Cmd+K - Focus search
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
                 const searchInput = document.querySelector('.search-box input');
                 if (searchInput) searchInput.focus();
             }
 
-            // ESC - Close modal
             if (e.key === 'Escape') {
                 if (DOM.modalOverlay.classList.contains('show')) {
                     closeModal();
@@ -1549,11 +1256,6 @@
         /* ============================================================
            AUTHENTICATION
            ============================================================ */
-
-        /**
-         * Check if user is authenticated
-         * @returns {boolean}
-         */
         function checkAuth() {
             console.log('🔐 Admin Auth Check...');
             const userStr = localStorage.getItem('user');
@@ -1578,10 +1280,6 @@
             return false;
         }
 
-        /**
-         * Update profile UI
-         * @param {Object} user
-         */
         function updateProfile(user) {
             if (!user) return;
             const name = user.fullName || user.username || 'Administrator';
@@ -1594,15 +1292,6 @@
         /* ============================================================
            API CALLS
            ============================================================ */
-
-        /**
-         * Make API call with retry logic
-         * @param {string} endpoint
-         * @param {string} method
-         * @param {Object|null} body
-         * @param {number} retries
-         * @returns {Promise<Object|null>}
-         */
         async function apiCall(endpoint, method = 'GET', body = null, retries = CONFIG.MAX_RETRIES) {
             const options = {
                 method,
@@ -1651,7 +1340,6 @@
         /* ============================================================
            DATA FETCHERS
            ============================================================ */
-
         async function fetchCourses() {
             const data = await apiCall('/admin/courses');
             state.courses = data || [];
@@ -1674,6 +1362,13 @@
             const data = await apiCall('/admin/classes');
             state.classes = data || [];
             return state.classes;
+        }
+
+        // 📢 NEW
+        async function fetchNotices() {
+            const data = await apiCall('/admin/notices');
+            state.notices = data || [];
+            return state.notices;
         }
 
         async function fetchAdminDashboard() {
@@ -1700,14 +1395,6 @@
         /* ============================================================
            SEARCH BAR COMPONENT
            ============================================================ */
-
-        /**
-         * Create search bar component
-         * @param {string} placeholder
-         * @param {Function} onSearch - Callback with search term, returns count
-         * @param {string} initialValue - Initial search value
-         * @returns {HTMLElement}
-         */
         function createSearchBar(placeholder, onSearch, initialValue = '') {
             const wrapper = document.createElement('div');
             wrapper.className = 'search-bar-wrapper';
@@ -1750,7 +1437,6 @@
                 input.focus();
             });
 
-            // Initial render
             if (initialValue) {
                 const count = onSearch(initialValue);
                 countEl.textContent = `${count} result${count !== 1 ? 's' : ''} found`;
@@ -1762,17 +1448,9 @@
         /* ============================================================
            SORTING HELPERS
            ============================================================ */
-
-        /**
-         * Sort array by key
-         * @param {Array} arr
-         * @param {string} key
-         * @param {string} dir - 'asc'|'desc'
-         * @returns {Array}
-         */
         function sortArray(arr, key, dir) {
             if (!key) return arr;
-            const sorted = [...arr].sort((a, b) => {
+            return [...arr].sort((a, b) => {
                 let va = getNestedValue(a, key);
                 let vb = getNestedValue(b, key);
 
@@ -1786,24 +1464,12 @@
                     ? String(va).localeCompare(String(vb))
                     : String(vb).localeCompare(String(va));
             });
-            return sorted;
         }
 
-        /**
-         * Get nested value from object using dot notation
-         * @param {Object} obj
-         * @param {string} path
-         * @returns {*}
-         */
         function getNestedValue(obj, path) {
             return path.split('.').reduce((acc, part) => acc && acc[part], obj);
         }
 
-        /**
-         * Handle sort click on th
-         * @param {string} module
-         * @param {string} key
-         */
         function handleSort(module, key) {
             const s = state.sortState[module];
             if (s.key === key) {
@@ -1815,12 +1481,6 @@
             renderModule(module);
         }
 
-        /**
-         * Render sort icon
-         * @param {string} module
-         * @param {string} key
-         * @returns {string}
-         */
         function renderSortIcon(module, key) {
             const s = state.sortState[module];
             if (s.key !== key) return '<i class="fas fa-sort sort-icon"></i>';
@@ -1829,13 +1489,6 @@
                 : '<i class="fas fa-sort-down sort-icon"></i>';
         }
 
-        /**
-         * Render sortable th
-         * @param {string} module
-         * @param {string} key
-         * @param {string} label
-         * @returns {string}
-         */
         function sortableTh(module, key, label) {
             const s = state.sortState[module];
             const cls = s.key === key ? 'sorted' : '';
@@ -1844,20 +1497,11 @@
             </th>`;
         }
 
-        // Expose to window for onclick
         window.__handleSort = handleSort;
 
         /* ============================================================
            PAGINATION HELPERS
            ============================================================ */
-
-        /**
-         * Paginate array
-         * @param {Array} arr
-         * @param {number} page
-         * @param {number} size
-         * @returns {Object}
-         */
         function paginate(arr, page, size) {
             const total = arr.length;
             const totalPages = Math.ceil(total / size) || 1;
@@ -1873,13 +1517,6 @@
             };
         }
 
-        /**
-         * Render pagination controls
-         * @param {string} module
-         * @param {number} totalPages
-         * @param {number} currentPage
-         * @returns {string}
-         */
         function renderPagination(module, totalPages, currentPage) {
             if (totalPages <= 1) return '';
 
@@ -1909,11 +1546,6 @@
             return html;
         }
 
-        /**
-         * Navigate to page
-         * @param {string} module
-         * @param {number} page
-         */
         function goToPage(module, page) {
             state.pagination[module].page = page;
             renderModule(module);
@@ -1921,28 +1553,9 @@
 
         window.__goToPage = goToPage;
 
-        /**
-         * Change page size
-         * @param {string} module
-         * @param {number} size
-         */
-        function changePageSize(module, size) {
-            state.pagination[module].size = size;
-            state.pagination[module].page = 1;
-            renderModule(module);
-        }
-
-        window.__changePageSize = changePageSize;
-
         /* ============================================================
            BULK ACTIONS
            ============================================================ */
-
-        /**
-         * Toggle selection of a row
-         * @param {string} module
-         * @param {number} id
-         */
         function toggleSelection(module, id) {
             const sel = state.selection[module];
             if (sel.has(id)) sel.delete(id);
@@ -1953,12 +1566,6 @@
 
         window.__toggleSelection = toggleSelection;
 
-        /**
-         * Toggle select all
-         * @param {string} module
-         * @param {boolean} checked
-         * @param {Array} visibleIds
-         */
         function toggleSelectAll(module, checked, visibleIds) {
             const sel = state.selection[module];
             if (checked) {
@@ -1971,10 +1578,6 @@
 
         window.__toggleSelectAll = toggleSelectAll;
 
-        /**
-         * Update bulk actions bar
-         * @param {string} module
-         */
         function updateBulkActions(module) {
             const bar = document.getElementById(`${module}BulkBar`);
             if (!bar) return;
@@ -1984,10 +1587,6 @@
             if (countEl) countEl.textContent = count;
         }
 
-        /**
-         * Update select-all checkbox state
-         * @param {string} module
-         */
         function updateSelectAllCheckbox(module) {
             const cb = document.getElementById(`${module}SelectAll`);
             if (!cb) return;
@@ -1999,11 +1598,6 @@
             cb.indeterminate = !allSelected && someSelected;
         }
 
-        /**
-         * Get visible IDs for current module view
-         * @param {string} module
-         * @returns {Array<number>}
-         */
         function getVisibleIds(module) {
             const data = state[module] || [];
             const searchTerm = getSearchTerm(module);
@@ -2015,10 +1609,6 @@
             return paginated.items.map(item => item.id).filter(id => id !== undefined);
         }
 
-        /**
-         * Bulk delete selected items
-         * @param {string} module
-         */
         async function bulkDelete(module) {
             const ids = Array.from(state.selection[module]);
             if (ids.length === 0) return;
@@ -2040,11 +1630,6 @@
         /* ============================================================
            EXPORT / PRINT
            ============================================================ */
-
-        /**
-         * Export data to CSV
-         * @param {string} module
-         */
         function exportToCSV(module) {
             const data = state[module] || [];
             if (data.length === 0) {
@@ -2073,24 +1658,12 @@
 
         window.__exportToCSV = exportToCSV;
 
-        /**
-         * Print current view
-         */
-        function printView() {
-            window.print();
-        }
-
+        function printView() { window.print(); }
         window.__printView = printView;
 
         /* ============================================================
            COLUMN DEFINITIONS
            ============================================================ */
-
-        /**
-         * Get column definitions for module
-         * @param {string} module
-         * @returns {Array}
-         */
         function getColumnsForModule(module) {
             if (module === 'courses') {
                 return [
@@ -2125,20 +1698,21 @@
                     { key: 'capacity', label: 'Capacity' }
                 ];
             }
+            if (module === 'notices') {
+                return [
+                    { key: 'title', label: 'Title' },
+                    { key: 'targetAudience', label: 'Audience' },
+                    { key: 'priority', label: 'Priority' },
+                    { key: 'createdByRole', label: 'Creator' },
+                    { key: 'publishDate', label: 'Published' }
+                ];
+            }
             return [];
         }
 
         /* ============================================================
            FILTERING
            ============================================================ */
-
-        /**
-         * Filter data based on module and term
-         * @param {string} module
-         * @param {Array} data
-         * @param {string} term
-         * @returns {Array}
-         */
         function filterData(module, data, term) {
             if (!term) return data;
 
@@ -2166,6 +1740,12 @@
                     return s.includes(term);
                 });
             }
+            if (module === 'notices') {
+                return data.filter(n => {
+                    const s = `${n.title || ''} ${n.content || ''} ${n.targetAudience || ''} ${n.priority || ''} ${n.createdByName || ''}`.toLowerCase();
+                    return s.includes(term);
+                });
+            }
             return data;
         }
 
@@ -2178,7 +1758,8 @@
                 { label: 'Total Users', value: d.totalUsers || 0, icon: 'fa-users' },
                 { label: 'Students', value: d.totalStudents || 0, icon: 'fa-user-graduate' },
                 { label: 'Teachers', value: d.totalTeachers || 0, icon: 'fa-chalkboard-teacher' },
-                { label: 'Courses', value: d.totalCourses || 0, icon: 'fa-book' }
+                { label: 'Courses', value: d.totalCourses || 0, icon: 'fa-book' },
+                { label: 'Notices', value: state.notices.length || 0, icon: 'fa-bullhorn' }   // 📢 NEW
             ];
 
             const cards = [
@@ -2248,11 +1829,8 @@
                     <i class="fas fa-arrow-right"></i>
                     Manage all courses and subjects (${data.length} total, ${filtered.length} shown)
                 </div>
-
                 ${renderToolbar('courses')}
-
                 <div id="coursesSearchContainer"></div>
-
                 <div class="bulk-actions" id="coursesBulkBar">
                     <i class="fas fa-check-circle" style="color:var(--info);"></i>
                     <span><span class="selected-count">0</span> selected</span>
@@ -2263,7 +1841,6 @@
                         <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
-
                 <div class="table-container">
                     <table>
                         <thead>
@@ -2284,7 +1861,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 ${renderPagination('courses', paginated.totalPages, paginated.page)}
             `;
 
@@ -2300,9 +1876,6 @@
             setActiveMenu('courses');
         }
 
-        /**
-         * Render course table rows
-         */
         function renderCoursesRows(items, page, size) {
             if (items.length === 0) {
                 return `<tr><td colspan="7"><div class="no-results">
@@ -2360,11 +1933,8 @@
                     <i class="fas fa-arrow-right"></i>
                     Manage faculty members (${data.length} total, ${filtered.length} shown)
                 </div>
-
                 ${renderToolbar('teachers')}
-
                 <div id="teachersSearchContainer"></div>
-
                 <div class="bulk-actions" id="teachersBulkBar">
                     <i class="fas fa-check-circle" style="color:var(--info);"></i>
                     <span><span class="selected-count">0</span> selected</span>
@@ -2375,7 +1945,6 @@
                         <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
-
                 <div class="table-container">
                     <table>
                         <thead>
@@ -2397,7 +1966,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 ${renderPagination('teachers', paginated.totalPages, paginated.page)}
             `;
 
@@ -2473,11 +2041,8 @@
                     <i class="fas fa-arrow-right"></i>
                     Manage all students (${data.length} total, ${filtered.length} shown)
                 </div>
-
                 ${renderToolbar('students')}
-
                 <div id="studentsSearchContainer"></div>
-
                 <div class="bulk-actions" id="studentsBulkBar">
                     <i class="fas fa-check-circle" style="color:var(--info);"></i>
                     <span><span class="selected-count">0</span> selected</span>
@@ -2488,7 +2053,6 @@
                         <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
-
                 <div class="table-container">
                     <table>
                         <thead>
@@ -2510,7 +2074,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 ${renderPagination('students', paginated.totalPages, paginated.page)}
             `;
 
@@ -2586,11 +2149,8 @@
                     <i class="fas fa-arrow-right"></i>
                     Manage all classes (${data.length} total, ${filtered.length} shown)
                 </div>
-
                 ${renderToolbar('classes')}
-
                 <div id="classesSearchContainer"></div>
-
                 <div class="bulk-actions" id="classesBulkBar">
                     <i class="fas fa-check-circle" style="color:var(--info);"></i>
                     <span><span class="selected-count">0</span> selected</span>
@@ -2601,7 +2161,6 @@
                         <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
-
                 <div class="table-container">
                     <table>
                         <thead>
@@ -2623,7 +2182,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 ${renderPagination('classes', paginated.totalPages, paginated.page)}
             `;
 
@@ -2663,6 +2221,126 @@
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="editClass(${c.id})" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-danger btn-sm" onclick="deleteClass(${c.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        /* ============================================================
+           📢 RENDER: NOTICES
+           ============================================================ */
+        function renderNotices() {
+            DOM.pageTitle.textContent = 'Notices';
+            state.currentModule = 'notices';
+
+            const data = state.notices;
+            const searchTerm = getSearchTerm('notices');
+
+            if (!data || data.length === 0) {
+                DOM.contentArea.innerHTML = renderEmptyState('notices', 'bullhorn', 'No Notices Found', 'Click "Create Notice" to post your first notice.');
+                updateBadges();
+                setActiveMenu('notices');
+                return;
+            }
+
+            let filtered = filterData('notices', data, searchTerm);
+            const s = state.sortState.notices;
+            if (s.key) filtered = sortArray(filtered, s.key, s.dir);
+            const pag = state.pagination.notices;
+            const paginated = paginate(filtered, pag.page, pag.size);
+
+            DOM.contentArea.innerHTML = `
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i>
+                    Manage notices for students and teachers (${data.length} total, ${filtered.length} shown)
+                </div>
+                ${renderToolbar('notices')}
+                <div id="noticesSearchContainer"></div>
+                <div class="bulk-actions" id="noticesBulkBar">
+                    <i class="fas fa-check-circle" style="color:var(--info);"></i>
+                    <span><span class="selected-count">0</span> selected</span>
+                    <button class="btn btn-danger btn-sm" onclick="window.__bulkDelete('notices')">
+                        <i class="fas fa-trash"></i> Delete Selected
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.__clearSelection('notices')">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">
+                                    <input type="checkbox" id="noticesSelectAll" onchange="window.__toggleSelectAll('notices', this.checked, ${JSON.stringify(paginated.items.map(i => i.id)).replace(/"/g, '&quot;')})" />
+                                </th>
+                                <th>#</th>
+                                ${sortableTh('notices', 'title', 'Title')}
+                                ${sortableTh('notices', 'targetAudience', 'Audience')}
+                                ${sortableTh('notices', 'priority', 'Priority')}
+                                <th>Creator</th>
+                                ${sortableTh('notices', 'publishDate', 'Published')}
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="noticesTableBody">
+                            ${renderNoticesRows(paginated.items, paginated.page, paginated.size)}
+                        </tbody>
+                    </table>
+                </div>
+                ${renderPagination('notices', paginated.totalPages, paginated.page)}
+            `;
+
+            attachSearchBar('noticesSearchContainer', 'Search notices by title, content, audience...', (term) => {
+                setSearchTerm('notices', term);
+                state.pagination.notices.page = 1;
+                renderNotices();
+                return filterData('notices', data, term).length;
+            }, searchTerm);
+
+            updateBadges();
+            updateBulkActions('notices');
+            setActiveMenu('notices');
+        }
+
+        function renderNoticesRows(items, page, size) {
+            if (items.length === 0) {
+                return `<tr><td colspan="9"><div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No Notices Match Your Search</h3>
+                    <p>Try different keywords</p>
+                </div></td></tr>`;
+            }
+
+            return items.map((n, i) => {
+                const idx = (page - 1) * size + i + 1;
+                const selected = state.selection.notices.has(n.id);
+                const isActive = n.isActive !== false;
+
+                let audienceLabel = 'Everyone';
+                if (n.targetAudience === 'STUDENTS') audienceLabel = 'Students';
+                else if (n.targetAudience === 'TEACHERS') audienceLabel = 'Teachers';
+                else if (n.targetAudience === 'CLASS_SPECIFIC') audienceLabel = `Class #${n.targetClassId || 'N/A'}`;
+
+                const priorityClass = (n.priority || 'NORMAL').toLowerCase();
+
+                return `
+                    <tr>
+                        <td><input type="checkbox" ${selected ? 'checked' : ''} onchange="window.__toggleSelection('notices', ${n.id})" /></td>
+                        <td>${idx}</td>
+                        <td>
+                            <strong>${escapeHtml(n.title || 'Untitled')}</strong>
+                            ${n.isPinned ? '<i class="fas fa-thumbtack" style="color:#f59e0b; margin-left:6px;" title="Pinned"></i>' : ''}
+                        </td>
+                        <td><span class="status-badge info">${escapeHtml(audienceLabel)}</span></td>
+                        <td><span class="status-badge ${priorityClass}">${escapeHtml(n.priority || 'NORMAL')}</span></td>
+                        <td>${n.createdByRole === 'ADMIN' ? '👑 Admin' : '👨‍🏫 Teacher'}</td>
+                        <td>${n.publishDate ? new Date(n.publishDate).toLocaleDateString() : 'N/A'}</td>
+                        <td><span class="status-badge ${isActive ? 'active' : 'inactive'}">${isActive ? 'Active' : 'Inactive'}</span></td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editNotice(${n.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteNotice(${n.id})" title="Delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -2718,10 +2396,6 @@
         /* ============================================================
            RENDER HELPERS
            ============================================================ */
-
-        /**
-         * Render empty state
-         */
         function renderEmptyState(module, icon, title, desc) {
             return `
                 <div class="page-sub"><i class="fas fa-arrow-right"></i> Manage all ${module}</div>
@@ -2734,21 +2408,20 @@
             `;
         }
 
-        /**
-         * Render toolbar with Add / Export / Print buttons
-         */
         function renderToolbar(module) {
             const addLabels = {
                 courses: 'Add Course',
                 teachers: 'Add Teacher',
                 students: 'Add Student',
-                classes: 'Add Class'
+                classes: 'Add Class',
+                notices: 'Create Notice'      // 📢 NEW
             };
             const addFns = {
                 courses: 'openAddCourse',
                 teachers: 'openAddTeacher',
                 students: 'openAddStudent',
-                classes: 'openAddClass'
+                classes: 'openAddClass',
+                notices: 'openAddNotice'      // 📢 NEW
             };
 
             return `
@@ -2766,9 +2439,6 @@
             `;
         }
 
-        /**
-         * Attach search bar to container
-         */
         function attachSearchBar(containerId, placeholder, onSearch, initialValue) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -2776,32 +2446,25 @@
             container.appendChild(createSearchBar(placeholder, onSearch, initialValue));
         }
 
-        /**
-         * Render module by name
-         */
         function renderModule(module) {
             if (module === 'courses') renderCourses();
             else if (module === 'teachers') renderTeachers();
             else if (module === 'students') renderStudents();
             else if (module === 'classes') renderClasses();
             else if (module === 'attendance') renderAttendance();
+            else if (module === 'notices') renderNotices();       // 📢 NEW
             else if (module === 'dashboard') renderDashboard();
         }
 
-        /**
-         * Refresh module data and re-render
-         */
         async function refreshModule(module) {
             if (module === 'courses') await fetchCourses();
             else if (module === 'teachers') await fetchTeachers();
             else if (module === 'students') await fetchStudents();
             else if (module === 'classes') await fetchClasses();
+            else if (module === 'notices') await fetchNotices();  // 📢 NEW
             renderModule(module);
         }
 
-        /* ============================================================
-           BADGES & MENU
-           ============================================================ */
         function updateBadges() {
             document.getElementById('coursesBadge').textContent = state.courses?.length || 0;
             document.getElementById('teachersBadge').textContent = state.teachers?.length || 0;
@@ -2810,6 +2473,7 @@
             document.getElementById('attendanceBadge').textContent = state.adminData?.attendancePercentage
                 ? `${Math.round(state.adminData.attendancePercentage)}%`
                 : '0%';
+            document.getElementById('noticesBadge').textContent = state.notices?.length || 0;   // 📢 NEW
         }
 
         function setActiveMenu(module) {
@@ -3170,6 +2834,220 @@
         };
 
         /* ============================================================
+           📢 CRUD: NOTICES
+           ============================================================ */
+        window.openAddNotice = function() {
+            DOM.modalTitle.textContent = 'Create Notice';
+            DOM.modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="noticeTitle" placeholder="e.g. Exam Schedule Update" />
+                </div>
+                <div class="form-group">
+                    <label>Content *</label>
+                    <textarea id="noticeContent" rows="5" placeholder="Write your notice here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Audience *</label>
+                    <select id="noticeAudience" onchange="window.__onNoticeAudienceChange()">
+                        <option value="ALL">Everyone (Students + Teachers)</option>
+                        <option value="STUDENTS">Students Only</option>
+                        <option value="TEACHERS">Teachers Only</option>
+                        <option value="CLASS_SPECIFIC">Specific Class</option>
+                    </select>
+                </div>
+                <div class="form-group" id="noticeClassGroup" style="display:none;">
+                    <label>Class *</label>
+                    <select id="noticeClass">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="noticePriority">
+                        <option value="LOW">🟢 Low</option>
+                        <option value="NORMAL" selected>🟡 Normal</option>
+                        <option value="HIGH">🟠 High</option>
+                        <option value="URGENT">🔴 Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date (Optional)</label>
+                    <input type="datetime-local" id="noticeExpiry" />
+                </div>
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" id="noticePin" style="width:auto;" />
+                        📌 Pin this notice (top pe dikhega)
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveNotice()"><i class="fas fa-paper-plane"></i> Post Notice</button>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const classSelect = document.getElementById('noticeClass');
+                if (classSelect) {
+                    state.classes.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = `${c.className || ''} ${c.section ? '- ' + c.section : ''}`;
+                        classSelect.appendChild(opt);
+                    });
+                }
+            }, 50);
+
+            DOM.modalOverlay.classList.add('show');
+        };
+
+        window.__onNoticeAudienceChange = function() {
+            const audience = document.getElementById('noticeAudience').value;
+            document.getElementById('noticeClassGroup').style.display =
+                audience === 'CLASS_SPECIFIC' ? 'block' : 'none';
+        };
+
+        window.saveNotice = async function() {
+            const title = document.getElementById('noticeTitle').value.trim();
+            const content = document.getElementById('noticeContent').value.trim();
+            const audience = document.getElementById('noticeAudience').value;
+            const classId = document.getElementById('noticeClass')?.value;
+            const priority = document.getElementById('noticePriority').value;
+            const expiry = document.getElementById('noticeExpiry').value;
+            const isPinned = document.getElementById('noticePin').checked;
+
+            if (!title || !content) { showToast('Title and content are required.', 'warning'); return; }
+            if (audience === 'CLASS_SPECIFIC' && !classId) { showToast('Please select a class.', 'warning'); return; }
+
+            const result = await apiCall('/admin/notices', 'POST', {
+                title,
+                content,
+                targetAudience: audience,
+                targetClassId: audience === 'CLASS_SPECIFIC' ? parseInt(classId) : null,
+                priority,
+                expiryDate: expiry ? new Date(expiry).toISOString() : null,
+                isPinned,
+                createdBy: state.currentUser?.userId || state.currentUser?.id,
+                createdByRole: 'ADMIN'
+            });
+
+            if (result) {
+                showToast('Notice created successfully! 📢', 'success');
+                closeModal();
+                await refreshModule('notices');
+            }
+        };
+
+        window.editNotice = function(id) {
+            const notice = state.notices.find(n => n.id === id);
+            if (!notice) return;
+
+            DOM.modalTitle.textContent = 'Edit Notice';
+            DOM.modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="noticeTitle" value="${escapeHtml(notice.title || '')}" />
+                </div>
+                <div class="form-group">
+                    <label>Content *</label>
+                    <textarea id="noticeContent" rows="5">${escapeHtml(notice.content || '')}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Audience *</label>
+                    <select id="noticeAudience" onchange="window.__onNoticeAudienceChange()">
+                        <option value="ALL" ${notice.targetAudience === 'ALL' ? 'selected' : ''}>Everyone</option>
+                        <option value="STUDENTS" ${notice.targetAudience === 'STUDENTS' ? 'selected' : ''}>Students Only</option>
+                        <option value="TEACHERS" ${notice.targetAudience === 'TEACHERS' ? 'selected' : ''}>Teachers Only</option>
+                        <option value="CLASS_SPECIFIC" ${notice.targetAudience === 'CLASS_SPECIFIC' ? 'selected' : ''}>Specific Class</option>
+                    </select>
+                </div>
+                <div class="form-group" id="noticeClassGroup" style="display:${notice.targetAudience === 'CLASS_SPECIFIC' ? 'block' : 'none'};">
+                    <label>Class *</label>
+                    <select id="noticeClass">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="noticePriority">
+                        <option value="LOW" ${notice.priority === 'LOW' ? 'selected' : ''}>🟢 Low</option>
+                        <option value="NORMAL" ${notice.priority === 'NORMAL' ? 'selected' : ''}>🟡 Normal</option>
+                        <option value="HIGH" ${notice.priority === 'HIGH' ? 'selected' : ''}>🟠 High</option>
+                        <option value="URGENT" ${notice.priority === 'URGENT' ? 'selected' : ''}>🔴 Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date (Optional)</label>
+                    <input type="datetime-local" id="noticeExpiry" value="${notice.expiryDate ? new Date(notice.expiryDate).toISOString().slice(0, 16) : ''}" />
+                </div>
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" id="noticePin" style="width:auto;" ${notice.isPinned ? 'checked' : ''} />
+                        📌 Pin this notice
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="updateNotice(${id})"><i class="fas fa-save"></i> Update</button>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const classSelect = document.getElementById('noticeClass');
+                if (classSelect) {
+                    state.classes.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = `${c.className || ''} ${c.section ? '- ' + c.section : ''}`;
+                        if (c.id === notice.targetClassId) opt.selected = true;
+                        classSelect.appendChild(opt);
+                    });
+                }
+            }, 50);
+
+            DOM.modalOverlay.classList.add('show');
+        };
+
+        window.updateNotice = async function(id) {
+            const title = document.getElementById('noticeTitle').value.trim();
+            const content = document.getElementById('noticeContent').value.trim();
+            const audience = document.getElementById('noticeAudience').value;
+            const classId = document.getElementById('noticeClass')?.value;
+            const priority = document.getElementById('noticePriority').value;
+            const expiry = document.getElementById('noticeExpiry').value;
+            const isPinned = document.getElementById('noticePin').checked;
+
+            if (!title || !content) { showToast('Title and content are required.', 'warning'); return; }
+            if (audience === 'CLASS_SPECIFIC' && !classId) { showToast('Please select a class.', 'warning'); return; }
+
+            const result = await apiCall(`/admin/notices/${id}`, 'PUT', {
+                title,
+                content,
+                targetAudience: audience,
+                targetClassId: audience === 'CLASS_SPECIFIC' ? parseInt(classId) : null,
+                priority,
+                expiryDate: expiry ? new Date(expiry).toISOString() : null,
+                isPinned
+            });
+
+            if (result) {
+                showToast('Notice updated successfully!', 'success');
+                closeModal();
+                await refreshModule('notices');
+            }
+        };
+
+        window.deleteNotice = async function(id) {
+            if (!confirm('Are you sure you want to delete this notice?')) return;
+            const result = await apiCall(`/admin/notices/${id}`, 'DELETE');
+            if (result) {
+                showToast('Notice deleted successfully!', 'success');
+                await refreshModule('notices');
+            }
+        };
+
+        /* ============================================================
            MENU NAVIGATION
            ============================================================ */
         DOM.menuItems.forEach(item => {
@@ -3177,7 +3055,6 @@
                 const mod = this.dataset.module;
                 state.currentModule = mod;
 
-                // Reset search, sort, pagination, and selection for all modules
                 resetAllSearchTerms();
                 resetSortState(mod);
                 resetPagination(mod);
@@ -3198,6 +3075,9 @@
                 } else if (mod === 'attendance') {
                     await fetchAdminDashboard();
                     renderAttendance();
+                } else if (mod === 'notices') {         // 📢 NEW
+                    await fetchNotices();
+                    renderNotices();
                 } else if (mod === 'dashboard') {
                     await fetchAdminDashboard();
                     renderDashboard();
@@ -3219,7 +3099,7 @@
            INIT
            ============================================================ */
         async function initDashboard() {
-            console.log('🚀 Initializing Admin Panel v2.0...');
+            console.log('🚀 Initializing Admin Panel v2.1...');
 
             if (!checkAuth()) {
                 console.error('❌ Auth failed');
@@ -3241,7 +3121,8 @@
                     fetchCourses(),
                     fetchTeachers(),
                     fetchStudents(),
-                    fetchClasses()
+                    fetchClasses(),
+                    fetchNotices()              // 📢 NEW
                 ]);
 
                 renderDashboard();
@@ -3263,8 +3144,9 @@
 
         initDashboard();
 
-        console.log('🔹 Admin Panel - Enterprise Edition');
+        console.log('🔹 Admin Panel - Enterprise Edition v2.1');
         console.log(`📍 API: ${CONFIG.API_BASE_URL}`);
+        console.log('📢 Notices feature enabled');
     })();
 </script>
 </body>

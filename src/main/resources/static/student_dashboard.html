@@ -572,6 +572,23 @@
         .item-status.graded { background: #cce5ff; color: #004085; }
         .item-status.late { background: #f8d7da; color: #721c24; }
 
+        /* Priority badges for notices */
+        .priority-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .priority-low { background: #ecfdf5; color: #047857; }
+        .priority-normal { background: #fef3c7; color: #92400e; }
+        .priority-high { background: #fed7aa; color: #9a3412; }
+        .priority-urgent { background: #fee2e2; color: #991b1b; }
+
         .btn-primary {
             background: var(--primary);
             color: white;
@@ -1098,9 +1115,12 @@
             <button class="menu-item" data-module="notes">
                 <i class="fas fa-file-alt"></i> Notes <span class="badge" id="notesBadge">0</span>
             </button>
-            <!-- 🔥🔥🔥 LIVE CLASSES BUTTON 🔥🔥🔥 -->
             <button class="menu-item" data-module="live">
                 <i class="fas fa-video"></i> Live Classes <span class="badge" id="liveBadge">0</span>
+            </button>
+            <!-- 📢 NOTICES BUTTON -->
+            <button class="menu-item" data-module="notices">
+                <i class="fas fa-bullhorn"></i> Notices <span class="badge" id="noticesBadge">0</span>
             </button>
 
             <div class="divider"></div>
@@ -1185,6 +1205,19 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- 📢 NOTICE VIEW MODAL -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="viewNoticeModal">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-bullhorn"></i> Notice</h2>
+            <button class="modal-close" onclick="closeModal('viewNoticeModal')">&times;</button>
+        </div>
+        <div id="viewNoticeContent"></div>
+    </div>
+</div>
+
 
 <script>
     (function() {
@@ -1208,8 +1241,9 @@
         let allClasses = [];
         let allSubjects = [];
         let allAttendance = [];
-        let allLiveClasses = [];          // 🔥 NEW
-        let liveRefreshInterval = null;   // 🔥 NEW
+        let allLiveClasses = [];
+        let allNotices = [];              // 📢 NEW
+        let liveRefreshInterval = null;
 
         // ============================================================
         // DOM REFS
@@ -1314,7 +1348,6 @@
             try {
                 console.log('🔄 Fetching student data...');
 
-                // ✅ Student profile fetch karo
                 const studentProfile = await fetchData(`/student/profile/${currentUser?.userId}`);
                 if (studentProfile && !studentProfile.error) {
                     studentData = studentProfile;
@@ -1322,22 +1355,21 @@
                     console.log('✅ Student Profile:', studentData);
                 }
 
-                // ✅ Student ID (actual students table ID)
                 const STUDENT_ID = studentData?.id || currentUser?.userId;
+                const STUDENT_CLASS_ID = studentData?.classId || studentData?.class_id || 1;
 
-                // ✅ URLs set karo
                 const assignmentUrl = `/student/assignments/${STUDENT_ID}`;
                 const quizUrl = `/student/quizzes/${STUDENT_ID}`;
                 const resultsUrl = `/student/results/${STUDENT_ID}`;
                 const attendanceUrl = `/student/attendance/${STUDENT_ID}`;
                 const notesUrl = `/student/notes/${STUDENT_ID}`;
-                const liveClassesUrl = `/student/live-classes/${STUDENT_ID}`;  // 🔥 NEW
+                const liveClassesUrl = `/student/live-classes/${STUDENT_ID}`;
+                const noticesUrl = `/student/notices/${STUDENT_CLASS_ID}`;   // 📢 NEW
 
-                console.log('📤 Fetching attendance from:', attendanceUrl);
-                console.log('🎥 Fetching live classes from:', liveClassesUrl);
+                console.log('📤 Fetching live classes from:', liveClassesUrl);
+                console.log('📢 Fetching notices from:', noticesUrl);
 
-                // ✅ Saare data fetch karo
-                const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance, notes, liveClasses] = await Promise.all([
+                const [assignments, quizzes, courses, students, teachers, classes, subjects, results, attendance, notes, liveClasses, notices] = await Promise.all([
                     fetchData(assignmentUrl),
                     fetchData(quizUrl),
                     fetchData('/admin/courses'),
@@ -1348,10 +1380,10 @@
                     fetchData(resultsUrl),
                     fetchData(attendanceUrl),
                     fetchData(notesUrl),
-                    fetchData(liveClassesUrl)  // 🔥 NEW
+                    fetchData(liveClassesUrl),
+                    fetchData(noticesUrl)  // 📢 NEW
                 ]);
 
-                // ✅ Data ko assign karo
                 allAssignments = Array.isArray(assignments) ? assignments : [];
                 allQuizzes = Array.isArray(quizzes) ? quizzes : [];
                 allCourses = Array.isArray(courses) ? courses : [];
@@ -1361,38 +1393,38 @@
                 allSubjects = Array.isArray(subjects) ? subjects : [];
                 allAttendance = Array.isArray(attendance) ? attendance : [];
                 allNotes = Array.isArray(notes) ? notes : [];
-                allLiveClasses = Array.isArray(liveClasses) ? liveClasses : [];  // 🔥 NEW
+                allLiveClasses = Array.isArray(liveClasses) ? liveClasses : [];
+                allNotices = Array.isArray(notices) ? notices : [];   // 📢 NEW
 
-                // ✅ Results badge update karo
                 if (results && results.performance) {
                     document.getElementById('resultsBadge').textContent = results.performance.gradedCount || 0;
                 }
 
-                // ✅ Badges update karo
                 document.getElementById('coursesBadge').textContent = allCourses.length || 0;
                 document.getElementById('assignmentsBadge').textContent = allAssignments.length || 0;
                 document.getElementById('quizzesBadge').textContent = allQuizzes.length || 0;
                 document.getElementById('notesBadge').textContent = allNotes.length || 0;
 
-                // 🔥 Live Classes badge (only LIVE + SCHEDULED)
                 const activeLiveCount = allLiveClasses.filter(c =>
                     c.status === 'LIVE' || c.status === 'SCHEDULED'
                 ).length;
                 document.getElementById('liveBadge').textContent = activeLiveCount;
 
-                // ✅ Attendance percentage calculate karo
+                document.getElementById('noticesBadge').textContent = allNotices.length;  // 📢 NEW
+
                 const totalAttendanceDays = allAttendance.length;
                 const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
                 const attendancePercentage = totalAttendanceDays > 0 ? Math.round((presentDays * 100.0) / totalAttendanceDays) : 0;
                 document.getElementById('attendanceBadge').textContent = attendancePercentage + '%';
 
-                // ✅ Debug logs
-                console.log('✅ Assignments loaded:', allAssignments.length);
-                console.log('✅ Quizzes loaded:', allQuizzes.length);
-                console.log('✅ Courses loaded:', allCourses.length);
-                console.log('✅ Attendance loaded:', allAttendance.length);
-                console.log('✅ Notes loaded:', allNotes.length);
-                console.log('🎥 Live Classes loaded:', allLiveClasses.length);
+                console.log('✅ Data loaded:');
+                console.log('  📝 Assignments:', allAssignments.length);
+                console.log('  📝 Quizzes:', allQuizzes.length);
+                console.log('  📝 Courses:', allCourses.length);
+                console.log('  📝 Attendance:', allAttendance.length);
+                console.log('  📝 Notes:', allNotes.length);
+                console.log('  🎥 Live Classes:', allLiveClasses.length);
+                console.log('  📢 Notices:', allNotices.length);   // 📢 NEW
 
                 return true;
             } catch (error) {
@@ -1456,7 +1488,7 @@
         }
 
         // ============================================================
-        // 🔥 LIVE CLASS HELPERS
+        // LIVE CLASS HELPERS
         // ============================================================
         function getPlatformInfo(platform) {
             const map = {
@@ -1512,6 +1544,20 @@
         }
 
         // ============================================================
+        // 📢 NOTICE HELPERS
+        // ============================================================
+        const PRIORITY_COLORS = {
+            'LOW':    { bg: '#ecfdf5', color: '#047857', icon: '🟢', label: 'Low' },
+            'NORMAL': { bg: '#fef3c7', color: '#92400e', icon: '🟡', label: 'Normal' },
+            'HIGH':   { bg: '#fed7aa', color: '#9a3412', icon: '🟠', label: 'High' },
+            'URGENT': { bg: '#fee2e2', color: '#991b1b', icon: '🔴', label: 'Urgent' }
+        };
+
+        function getPriorityInfo(priority) {
+            return PRIORITY_COLORS[priority] || PRIORITY_COLORS.NORMAL;
+        }
+
+        // ============================================================
         // RENDER FUNCTIONS
         // ============================================================
         function renderDashboard() {
@@ -1520,6 +1566,8 @@
             const totalQuizzes = allQuizzes.length || 0;
             const totalLive = allLiveClasses.filter(c => c.status === 'LIVE').length;
             const upcomingLive = allLiveClasses.filter(c => c.status === 'SCHEDULED').length;
+            const totalNotices = allNotices.length || 0;   // 📢 NEW
+            const urgentNotices = allNotices.filter(n => n.priority === 'URGENT').length;  // 📢 NEW
 
             const totalAttendanceDays = allAttendance.length;
             const presentDays = allAttendance.filter(a => a.status === 'PRESENT').length;
@@ -1531,7 +1579,9 @@
                 { label: 'Quizzes', value: totalQuizzes, icon: 'fa-pencil-alt' },
                 { label: 'Attendance', value: attendancePercentage + '%', icon: 'fa-calendar-check' },
                 { label: 'Live Now', value: totalLive, icon: 'fa-circle', color: totalLive > 0 ? 'var(--danger)' : '' },
-                { label: 'Upcoming Live', value: upcomingLive, icon: 'fa-video' }
+                { label: 'Upcoming Live', value: upcomingLive, icon: 'fa-video' },
+                { label: 'Notices', value: totalNotices, icon: 'fa-bullhorn' },   // 📢 NEW
+                { label: 'Urgent Notices', value: urgentNotices, icon: 'fa-exclamation-circle', color: urgentNotices > 0 ? 'var(--danger)' : '' }   // 📢 NEW
             ];
 
             const statsHTML = stats.map(stat => `
@@ -1562,7 +1612,7 @@
                 `;
             }
 
-            // 🔥 Live Classes widget
+            // Live Classes widget
             const liveNow = allLiveClasses.filter(c => c.status === 'LIVE');
             const upcoming = allLiveClasses.filter(c => c.status === 'SCHEDULED').slice(0, 2);
             let liveHTML = '';
@@ -1591,6 +1641,33 @@
                 `;
             }
 
+            // 📢 Notices widget
+            const recentNotices = allNotices.slice(0, 3);
+            let noticesHTML = '';
+            if (recentNotices.length > 0) {
+                noticesHTML = recentNotices.map(n => {
+                    const p = getPriorityInfo(n.priority);
+                    return `
+                        <div class="module-card">
+                            <div class="icon">
+                                ${n.isPinned ? '<i class="fas fa-thumbtack" style="color:#f59e0b;"></i>' : '<i class="fas fa-bullhorn"></i>'}
+                            </div>
+                            <div class="title">${n.title || 'Notice'}</div>
+                            <div class="desc">${p.icon} ${p.label} · ${n.createdByRole === 'ADMIN' ? 'Admin' : 'Teacher'}</div>
+                            <div class="count">${n.publishDate ? new Date(n.publishDate).toLocaleDateString() : 'N/A'}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                noticesHTML = `
+                    <div class="module-card">
+                        <div class="icon"><i class="fas fa-bullhorn"></i></div>
+                        <div class="title">No Notices</div>
+                        <div class="desc">Check back later</div>
+                    </div>
+                `;
+            }
+
             const chartHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
                     <div class="chart-box">
@@ -1608,18 +1685,28 @@
                 <div class="page-title">Dashboard</div>
                 <div class="page-sub"><i class="fas fa-arrow-right"></i> Welcome back, ${currentUser?.fullName || 'Student'}!</div>
                 <div class="stats-grid">${statsHTML}</div>
+
                 <div style="margin-top: 1.5rem;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
                         <i class="fas fa-video"></i> Live Classes
                     </h3>
                     <div class="module-grid">${liveHTML}</div>
                 </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
+                        <i class="fas fa-bullhorn"></i> Recent Notices
+                    </h3>
+                    <div class="module-grid">${noticesHTML}</div>
+                </div>
+
                 <div style="margin-top: 1.5rem;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
                         <i class="fas fa-clock"></i> Recent Assignments
                     </h3>
                     <div class="module-grid">${assignmentsHTML}</div>
                 </div>
+
                 ${chartHTML}
             `;
 
@@ -1974,8 +2061,6 @@
                     return;
                 }
 
-                console.log('📤 Submitting answers:', answers);
-
                 const data = {
                     studentId: studentData?.id,
                     answers: answers,
@@ -1985,7 +2070,6 @@
                 const result = await postData(`/student/quizzes/${quizId}/submit`, data);
 
                 if (result && result.success !== false) {
-                    console.log('✅ Result from backend:', result);
                     showToast(`Quiz submitted! Marks: ${result.marksObtained}, Percentage: ${result.percentage}%, Grade: ${result.grade}`, 'success');
 
                     closeModal('quizAttemptModal');
@@ -2071,13 +2155,10 @@
         // RENDER ATTENDANCE
         // ============================================================
         function renderAttendance() {
-            console.log('📊 Rendering attendance with data:', allAttendance);
-
             const attendanceList = allAttendance || [];
             const totalDays = attendanceList.length;
             const presentDays = attendanceList.filter(a => a.status === 'PRESENT').length;
             const absentDays = attendanceList.filter(a => a.status === 'ABSENT').length;
-            const lateDays = attendanceList.filter(a => a.status === 'LATE').length;
             const percentage = totalDays > 0 ? Math.round((presentDays * 100.0) / totalDays) : 0;
 
             const stats = [
@@ -2508,11 +2589,9 @@
         }
 
         // ============================================================
-        // 🔥🔥🔥 RENDER LIVE CLASSES 🔥🔥🔥
+        // 🔥 RENDER LIVE CLASSES
         // ============================================================
         function renderLiveClasses() {
-            console.log('🎥 Rendering live classes:', allLiveClasses);
-
             const live = allLiveClasses.filter(c => c.status === 'LIVE');
             const scheduled = allLiveClasses.filter(c => c.status === 'SCHEDULED');
             const ended = allLiveClasses.filter(c => c.status === 'ENDED');
@@ -2532,9 +2611,6 @@
                 </div>
             `).join('');
 
-            // ========================================================
-            // LIVE NOW SECTION
-            // ========================================================
             let liveBanner = '';
             let liveHTML = '';
 
@@ -2547,7 +2623,6 @@
                 `;
 
                 liveHTML = live.map(c => {
-                    const platform = getPlatformInfo(c.meetingPlatform);
                     return `
                         <div class="item-card live-class-card">
                             <div class="item-info">
@@ -2573,9 +2648,6 @@
                 }).join('');
             }
 
-            // ========================================================
-            // UPCOMING SECTION
-            // ========================================================
             let upcomingHTML = '';
             if (scheduled.length > 0) {
                 const sortedScheduled = [...scheduled].sort(
@@ -2614,9 +2686,6 @@
                 }).join('');
             }
 
-            // ========================================================
-            // PAST CLASSES
-            // ========================================================
             let pastHTML = '';
             const past = [...ended, ...cancelled].sort(
                 (a, b) => new Date(b.scheduledAt) - new Date(a.scheduledAt)
@@ -2651,9 +2720,6 @@
                 }).join('');
             }
 
-            // ========================================================
-            // COMBINE ALL
-            // ========================================================
             let contentHTML = '';
 
             if (live.length === 0 && scheduled.length === 0 && past.length === 0) {
@@ -2709,7 +2775,6 @@
             contentArea.innerHTML = html;
             setActiveMenu('live');
 
-            // Auto-refresh if any class is live
             if (live.length > 0) {
                 startLiveRefresh();
             } else {
@@ -2723,7 +2788,6 @@
         function startLiveRefresh() {
             if (liveRefreshInterval) return;
             liveRefreshInterval = setInterval(async () => {
-                console.log('🔄 Auto-refreshing live classes...');
                 await fetchAllData();
                 const liveMenuActive = document.querySelector('[data-module="live"].active');
                 if (liveMenuActive) {
@@ -2739,17 +2803,196 @@
             }
         }
 
-        // ============================================================
-        // MARK LIVE JOIN
-        // ============================================================
         window.markLiveJoin = async function(classId) {
             try {
                 const data = { studentId: studentData?.id };
                 await postData(`/student/live-classes/${classId}/join`, data);
-                console.log('✅ Join tracked for class:', classId);
             } catch (error) {
                 console.warn('Join tracking failed:', error);
             }
+        };
+
+        // ============================================================
+        // 📢📢📢 RENDER NOTICES 📢📢📢
+        // ============================================================
+        function renderNotices() {
+            const pinned = allNotices.filter(n => n.isPinned);
+            const regular = allNotices.filter(n => !n.isPinned);
+
+            const stats = [
+                { label: 'Total', value: allNotices.length, icon: 'fa-bullhorn' },
+                { label: 'Pinned', value: pinned.length, icon: 'fa-thumbtack' },
+                { label: 'Urgent', value: allNotices.filter(n => n.priority === 'URGENT').length, icon: 'fa-exclamation-circle', color: 'var(--danger)' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number" style="color:${stat.color || 'var(--text-primary)'}">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            const renderNotice = (n) => {
+                const p = getPriorityInfo(n.priority);
+                const roleIcon = n.createdByRole === 'ADMIN' ? '👑' : '👨‍🏫';
+                const roleLabel = n.createdByRole === 'ADMIN' ? 'Admin' : 'Teacher';
+
+                return `
+                    <div class="item-card" style="
+                        border-left: 4px solid ${p.color};
+                        ${n.isPinned ? 'background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), transparent 40%);' : ''}
+                        cursor: pointer;
+                    " onclick="viewNotice(${n.id})">
+                        <div class="item-info" style="flex:1;">
+                            <div class="item-title" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                ${n.isPinned ? '<i class="fas fa-thumbtack" style="color:#f59e0b;"></i>' : ''}
+                                ${n.title}
+                                <span class="priority-badge priority-${(n.priority || 'NORMAL').toLowerCase()}">
+                                    ${p.icon} ${p.label}
+                                </span>
+                            </div>
+                            <div class="item-meta" style="margin-top:6px;">
+                                <span>${roleIcon} ${n.createdByName || roleLabel}</span>
+                                <span><i class="fas fa-calendar"></i> ${n.publishDate ? new Date(n.publishDate).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            <div style="
+                                color: var(--text-secondary);
+                                font-size: 0.85rem;
+                                margin-top: 8px;
+                                line-height: 1.5;
+                            ">
+                                ${n.content && n.content.length > 120 ? n.content.substring(0, 120) + '...' : (n.content || '')}
+                            </div>
+                        </div>
+                        <div style="text-align:right; display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                            <button class="btn-primary" style="padding:0.3rem 0.8rem; font-size:0.75rem;">
+                                <i class="fas fa-eye"></i> Read
+                            </button>
+                        </div>
+                    </div>
+                `;
+            };
+
+            let listHTML = '';
+            if (allNotices.length === 0) {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullhorn" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <p style="margin-top:1rem;">No notices yet</p>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">
+                            Your teachers will post notices here
+                        </p>
+                    </div>
+                `;
+            } else {
+                if (pinned.length > 0) {
+                    listHTML += `
+                        <h3 style="color:var(--text-primary); font-size:1rem; margin:1rem 0 0.8rem;">
+                            <i class="fas fa-thumbtack" style="color:#f59e0b;"></i> Pinned Notices
+                        </h3>
+                        <div class="item-list" style="margin-bottom:1.5rem;">
+                            ${pinned.map(renderNotice).join('')}
+                        </div>
+                    `;
+                }
+                if (regular.length > 0) {
+                    listHTML += `
+                        <h3 style="color:var(--text-primary); font-size:1rem; margin:1rem 0 0.8rem;">
+                            <i class="fas fa-list"></i> All Notices
+                        </h3>
+                        <div class="item-list">
+                            ${regular.map(renderNotice).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            const html = `
+                <div class="page-title"><i class="fas fa-bullhorn"></i> Notice Board</div>
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i> Stay updated with latest notices (${allNotices.length})
+                </div>
+                <div class="stats-grid">${statsHTML}</div>
+                ${listHTML}
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('notices');
+        }
+
+        // View single notice
+        window.viewNotice = async function(noticeId) {
+            const notice = allNotices.find(n => n.id === noticeId);
+            if (!notice) return;
+
+            // Increment view count (silent)
+            try {
+                await postData(`/student/notices/${noticeId}/view`, {});
+            } catch (e) { /* silent */ }
+
+            const p = getPriorityInfo(notice.priority);
+            const roleIcon = notice.createdByRole === 'ADMIN' ? '👑' : '👨‍🏫';
+            const roleLabel = notice.createdByRole === 'ADMIN' ? 'Admin' : 'Teacher';
+
+            document.getElementById('viewNoticeContent').innerHTML = `
+                <div style="
+                    border-left: 4px solid ${p.color};
+                    padding-left: 1rem;
+                    margin-bottom: 1.5rem;
+                ">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom: 0.8rem; flex-wrap: wrap;">
+                        <h3 style="color:var(--text-primary); font-size:1.3rem; font-weight:700; margin:0;">
+                            ${notice.title}
+                        </h3>
+                        <span class="priority-badge priority-${(notice.priority || 'NORMAL').toLowerCase()}">
+                            ${p.icon} ${p.label}
+                        </span>
+                        ${notice.isPinned ? `
+                            <span style="color:#f59e0b; font-size:0.9rem;">
+                                <i class="fas fa-thumbtack"></i> Pinned
+                            </span>
+                        ` : ''}
+                    </div>
+
+                    <div style="
+                        color: var(--text-secondary);
+                        font-size: 0.85rem;
+                        display: flex;
+                        gap: 1rem;
+                        flex-wrap: wrap;
+                        margin-bottom: 1.5rem;
+                    ">
+                        <span>${roleIcon} ${notice.createdByName || roleLabel}</span>
+                        <span><i class="fas fa-calendar"></i> ${notice.publishDate ? new Date(notice.publishDate).toLocaleString() : 'N/A'}</span>
+                        ${notice.expiryDate ? `
+                            <span><i class="fas fa-hourglass-end"></i> Expires: ${new Date(notice.expiryDate).toLocaleDateString()}</span>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div style="
+                    color: var(--text-primary);
+                    font-size: 1rem;
+                    line-height: 1.7;
+                    white-space: pre-wrap;
+                    padding: 1rem;
+                    background: var(--stat-bg);
+                    border-radius: 12px;
+                ">
+                    ${notice.content || ''}
+                </div>
+
+                ${notice.attachmentUrl ? `
+                    <div style="margin-top: 1rem;">
+                        <a href="${notice.attachmentUrl}" target="_blank" class="btn-primary"
+                           style="text-decoration:none; color:white;">
+                            <i class="fas fa-paperclip"></i> View Attachment
+                        </a>
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById('viewNoticeModal').classList.add('show');
         };
 
         // ============================================================
@@ -2771,7 +3014,6 @@
             item.addEventListener('click', function() {
                 const mod = this.dataset.module;
 
-                // Auto-refresh band karo jab page change ho
                 stopLiveRefresh();
 
                 switch(mod) {
@@ -2782,7 +3024,8 @@
                     case 'attendance': renderAttendance(); break;
                     case 'results': renderResults(); break;
                     case 'notes': renderNotes(); break;
-                    case 'live': renderLiveClasses(); break;  // 🔥 NEW
+                    case 'live': renderLiveClasses(); break;
+                    case 'notices': renderNotices(); break;   // 📢 NEW
                     default: renderDashboard();
                 }
             });
@@ -2860,6 +3103,7 @@
         console.log(`📍 API: ${API_BASE_URL}`);
         console.log('✅ Connected to Smart School Backend');
         console.log('🎥 Live Classes feature enabled');
+        console.log('📢 Notices feature enabled');
 
     })();
 </script>

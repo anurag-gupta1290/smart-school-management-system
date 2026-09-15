@@ -590,6 +590,23 @@
         .item-status.ended { background: #d4edda; color: #155724; }
         .item-status.cancelled { background: #e2e3e5; color: #383d41; }
 
+        /* Priority badges for notices */
+        .priority-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .priority-low { background: #ecfdf5; color: #047857; }
+        .priority-normal { background: #fef3c7; color: #92400e; }
+        .priority-high { background: #fed7aa; color: #9a3412; }
+        .priority-urgent { background: #fee2e2; color: #991b1b; }
+
         @keyframes pulse-bg {
             0%, 100% { background: #f8d7da; }
             50% { background: #f5c6cb; }
@@ -1542,6 +1559,80 @@
 </div>
 
 <!-- ============================================================ -->
+<!-- 📢📢📢 CREATE NOTICE MODAL 📢📢📢 -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="createNoticeModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-bullhorn"></i> <span id="noticeModalTitle">Create Notice</span></h2>
+            <button class="modal-close" onclick="closeModal('createNoticeModal')">&times;</button>
+        </div>
+        <form id="noticeForm" onsubmit="submitNotice(event)">
+            <input type="hidden" id="noticeEditId" />
+
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="noticeTitle" placeholder="e.g., Exam Schedule Update" required />
+            </div>
+
+            <div class="form-group">
+                <label>Content *</label>
+                <textarea id="noticeContent" rows="5" placeholder="Write your notice here..." required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Target Audience *</label>
+                    <select id="noticeAudience" onchange="onNoticeAudienceChange()">
+                        <option value="STUDENTS">Students Only</option>
+                        <option value="CLASS_SPECIFIC">Specific Class</option>
+                    </select>
+                    <small style="color:var(--text-muted);">Teacher sirf students ko notice bhej sakta hai</small>
+                </div>
+                <div class="form-group" id="noticeClassGroup" style="display:none;">
+                    <label>Class *</label>
+                    <select id="noticeClass">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="noticePriority">
+                        <option value="LOW">🟢 Low</option>
+                        <option value="NORMAL" selected>🟡 Normal</option>
+                        <option value="HIGH">🟠 High</option>
+                        <option value="URGENT">🔴 Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date (Optional)</label>
+                    <input type="datetime-local" id="noticeExpiry" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="noticePin" style="width:auto;" />
+                    📌 Pin this notice (top pe dikhega)
+                </label>
+            </div>
+
+            <div class="form-error" id="noticeError">Please fill all required fields.</div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary-modal" onclick="closeModal('createNoticeModal')">Cancel</button>
+                <button type="submit" class="btn-primary-modal" id="noticeSubmitBtn">
+                    <i class="fas fa-paper-plane"></i> Post Notice
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- MAIN DASHBOARD -->
 <!-- ============================================================ -->
 <div class="dashboard">
@@ -1594,9 +1685,12 @@
             <button class="menu-item" data-module="notes">
                 <i class="fas fa-sticky-note"></i> Notes <span class="badge" id="notesBadge">0</span>
             </button>
-            <!-- 🔥🔥🔥 LIVE CLASSES BUTTON 🔥🔥🔥 -->
             <button class="menu-item" data-module="live-classes">
                 <i class="fas fa-video"></i> Live Classes <span class="badge" id="liveClassesBadge">0</span>
+            </button>
+            <!-- 📢 NOTICES BUTTON -->
+            <button class="menu-item" data-module="notices">
+                <i class="fas fa-bullhorn"></i> Notices <span class="badge" id="noticesBadge">0</span>
             </button>
 
             <div class="divider"></div>
@@ -1659,11 +1753,12 @@
         let allClasses = [];
         let allSubjects = [];
         let allNotes = [];
-        let allLiveClasses = [];  // 🔥 NEW
+        let allLiveClasses = [];
+        let allNotices = [];                    // 📢 NEW
         let attendanceStudents = [];
         let currentNoteId = null;
         let currentNoteFileUrl = null;
-        let liveClassRefreshInterval = null;  // 🔥 NEW
+        let liveClassRefreshInterval = null;
 
         // ============================================================
         // DOM REFS
@@ -1762,7 +1857,7 @@
                 if (endpoint.includes('/notes') || endpoint.includes('/assignments') ||
                     endpoint.includes('/quizzes') || endpoint.includes('/submissions') ||
                     endpoint.includes('/students') || endpoint.includes('/classes') ||
-                    endpoint.includes('/live-classes')) {
+                    endpoint.includes('/live-classes') || endpoint.includes('/notices')) {
                     return [];
                 }
                 return null;
@@ -1863,7 +1958,7 @@
                     console.warn('⚠️ Using userId as teacherId:', currentTeacherId);
                 }
 
-                const [assignments, quizzes, submissions, students, teachers, subjects, classes, notes, liveClasses] = await Promise.all([
+                const [assignments, quizzes, submissions, students, teachers, subjects, classes, notes, liveClasses, notices] = await Promise.all([
                     fetchData('/teacher/assignments').then(data => Array.isArray(data) ? data : []),
                     fetchData('/teacher/quizzes').then(data => Array.isArray(data) ? data : []),
                     fetchData('/teacher/submissions').then(data => Array.isArray(data) ? data : []),
@@ -1872,7 +1967,8 @@
                     fetchData('/admin/subjects').then(data => Array.isArray(data) ? data : []),
                     fetchData('/admin/classes').then(data => Array.isArray(data) ? data : []),
                     fetchData(`/teacher/notes?teacherId=${currentTeacherId || 1}`).then(data => Array.isArray(data) ? data : []),
-                    fetchData(`/teacher/live-classes/teacher/${currentTeacherId || 1}`).then(data => Array.isArray(data) ? data : [])  // 🔥 NEW
+                    fetchData(`/teacher/live-classes/teacher/${currentTeacherId || 1}`).then(data => Array.isArray(data) ? data : []),
+                    fetchData(`/teacher/notices/${currentUser?.userId || 1}`).then(data => Array.isArray(data) ? data : [])  // 📢 NEW
                 ]);
 
                 allAssignments = assignments;
@@ -1883,7 +1979,8 @@
                 allSubjects = subjects;
                 allClasses = classes;
                 allNotes = notes;
-                allLiveClasses = liveClasses;  // 🔥 NEW
+                allLiveClasses = liveClasses;
+                allNotices = notices;  // 📢 NEW
 
                 console.log('✅ Data loaded:');
                 console.log('  📝 Assignments:', allAssignments.length);
@@ -1893,9 +1990,9 @@
                 console.log('  📝 Subjects:', allSubjects.length);
                 console.log('  📝 Classes:', allClasses.length);
                 console.log('  📝 Notes:', allNotes.length);
-                console.log('  🎥 Live Classes:', allLiveClasses.length);  // 🔥 NEW
+                console.log('  🎥 Live Classes:', allLiveClasses.length);
+                console.log('  📢 Notices:', allNotices.length);  // 📢 NEW
 
-                // Update badges
                 document.getElementById('assignmentsBadge').textContent = allAssignments.length;
                 document.getElementById('quizzesBadge').textContent = allQuizzes.length;
                 document.getElementById('submissionsBadge').textContent = allSubmissions.length;
@@ -1903,7 +2000,8 @@
                 document.getElementById('attendanceBadge').textContent = allClasses.length || 0;
                 document.getElementById('notesBadge').textContent = allNotes.length;
                 document.getElementById('liveClassesBadge').textContent =
-                    allLiveClasses.filter(c => c.status === 'LIVE' || c.status === 'SCHEDULED').length;  // 🔥 NEW
+                    allLiveClasses.filter(c => c.status === 'LIVE' || c.status === 'SCHEDULED').length;
+                document.getElementById('noticesBadge').textContent = allNotices.length;  // 📢 NEW
 
                 populateDropdowns();
                 return true;
@@ -1919,7 +2017,7 @@
         // POPULATE DROPDOWNS
         // ============================================================
         function populateDropdowns() {
-            const classSelects = ['assignmentClass', 'quizClass', 'attendanceClass', 'noteClass', 'liveClassClass'];
+            const classSelects = ['assignmentClass', 'quizClass', 'attendanceClass', 'noteClass', 'liveClassClass', 'noticeClass'];
             classSelects.forEach(id => {
                 const select = document.getElementById(id);
                 if (!select) return;
@@ -2404,7 +2502,6 @@
         // 🔥🔥🔥 LIVE CLASSES FUNCTIONS 🔥🔥🔥
         // ============================================================
 
-        // Open create/edit modal
         window.openLiveClassModal = function(classId = null) {
             const modal = document.getElementById('liveClassModal');
             const form = document.getElementById('liveClassForm');
@@ -2420,7 +2517,6 @@
             populateDropdowns();
 
             if (classId) {
-                // Edit mode
                 const liveClass = allLiveClasses.find(c => c.id === classId);
                 if (!liveClass) {
                     showToast('Live class not found', 'error');
@@ -2440,7 +2536,6 @@
                 document.getElementById('liveClassPassword').value = liveClass.meetingPassword || '';
 
                 if (liveClass.scheduledAt) {
-                    // Convert to local datetime-local format
                     const d = new Date(liveClass.scheduledAt);
                     const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
                     document.getElementById('liveClassScheduledAt').value = local.toISOString().slice(0, 16);
@@ -2448,7 +2543,6 @@
 
                 onLivePlatformChange();
             } else {
-                // Create mode
                 titleEl.textContent = 'Schedule Live Class';
                 submitBtn.innerHTML = '<i class="fas fa-plus"></i> Schedule Class';
 
@@ -2463,7 +2557,6 @@
             modal.classList.add('show');
         };
 
-        // Platform change handler
         window.onLivePlatformChange = function() {
             const platform = document.getElementById('liveClassPlatform').value;
             const passwordGroup = document.getElementById('meetingPasswordGroup');
@@ -2484,7 +2577,6 @@
             urlInput.placeholder = placeholders[platform] || 'https://...';
         };
 
-        // Submit live class
         window.submitLiveClass = async function(event) {
             event.preventDefault();
 
@@ -2514,8 +2606,7 @@
 
             try {
                 const data = {
-                    title,
-                    description,
+                    title, description,
                     classId: parseInt(classIdVal),
                     subjectId: parseInt(subjectId),
                     teacherId: currentTeacherId,
@@ -2528,10 +2619,8 @@
 
                 let result;
                 if (classId) {
-                    // Update
                     result = await putData(`/teacher/live-classes/${classId}`, data);
                 } else {
-                    // Create
                     result = await postData('/teacher/live-classes', data);
                 }
 
@@ -2553,10 +2642,8 @@
             }
         };
 
-        // Start live class
         window.startLiveClass = async function(classId) {
             if (!confirm('Start this live class now? Students will be notified.')) return;
-
             try {
                 const result = await postData(`/teacher/live-classes/${classId}/start`, {});
                 if (result && !result.error) {
@@ -2572,10 +2659,8 @@
             }
         };
 
-        // End live class
         window.endLiveClass = async function(classId) {
             if (!confirm('End this live class? Students will no longer be able to join.')) return;
-
             try {
                 const result = await postData(`/teacher/live-classes/${classId}/end`, {});
                 if (result && !result.error) {
@@ -2591,10 +2676,8 @@
             }
         };
 
-        // Cancel live class
         window.cancelLiveClass = async function(classId) {
             if (!confirm('Cancel this live class? Students will be notified.')) return;
-
             try {
                 const result = await postData(`/teacher/live-classes/${classId}/cancel`, {});
                 if (result && !result.error) {
@@ -2609,10 +2692,8 @@
             }
         };
 
-        // Delete live class
         window.deleteLiveClass = async function(classId) {
             if (!confirm('Delete this live class permanently? This cannot be undone.')) return;
-
             try {
                 const result = await deleteData(`/teacher/live-classes/${classId}`);
                 if (result && !result.error) {
@@ -2627,7 +2708,6 @@
             }
         };
 
-        // Copy meeting link
         window.copyMeetingLink = function(url) {
             navigator.clipboard.writeText(url).then(() => {
                 showToast('Link copied to clipboard! 📋', 'success');
@@ -2636,14 +2716,12 @@
             });
         };
 
-        // Auto-refresh live classes every 30 seconds if any is LIVE
         function startLiveClassAutoRefresh() {
             if (liveClassRefreshInterval) return;
             liveClassRefreshInterval = setInterval(async () => {
                 const hasLive = allLiveClasses.some(c => c.status === 'LIVE');
                 if (hasLive) {
                     await fetchAllData();
-                    // Only re-render if we're on live-classes page
                     const liveMenuActive = document.querySelector('[data-module="live-classes"].active');
                     if (liveMenuActive) renderLiveClasses();
                 } else {
@@ -2659,7 +2737,6 @@
             }
         }
 
-        // Helper: get platform icon
         function getPlatformIcon(platform) {
             const map = {
                 'GOOGLE_MEET': { class: 'google-meet', icon: 'fa-video' },
@@ -2670,7 +2747,6 @@
             return map[platform] || map['OTHER'];
         }
 
-        // Helper: get status class
         function getLiveStatusClass(status) {
             return {
                 'LIVE': 'live',
@@ -2680,7 +2756,6 @@
             }[status] || 'scheduled';
         }
 
-        // Helper: get status label
         function getLiveStatusLabel(status) {
             return {
                 'LIVE': '🔴 LIVE',
@@ -2690,7 +2765,6 @@
             }[status] || status;
         }
 
-        // Helper: format date time
         function formatDateTime(iso) {
             if (!iso) return 'N/A';
             const d = new Date(iso);
@@ -2704,7 +2778,6 @@
             });
         }
 
-        // Helper: countdown
         function getCountdown(iso) {
             if (!iso) return '';
             const diff = new Date(iso) - new Date();
@@ -2716,6 +2789,294 @@
             if (hours > 0) return `In ${hours}h ${mins % 60}m`;
             return `In ${mins}m`;
         }
+
+        // ============================================================
+        // 📢📢📢 NOTICES FUNCTIONS 📢📢📢
+        // ============================================================
+
+        const PRIORITY_COLORS = {
+            'LOW':    { bg: '#ecfdf5', color: '#047857', icon: '🟢', label: 'Low' },
+            'NORMAL': { bg: '#fef3c7', color: '#92400e', icon: '🟡', label: 'Normal' },
+            'HIGH':   { bg: '#fed7aa', color: '#9a3412', icon: '🟠', label: 'High' },
+            'URGENT': { bg: '#fee2e2', color: '#991b1b', icon: '🔴', label: 'Urgent' }
+        };
+
+        function getPriorityInfo(priority) {
+            return PRIORITY_COLORS[priority] || PRIORITY_COLORS.NORMAL;
+        }
+
+        window.openNoticeModal = function(noticeId = null) {
+            const form = document.getElementById('noticeForm');
+            form.reset();
+            document.getElementById('noticeEditId').value = '';
+            document.getElementById('noticeError').classList.remove('show');
+            document.getElementById('noticeClassGroup').style.display = 'none';
+            document.getElementById('noticeModalTitle').textContent = 'Create Notice';
+            document.getElementById('noticeSubmitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Post Notice';
+
+            populateDropdowns();
+
+            if (noticeId) {
+                const notice = allNotices.find(n => n.id === noticeId);
+                if (!notice) {
+                    showToast('Notice not found', 'error');
+                    return;
+                }
+
+                document.getElementById('noticeModalTitle').textContent = 'Edit Notice';
+                document.getElementById('noticeSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Update Notice';
+                document.getElementById('noticeEditId').value = notice.id;
+                document.getElementById('noticeTitle').value = notice.title || '';
+                document.getElementById('noticeContent').value = notice.content || '';
+                document.getElementById('noticeAudience').value = notice.targetAudience || 'STUDENTS';
+                document.getElementById('noticePriority').value = notice.priority || 'NORMAL';
+                document.getElementById('noticePin').checked = notice.isPinned || false;
+
+                if (notice.targetAudience === 'CLASS_SPECIFIC') {
+                    document.getElementById('noticeClassGroup').style.display = 'block';
+                    document.getElementById('noticeClass').value = notice.targetClassId || '';
+                }
+
+                if (notice.expiryDate) {
+                    const d = new Date(notice.expiryDate);
+                    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+                    document.getElementById('noticeExpiry').value = local.toISOString().slice(0, 16);
+                }
+            }
+
+            document.getElementById('createNoticeModal').classList.add('show');
+        };
+
+        window.onNoticeAudienceChange = function() {
+            const audience = document.getElementById('noticeAudience').value;
+            document.getElementById('noticeClassGroup').style.display =
+                audience === 'CLASS_SPECIFIC' ? 'block' : 'none';
+        };
+
+        window.submitNotice = async function(event) {
+            event.preventDefault();
+
+            const editId = document.getElementById('noticeEditId').value;
+            const title = document.getElementById('noticeTitle').value.trim();
+            const content = document.getElementById('noticeContent').value.trim();
+            const audience = document.getElementById('noticeAudience').value;
+            const classId = document.getElementById('noticeClass').value;
+            const priority = document.getElementById('noticePriority').value;
+            const expiry = document.getElementById('noticeExpiry').value;
+            const isPinned = document.getElementById('noticePin').checked;
+
+            const errorEl = document.getElementById('noticeError');
+
+            if (!title || !content) {
+                errorEl.textContent = 'Title and content are required.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            if (audience === 'CLASS_SPECIFIC' && !classId) {
+                errorEl.textContent = 'Please select a class.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const btn = document.getElementById('noticeSubmitBtn');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner-small"></span> Posting...';
+
+            try {
+                const data = {
+                    title,
+                    content,
+                    targetAudience: audience,
+                    targetClassId: audience === 'CLASS_SPECIFIC' ? parseInt(classId) : null,
+                    priority,
+                    expiryDate: expiry ? new Date(expiry).toISOString() : null,
+                    isPinned,
+                    createdBy: currentUser?.userId,
+                    createdByRole: 'TEACHER'
+                };
+
+                let result;
+                if (editId) {
+                    result = await putData(`/teacher/notices/${editId}`, data);
+                } else {
+                    result = await postData('/teacher/notices', data);
+                }
+
+                if (result && !result.error) {
+                    showToast(editId ? 'Notice updated! 📢' : 'Notice sent to students! 📢', 'success');
+                    closeModal('createNoticeModal');
+                    await fetchAllData();
+                    renderNotices();
+                } else {
+                    throw new Error(result?.error || 'Failed to save notice');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.add('show');
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        };
+
+        window.editNotice = function(id) {
+            openNoticeModal(id);
+        };
+
+        window.deleteNotice = async function(id) {
+            if (!confirm('Delete this notice?')) return;
+
+            try {
+                const result = await deleteData(`/teacher/notices/${id}`);
+                if (result && !result.error) {
+                    showToast('Notice deleted', 'success');
+                    await fetchAllData();
+                    renderNotices();
+                } else {
+                    throw new Error(result?.error || 'Failed to delete');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
+
+        window.toggleNoticePin = async function(id) {
+            try {
+                const result = await postData(`/notices/${id}/toggle-pin`, {});
+                if (result && !result.error) {
+                    showToast(result.data?.isPinned ? 'Notice pinned 📌' : 'Notice unpinned', 'success');
+                    await fetchAllData();
+                    renderNotices();
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // RENDER NOTICES
+        // ============================================================
+        window.renderNotices = function() {
+            const pinned = allNotices.filter(n => n.isPinned);
+            const regular = allNotices.filter(n => !n.isPinned);
+
+            const stats = [
+                { label: 'Total', value: allNotices.length, icon: 'fa-bullhorn' },
+                { label: 'Pinned', value: pinned.length, icon: 'fa-thumbtack' },
+                { label: 'Urgent', value: allNotices.filter(n => n.priority === 'URGENT').length, icon: 'fa-exclamation-circle', color: 'var(--danger)' }
+            ];
+
+            const statsHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-number" style="color:${stat.color || 'var(--text-primary)'}">${stat.value}</div>
+                    <div class="stat-label"><i class="fas ${stat.icon}"></i> ${stat.label}</div>
+                </div>
+            `).join('');
+
+            const renderNotice = (n) => {
+                const p = getPriorityInfo(n.priority);
+                const isOwn = n.createdBy === currentUser?.userId;
+                const audienceLabel = n.targetAudience === 'CLASS_SPECIFIC'
+                    ? `Class: ${n.targetClassName || 'N/A'}`
+                    : (n.targetAudience === 'ALL' ? 'Everyone' : 'Students');
+
+                return `
+                    <div class="item-card" style="
+                        border-left: 4px solid ${p.color};
+                        ${n.isPinned ? 'background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), transparent 40%);' : ''}
+                    ">
+                        <div class="item-info" style="flex:1;">
+                            <div class="item-title" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                ${n.isPinned ? '<i class="fas fa-thumbtack" style="color:#f59e0b;"></i>' : ''}
+                                ${n.title}
+                                <span class="priority-badge priority-${(n.priority || 'NORMAL').toLowerCase()}">
+                                    ${p.icon} ${p.label}
+                                </span>
+                            </div>
+                            <div class="item-meta" style="margin-top:6px;">
+                                <span><i class="fas fa-user"></i> ${n.createdByName || 'You'}</span>
+                                <span><i class="fas fa-users"></i> ${audienceLabel}</span>
+                                <span><i class="fas fa-calendar"></i> ${n.publishDate ? new Date(n.publishDate).toLocaleDateString() : 'N/A'}</span>
+                                <span><i class="fas fa-eye"></i> ${n.viewCount || 0} views</span>
+                            </div>
+                            <div style="
+                                color: var(--text-secondary);
+                                font-size: 0.85rem;
+                                margin-top: 8px;
+                                line-height: 1.5;
+                            ">
+                                ${n.content.length > 150 ? n.content.substring(0, 150) + '...' : n.content}
+                            </div>
+                        </div>
+                        ${isOwn ? `
+                            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                                <button class="btn-icon" onclick="toggleNoticePin(${n.id})" title="${n.isPinned ? 'Unpin' : 'Pin'}">
+                                    <i class="fas fa-thumbtack" style="${n.isPinned ? 'color:#f59e0b;' : ''}"></i>
+                                </button>
+                                <button class="btn-icon" onclick="editNotice(${n.id})" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" onclick="deleteNotice(${n.id})" style="color:#e74c3c;" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            };
+
+            let listHTML = '';
+            if (allNotices.length === 0) {
+                listHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullhorn" style="font-size:3rem; color:var(--text-muted);"></i>
+                        <p style="margin-top:1rem;">No notices yet</p>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">
+                            Click "Create Notice" to post your first notice
+                        </p>
+                    </div>
+                `;
+            } else {
+                if (pinned.length > 0) {
+                    listHTML += `
+                        <h3 style="color:var(--text-primary); font-size:1rem; margin:1rem 0 0.8rem;">
+                            <i class="fas fa-thumbtack" style="color:#f59e0b;"></i> Pinned Notices
+                        </h3>
+                        <div class="item-list" style="margin-bottom:1.5rem;">
+                            ${pinned.map(renderNotice).join('')}
+                        </div>
+                    `;
+                }
+                if (regular.length > 0) {
+                    listHTML += `
+                        <h3 style="color:var(--text-primary); font-size:1rem; margin:1rem 0 0.8rem;">
+                            <i class="fas fa-list"></i> All Notices
+                        </h3>
+                        <div class="item-list">
+                            ${regular.map(renderNotice).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            const html = `
+                <div class="page-title"><i class="fas fa-bullhorn"></i> Notice Board</div>
+                <div class="page-sub">
+                    <i class="fas fa-arrow-right"></i> Send notices to your students (${allNotices.length} total)
+                    <button class="btn-primary" onclick="openNoticeModal()" style="margin-left:auto;">
+                        <i class="fas fa-plus"></i> Create Notice
+                    </button>
+                </div>
+                <div class="stats-grid">${statsHTML}</div>
+                ${listHTML}
+            `;
+
+            contentArea.innerHTML = html;
+            setActiveMenu('notices');
+        };
 
         // ============================================================
         // RENDER LIVE CLASSES
@@ -2744,7 +3105,6 @@
                 </div>
             `).join('');
 
-            // Sort: LIVE first, then scheduled (by date), then ended/cancelled
             const sortedClasses = [...allLiveClasses].sort((a, b) => {
                 const order = { 'LIVE': 1, 'SCHEDULED': 2, 'ENDED': 3, 'CANCELLED': 4 };
                 const diff = (order[a.status] || 5) - (order[b.status] || 5);
@@ -2860,7 +3220,6 @@
             contentArea.innerHTML = html;
             setActiveMenu('live-classes');
 
-            // Start auto-refresh if any class is live
             if (live.length > 0) startLiveClassAutoRefresh();
         };
 
@@ -3144,8 +3503,6 @@
         // RENDER ATTENDANCE
         // ============================================================
         window.renderAttendance = async function() {
-            const teacherId = currentTeacherId;
-
             try {
                 const myClasses = allClasses || [];
                 const mySubjects = allSubjects || [];
@@ -3163,12 +3520,9 @@
                     return;
                 }
 
-                const totalClasses = myClasses.length;
-                const totalSubjects = mySubjects.length;
-
                 const stats = [
-                    { label: 'My Classes', value: totalClasses, icon: 'fa-users' },
-                    { label: 'My Subjects', value: totalSubjects, icon: 'fa-book' }
+                    { label: 'My Classes', value: myClasses.length, icon: 'fa-users' },
+                    { label: 'My Subjects', value: mySubjects.length, icon: 'fa-book' }
                 ];
 
                 const statsHTML = stats.map(stat => `
@@ -3234,12 +3588,11 @@
         // ============================================================
         function renderDashboard() {
             const totalStudents = allStudents.length || 0;
-            const totalTeachers = allTeachers.length || 0;
             const totalAssignments = allAssignments.length || 0;
             const totalQuizzes = allQuizzes.length || 0;
-            const totalSubmissions = allSubmissions.length || 0;
             const totalNotes = allNotes.length || 0;
             const totalLiveClasses = allLiveClasses.length || 0;
+            const totalNotices = allNotices.length || 0;   // 📢 NEW
             const liveNow = allLiveClasses.filter(c => c.status === 'LIVE').length;
 
             const pendingSubmissions = allSubmissions.filter(s =>
@@ -3252,6 +3605,7 @@
                 { label: 'Quizzes', value: totalQuizzes, icon: 'fa-pencil-alt' },
                 { label: 'Notes', value: totalNotes, icon: 'fa-sticky-note' },
                 { label: 'Live Classes', value: totalLiveClasses, icon: 'fa-video' },
+                { label: 'Notices', value: totalNotices, icon: 'fa-bullhorn' },   // 📢 NEW
                 { label: 'Live Now', value: liveNow, icon: 'fa-circle', color: liveNow > 0 ? 'var(--live-red)' : '' },
                 { label: 'Pending Grading', value: pendingSubmissions, icon: 'fa-clock' }
             ];
@@ -3263,11 +3617,11 @@
                 </div>
             `).join('');
 
-            // Recent items
             const recentNotes = allNotes.slice(0, 3);
             const recentLive = allLiveClasses
                 .filter(c => c.status === 'LIVE' || c.status === 'SCHEDULED')
                 .slice(0, 3);
+            const recentNotices = allNotices.slice(0, 3);   // 📢 NEW
 
             let liveHTML = '';
             if (recentLive.length > 0) {
@@ -3311,16 +3665,51 @@
                 `;
             }
 
+            // 📢 Recent Notices widget
+            let noticesHTML = '';
+            if (recentNotices.length > 0) {
+                noticesHTML = recentNotices.map(n => {
+                    const p = getPriorityInfo(n.priority);
+                    return `
+                        <div class="module-card">
+                            <div class="icon">
+                                ${n.isPinned ? '<i class="fas fa-thumbtack" style="color:#f59e0b;"></i>' : '<i class="fas fa-bullhorn"></i>'}
+                            </div>
+                            <div class="title">${n.title || 'Untitled'}</div>
+                            <div class="desc">${p.icon} ${p.label} priority</div>
+                            <div class="count">${n.publishDate ? new Date(n.publishDate).toLocaleDateString() : 'N/A'}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                noticesHTML = `
+                    <div class="module-card">
+                        <div class="icon"><i class="fas fa-bullhorn"></i></div>
+                        <div class="title">No Notices</div>
+                        <div class="desc">Send your first notice</div>
+                    </div>
+                `;
+            }
+
             const html = `
                 <div class="page-title">Dashboard</div>
                 <div class="page-sub"><i class="fas fa-arrow-right"></i> Welcome back, ${currentUser?.fullName || 'Teacher'}! Here's your teaching overview.</div>
                 <div class="stats-grid">${statsHTML}</div>
+
                 <div style="margin-top: 1.5rem;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
                         <i class="fas fa-video"></i> Recent Live Classes
                     </h3>
                     <div class="module-grid">${liveHTML}</div>
                 </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
+                        <i class="fas fa-bullhorn"></i> Recent Notices
+                    </h3>
+                    <div class="module-grid">${noticesHTML}</div>
+                </div>
+
                 <div style="margin-top: 1.5rem;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.8rem;">
                         <i class="fas fa-sticky-note"></i> Recent Notes
@@ -3605,7 +3994,8 @@
                     case 'students': renderStudents(); break;
                     case 'attendance': renderAttendance(); break;
                     case 'notes': renderNotes(); break;
-                    case 'live-classes': renderLiveClasses(); break;  // 🔥 NEW
+                    case 'live-classes': renderLiveClasses(); break;
+                    case 'notices': renderNotices(); break;   // 📢 NEW
                     default: renderDashboard();
                 }
             });
@@ -3681,6 +4071,7 @@
         console.log(`📍 API: ${API_BASE_URL}`);
         console.log('✅ Connected to Smart School Backend');
         console.log('🎥 Live Classes feature enabled');
+        console.log('📢 Notices feature enabled');
 
     })();
 </script>
